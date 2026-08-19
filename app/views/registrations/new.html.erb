@@ -1,0 +1,28 @@
+<h1 class="mb-6 text-2xl font-semibold">Create an account</h1>
+
+<%= form_with model: @user, url: registrations_path, class: "max-w-md space-y-4" do |form| %>
+  <% if @user.errors.any? %>
+    <ul class="list-disc pl-5 text-sm text-red-700">
+      <% @user.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  <% end %>
+  <div>
+    <%= form.label :name, class: "mb-1 block text-sm font-medium" %>
+    <%= form.text_field :name, required: true, class: "w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+  <div>
+    <%= form.label :email, class: "mb-1 block text-sm font-medium" %>
+    <%= form.email_field :email, required: true, class: "w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+  <div>
+    <%= form.label :password, class: "mb-1 block text-sm font-medium" %>
+    <%= form.password_field :password, required: true, class: "w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+  <div>
+    <%= form.label :password_confirmation, class: "mb-1 block text-sm font-medium" %>
+    <%= form.password_field :password_confirmation, required: true, class: "w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+  <%= form.submit "Register", class: "rounded bg-teal-700 px-4 py-2 text-white hover:bg-teal-800" %>
+<% end %>

@@ -1,0 +1,20 @@
+<h1 class="mb-6 text-2xl font-semibold">Choose a new password</h1>
+
+<%= form_with model: @user, url: password_reset_path(token: params[:token]), method: :patch, class: "max-w-md space-y-4" do |form| %>
+  <% if @user.errors.any? %>
+    <ul class="list-disc pl-5 text-sm text-red-700">
+      <% @user.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  <% end %>
+  <div>
+    <%= form.label :password, class: "mb-1 block text-sm font-medium" %>
+    <%= form.password_field :password, required: true, class: "w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+  <div>
+    <%= form.label :password_confirmation, class: "mb-1 block text-sm font-medium" %>
+    <%= form.password_field :password_confirmation, required: true, class: "w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+  <%= form.submit "Update password", class: "rounded bg-teal-700 px-4 py-2 text-white hover:bg-teal-800" %>
+<% end %>

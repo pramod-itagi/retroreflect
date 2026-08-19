@@ -1,0 +1,68 @@
+<h1 class="mb-2 text-2xl font-semibold">Home</h1>
+<p class="mb-8 text-slate-600">Collect private notes, then discuss them anonymously.</p>
+
+<% if @collecting_retrospectives.any? %>
+  <section class="mb-10">
+    <h2 class="mb-3 text-lg font-medium">Retrospectives collecting your notes</h2>
+    <ul class="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
+      <% @collecting_retrospectives.each do |retrospective| %>
+        <li class="flex items-center justify-between px-4 py-3">
+          <div>
+            <p class="font-medium"><%= retrospective.title %></p>
+            <p class="text-sm text-slate-500">
+              <%= retrospective.sprint_label.presence || retrospective.team.name %>
+              <% if retrospective.sprint_label.present? %> · <%= retrospective.team.name %><% end %>
+            </p>
+          </div>
+          <%= link_to "Add notes", participant_retrospective_path(retrospective), class: "text-sm text-teal-800 underline" %>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>
+
+<% if @owned_action_items.any? %>
+  <section class="mb-10">
+    <div class="mb-3 flex items-center justify-between">
+      <h2 class="text-lg font-medium">Action items assigned to you</h2>
+      <%= link_to "View all", participant_action_items_path, class: "text-sm text-teal-800 underline" %>
+    </div>
+    <ul class="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
+      <% @owned_action_items.first(5).each do |item| %>
+        <li class="px-4 py-3">
+          <p class="font-medium"><%= item.title %></p>
+          <p class="text-sm text-slate-500"><%= item.team.name %> · <%= action_status_label(item.status) %> · due <%= item.due_on %></p>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>
+
+<section class="mb-10">
+  <div class="mb-3 flex items-center justify-between">
+    <h2 class="text-lg font-medium">Teams you facilitate</h2>
+    <%= link_to "New team", new_facilitator_team_path, class: "rounded bg-teal-700 px-3 py-1.5 text-sm text-white hover:bg-teal-800" %>
+  </div>
+  <% if @facilitated_teams.any? %>
+    <ul class="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
+      <% @facilitated_teams.each do |team| %>
+        <li class="px-4 py-3">
+          <%= link_to team.name, facilitator_team_path(team), class: "font-medium text-teal-800" %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-sm text-slate-500">You are not facilitating any teams yet.</p>
+  <% end %>
+</section>
+
+<% if @member_teams.any? %>
+  <section>
+    <h2 class="mb-3 text-lg font-medium">Teams you belong to</h2>
+    <ul class="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
+      <% @member_teams.each do |team| %>
+        <li class="px-4 py-3 text-slate-700"><%= team.name %></li>
+      <% end %>
+    </ul>
+  </section>
+<% end %>

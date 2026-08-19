@@ -1,0 +1,55 @@
+plugins:
+  - rubocop-rails
+
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.2
+  Exclude:
+    - "db/schema.rb"
+    - "bin/**/*"
+    - "vendor/**/*"
+    - "node_modules/**/*"
+    - "spec/spec_helper.rb"
+    - "db/migrate/**/*"
+    - "config/puma.rb"
+    - "config/environments/**/*"
+  SuggestExtensions: false
+
+Style/Documentation:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+Style/EmptyMethod:
+  Enabled: false
+
+Rails/I18nLocaleTexts:
+  Enabled: false
+
+Rails/ActionOrder:
+  Enabled: false
+
+Metrics/AbcSize:
+  Max: 30
+
+Metrics/BlockLength:
+  Exclude:
+    - "spec/**/*"
+    - "config/**/*"
+
+Metrics/MethodLength:
+  Max: 25
+
+Layout/LineLength:
+  Max: 140
+
+Rails/SkipsModelValidations:
+  Exclude:
+    - "app/services/retrospectives/**/*.rb"

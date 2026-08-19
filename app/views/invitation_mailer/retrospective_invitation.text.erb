@@ -1,0 +1,9 @@
+Hi <%= @user.name %>,
+
+You’ve been invited to <%= @retrospective.title %><% if @retrospective.sprint_label.present? %> (<%= @retrospective.sprint_label %>)<% end %> on <%= @retrospective.team.name %>.
+
+Open the link while signed in as <%= @user.email %>. This invitation does not work for any other account.
+
+<%= @url %>
+
+The link expires in 14 days and only works while notes are being collected.

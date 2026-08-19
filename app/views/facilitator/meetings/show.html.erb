@@ -1,0 +1,73 @@
+<div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+  <div>
+    <% if @retrospective.sprint_label.present? %>
+      <p class="mb-1 text-sm font-medium uppercase tracking-wide text-teal-800"><%= @retrospective.sprint_label %></p>
+    <% end %>
+    <h1 class="text-2xl font-semibold">Meeting</h1>
+    <p class="text-sm text-slate-500">
+      <%= link_to @retrospective.title, facilitator_retrospective_path(@retrospective), class: "underline" %>
+      · Notes are anonymous
+    </p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <% if @retrospective.discussing? %>
+      <%= button_to "Close retrospective", close_facilitator_retrospective_path(@retrospective), class: "rounded border border-slate-300 bg-white px-3 py-2 text-sm" %>
+    <% end %>
+  </div>
+</div>
+
+<div class="grid items-start gap-6 lg:grid-cols-[18rem_1fr]">
+  <aside data-meeting-status class="rounded border border-slate-200 bg-white p-4">
+    <h2 class="mb-1 text-sm font-medium uppercase tracking-wide text-slate-500">Submission status</h2>
+    <p class="mb-4 text-lg font-semibold"><%= @submitted_count %> of <%= @participations.size %> submitted</p>
+    <ul class="space-y-2 text-sm">
+      <% @participations.sort_by { |participation| display_name_for(participation.user) }.each do |participation| %>
+        <li class="flex items-center justify-between gap-3">
+          <span><%= display_name_for(participation.user) %></span>
+          <span class="<%= participation.submitted? ? "text-teal-800" : "text-slate-500" %>">
+            <%= participation.response_status_label %>
+          </span>
+        </li>
+      <% end %>
+    </ul>
+    <p class="mt-4 text-xs leading-relaxed text-slate-500">Names here are attendance only. They are not attached to notes on the board.</p>
+  </aside>
+
+  <div data-meeting-board data-controller="meeting-board" class="grid gap-4 md:grid-cols-2">
+    <% Retrospective::CATEGORIES.each do |key, label| %>
+      <% items = @items_by_category[key] || [] %>
+      <section class="flex min-h-[16rem] flex-col rounded border border-slate-200 bg-white p-4">
+        <div class="mb-3 flex items-baseline justify-between gap-2">
+          <h2 class="font-medium"><%= label %></h2>
+          <span class="text-xs text-slate-500"><%= items.size %></span>
+        </div>
+        <ul class="flex-1 space-y-3">
+          <% items.each do |item| %>
+            <li data-meeting-board-target="card"
+                data-action="click->meeting-board#focus"
+                class="cursor-pointer rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed shadow-sm transition hover:border-teal-300">
+              <p class="whitespace-pre-wrap text-slate-900"><%= item.body %></p>
+              <button type="button"
+                      class="mt-3 text-xs text-slate-500 underline"
+                      data-action="click->meeting-board#markDiscussed">
+                Mark discussed
+              </button>
+            </li>
+          <% end %>
+        </ul>
+        <% if items.empty? %>
+          <p class="text-sm text-slate-400">No notes in this category.</p>
+        <% end %>
+      </section>
+    <% end %>
+  </div>
+</div>
+
+<% if @retrospective.discussing? %>
+  <section class="mt-10">
+    <h2 class="mb-3 text-lg font-medium">Action items</h2>
+    <p class="mb-4 text-sm text-slate-600">Capture follow-ups during the meeting. Owners can update status later; only you can cancel.</p>
+    <%= render "facilitator/action_items/form", team: @team, retrospective: @retrospective, owners: @owners %>
+    <%= render "facilitator/action_items/list", action_items: @action_items %>
+  </section>
+<% end %>

@@ -1,0 +1,65 @@
+<div class="mb-8">
+  <p class="text-sm text-slate-500"><%= link_to "Teams", facilitator_teams_path, class: "underline" %></p>
+  <h1 class="text-2xl font-semibold"><%= @team.name %></h1>
+</div>
+
+<section class="mb-10">
+  <h2 class="mb-3 text-lg font-medium">People</h2>
+  <ul class="mb-4 divide-y divide-slate-200 rounded border border-slate-200 bg-white">
+    <% @memberships.each do |membership| %>
+      <li class="flex items-center justify-between px-4 py-3 text-sm">
+        <span><%= display_name_for(membership.user) %> · <%= membership.role.humanize %></span>
+        <%= button_to "Remove", facilitator_team_membership_path(@team, membership), method: :delete, class: "text-slate-500 hover:text-red-700", form: { data: { turbo_confirm: "Remove this person?" } } %>
+      </li>
+    <% end %>
+  </ul>
+
+  <% if @candidate_users.any? %>
+    <%= form_with url: facilitator_team_memberships_path(@team), class: "flex flex-wrap items-end gap-3" do %>
+      <div>
+        <%= label_tag :user_id, "Add person", class: "mb-1 block text-sm font-medium" %>
+        <%= select_tag :user_id, options_from_collection_for_select(@candidate_users, :id, :display_name), prompt: "Select a confirmed user", class: "rounded border border-slate-300 px-3 py-2" %>
+      </div>
+      <div>
+        <%= label_tag :role, "Role", class: "mb-1 block text-sm font-medium" %>
+        <%= select_tag :role, options_for_select([["Member", "member"], ["Facilitator", "facilitator"]], "member"), class: "rounded border border-slate-300 px-3 py-2" %>
+      </div>
+      <%= submit_tag "Add", class: "rounded bg-slate-900 px-3 py-2 text-sm text-white" %>
+    <% end %>
+  <% else %>
+    <p class="text-sm text-slate-500">Everyone with a confirmed account is already on this team.</p>
+  <% end %>
+</section>
+
+<section class="mb-10">
+  <div class="mb-3 flex items-center justify-between">
+    <h2 class="text-lg font-medium">Retrospectives</h2>
+    <%= link_to "New retrospective", new_facilitator_team_retrospective_path(@team), class: "rounded bg-teal-700 px-3 py-1.5 text-sm text-white hover:bg-teal-800" %>
+  </div>
+  <% if @retrospectives.any? %>
+    <ul class="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
+      <% @retrospectives.each do |retrospective| %>
+        <li class="flex items-center justify-between px-4 py-3">
+          <div>
+            <%= link_to retrospective.title, facilitator_retrospective_path(retrospective), class: "font-medium text-teal-800" %>
+            <p class="text-sm text-slate-500">
+              <%= retrospective.status.humanize %>
+              <% if retrospective.sprint_label.present? %> · <%= retrospective.sprint_label %><% end %>
+            </p>
+          </div>
+          <% if retrospective.revealed? %>
+            <%= link_to "Meeting board", facilitator_retrospective_meeting_path(retrospective), class: "text-sm underline" %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="rounded border border-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-500">No retrospectives yet. Create one after you have members on the team.</p>
+  <% end %>
+</section>
+
+<section>
+  <h2 class="mb-3 text-lg font-medium">Action items</h2>
+  <%= render "facilitator/action_items/form", team: @team, retrospective: nil, owners: @team.users.active.order(:name) %>
+  <%= render "facilitator/action_items/list", action_items: @action_items %>
+</section>

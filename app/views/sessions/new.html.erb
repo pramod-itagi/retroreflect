@@ -1,0 +1,19 @@
+<h1 class="mb-6 text-2xl font-semibold">Sign in</h1>
+
+<%= form_with url: session_path, class: "max-w-md space-y-4" do %>
+  <div>
+    <%= label_tag :email, "Email", class: "mb-1 block text-sm font-medium" %>
+    <%= email_field_tag :email, params[:email], required: true, class: "w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+  <div>
+    <%= label_tag :password, "Password", class: "mb-1 block text-sm font-medium" %>
+    <%= password_field_tag :password, nil, required: true, class: "w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+  <%= submit_tag "Sign in", class: "rounded bg-teal-700 px-4 py-2 text-white hover:bg-teal-800" %>
+<% end %>
+
+<p class="mt-4 text-sm text-slate-600">
+  <%= link_to "Create an account", new_registration_path, class: "text-teal-800 underline" %>
+  ·
+  <%= link_to "Forgot password?", new_password_reset_path, class: "text-teal-800 underline" %>
+</p>

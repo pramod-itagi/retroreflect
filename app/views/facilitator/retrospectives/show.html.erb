@@ -1,0 +1,70 @@
+<p class="mb-2 text-sm text-slate-500"><%= link_to @team.name, facilitator_team_path(@team), class: "underline" %></p>
+<div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+  <div>
+    <h1 class="text-2xl font-semibold"><%= @retrospective.title %></h1>
+    <p class="text-sm text-slate-500">
+      <%= @retrospective.status.humanize %>
+      <% if @retrospective.sprint_label.present? %> · <%= @retrospective.sprint_label %><% end %>
+    </p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <% if @retrospective.draft? %>
+      <%= button_to "Send invitations", start_collecting_facilitator_retrospective_path(@retrospective), class: "rounded bg-teal-700 px-3 py-2 text-sm text-white", form: { data: { turbo_confirm: "Email every participant and freeze the roster?" } } %>
+      <%= button_to "Cancel", cancel_facilitator_retrospective_path(@retrospective), class: "rounded border border-slate-300 px-3 py-2 text-sm" %>
+    <% elsif @retrospective.collecting? %>
+      <%= button_to "Reveal notes", reveal_facilitator_retrospective_path(@retrospective), class: "rounded bg-teal-700 px-3 py-2 text-sm text-white", form: { data: { turbo_confirm: "Reveal all notes anonymously? Drafts will be deleted." } } %>
+      <%= button_to "Cancel", cancel_facilitator_retrospective_path(@retrospective), class: "rounded border border-slate-300 px-3 py-2 text-sm" %>
+    <% elsif @retrospective.discussing? %>
+      <%= link_to "Meeting board", facilitator_retrospective_meeting_path(@retrospective), class: "rounded bg-teal-700 px-3 py-2 text-sm text-white" %>
+      <%= button_to "Close retrospective", close_facilitator_retrospective_path(@retrospective), class: "rounded border border-slate-300 px-3 py-2 text-sm" %>
+    <% elsif @retrospective.closed? %>
+      <%= link_to "Meeting board", facilitator_retrospective_meeting_path(@retrospective), class: "rounded bg-slate-900 px-3 py-2 text-sm text-white" %>
+    <% end %>
+  </div>
+</div>
+
+<% if @retrospective.collecting? %>
+  <p class="mb-4 rounded border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+    You can see who has submitted, not what they wrote. Notes stay private until you reveal them.
+  </p>
+<% end %>
+
+<section class="mb-10">
+  <h2 class="mb-3 text-lg font-medium">Roster</h2>
+  <ul class="mb-4 divide-y divide-slate-200 rounded border border-slate-200 bg-white">
+    <% @participations.each do |participation| %>
+      <li class="flex items-center justify-between px-4 py-3 text-sm">
+        <span>
+          <%= display_name_for(participation.user) %>
+          · <%= participation.invitation_status_label %>
+          <% if @retrospective.collecting? || @retrospective.revealed? %>
+            · <%= participation.response_status_label %>
+          <% end %>
+        </span>
+        <% if @retrospective.draft? %>
+          <%= button_to "Remove", facilitator_retrospective_participation_path(@retrospective, participation), method: :delete, class: "text-slate-500" %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+
+  <% if @retrospective.draft? %>
+    <%= form_with url: facilitator_retrospective_participations_path(@retrospective), class: "flex flex-wrap items-end gap-3" do %>
+      <div>
+        <%= label_tag :user_id, "Add team member", class: "mb-1 block text-sm font-medium" %>
+        <%= select_tag :user_id, options_from_collection_for_select(@available_members, :id, :display_name), prompt: "Select member", class: "rounded border border-slate-300 px-3 py-2" %>
+      </div>
+      <%= submit_tag "Add to roster", class: "rounded bg-slate-900 px-3 py-2 text-sm text-white" %>
+    <% end %>
+  <% else %>
+    <p class="text-sm text-slate-500">Roster is frozen.</p>
+  <% end %>
+</section>
+
+<% if @retrospective.discussing? || @retrospective.closed? %>
+  <section>
+    <h2 class="mb-3 text-lg font-medium">Action items</h2>
+    <%= render "facilitator/action_items/form", team: @team, retrospective: @retrospective, owners: @team.users.active.order(:name) %>
+    <%= render "facilitator/action_items/list", action_items: @retrospective.action_items.includes(:owner) %>
+  </section>
+<% end %>
