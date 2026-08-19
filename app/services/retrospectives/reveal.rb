@@ -1,0 +1,34 @@
+# Copies draft bodies into anonymous feedback_items, then deletes drafts.
+# Never copies participation_id, user_id, or draft id onto published notes.
+# Shuffle within each category so discussion order is not submission order.
+class Retrospectives::Reveal
+  class Error < StandardError; end
+
+  def initialize(retrospective)
+    @retrospective = retrospective
+  end
+
+  def call
+    raise Error, "retrospective must be collecting" unless @retrospective.collecting?
+
+    Retrospective.transaction do
+      position = 0
+      drafts_by_category = @retrospective.feedback_drafts.group_by { |draft| draft.category.to_s }
+
+      Retrospective::CATEGORIES.each_key do |category|
+        Array(drafts_by_category[category]).shuffle.each do |draft|
+          position += 1
+          FeedbackItem.create!(
+            retrospective: @retrospective,
+            category: draft.category,
+            body: draft.body,
+            reveal_position: position
+          )
+        end
+      end
+
+      @retrospective.feedback_drafts.delete_all
+      @retrospective.update!(status: :discussing, revealed_at: Time.current)
+    end
+  end
+end

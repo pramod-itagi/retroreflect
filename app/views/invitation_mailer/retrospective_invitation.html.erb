@@ -1,0 +1,5 @@
+<p>Hi <%= @user.name %>,</p>
+<p>You’ve been invited to <%= @retrospective.title %><% if @retrospective.sprint_label.present? %> (<%= @retrospective.sprint_label %>)<% end %> on <%= @retrospective.team.name %>.</p>
+<p>Open the link while signed in as <%= @user.email %>. This invitation does not work for any other account.</p>
+<p><%= link_to "Open retrospective", @url %></p>
+<p>The link expires in 14 days and only works while notes are being collected.</p>

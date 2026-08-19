@@ -1,0 +1,25 @@
+<%= form_with model: ActionItem.new, url: (retrospective ? facilitator_retrospective_action_items_path(retrospective) : facilitator_team_action_items_path(team)), class: "mb-4 grid gap-3 rounded border border-slate-200 bg-white p-4 md:grid-cols-4" do |form| %>
+  <div class="md:col-span-2">
+    <%= form.label :title, class: "mb-1 block text-sm font-medium" %>
+    <%= form.text_field :title, required: true, class: "w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+  <div>
+    <%= form.label :owner_id, "Owner", class: "mb-1 block text-sm font-medium" %>
+    <%= form.collection_select :owner_id, owners, :id, :display_name, { prompt: "Select owner" }, { required: true, class: "w-full rounded border border-slate-300 px-3 py-2" } %>
+  </div>
+  <div>
+    <%= form.label :due_on, "Due date", class: "mb-1 block text-sm font-medium" %>
+    <%= form.date_field :due_on, required: true, class: "w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+  <div>
+    <%= form.label :status, class: "mb-1 block text-sm font-medium" %>
+    <%= form.select :status, ActionItem::STATUSES.map { |status| [action_status_label(status), status] }, { selected: "open" }, class: "w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+  <div class="md:col-span-4">
+    <%= form.label :description, class: "mb-1 block text-sm font-medium" %>
+    <%= form.text_area :description, rows: 2, class: "w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+  <div>
+    <%= form.submit "Add action item", class: "rounded bg-slate-900 px-3 py-2 text-sm text-white" %>
+  </div>
+<% end %>

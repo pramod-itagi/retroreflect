@@ -1,0 +1,9 @@
+<h1 class="mb-6 text-2xl font-semibold">Reset password</h1>
+
+<%= form_with url: password_resets_path, class: "max-w-md space-y-4" do %>
+  <div>
+    <%= label_tag :email, "Email", class: "mb-1 block text-sm font-medium" %>
+    <%= email_field_tag :email, nil, required: true, class: "w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+  <%= submit_tag "Send reset instructions", class: "rounded bg-teal-700 px-4 py-2 text-white hover:bg-teal-800" %>
+<% end %>

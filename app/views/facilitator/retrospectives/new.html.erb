@@ -1,0 +1,45 @@
+<p class="mb-2 text-sm text-slate-500"><%= link_to @team.name, facilitator_team_path(@team), class: "underline" %></p>
+<h1 class="mb-2 text-2xl font-semibold">New retrospective</h1>
+<p class="mb-6 max-w-lg text-sm text-slate-600">Name the session, pick the sprint, then choose who will submit notes. You can adjust the roster until collection starts.</p>
+
+<%= form_with model: @retrospective, url: facilitator_team_retrospectives_path(@team), class: "max-w-lg space-y-5" do |form| %>
+  <% if @retrospective.errors.any? %>
+    <ul class="list-disc rounded border border-red-200 bg-red-50 px-5 py-3 text-sm text-red-800">
+      <% @retrospective.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <div>
+    <%= form.label :title, class: "mb-1 block text-sm font-medium" %>
+    <%= form.text_field :title, required: true, placeholder: "Sprint 12 retro", class: "w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+
+  <div>
+    <%= form.label :sprint_label, "Sprint number", class: "mb-1 block text-sm font-medium" %>
+    <%= form.select :sprint_label,
+                    Retrospective::SPRINT_LABELS.map { |label| [label, label] },
+                    { include_blank: "Select sprint number" },
+                    { required: true, class: "w-full rounded border border-slate-300 px-3 py-2" } %>
+  </div>
+
+  <fieldset class="rounded border border-slate-200 bg-white px-4 py-3">
+    <legend class="px-1 text-sm font-medium">Participants</legend>
+    <p class="mb-3 text-sm text-slate-500">Team members only. Facilitators run the meeting and do not submit notes.</p>
+    <% if @members.any? %>
+      <div class="space-y-2">
+        <% @members.each do |member| %>
+          <label class="flex items-center gap-2 text-sm" for="participant_<%= member.id %>">
+            <%= check_box_tag "participant_ids[]", member.id, Array(params[:participant_ids]).map(&:to_s).include?(member.id.to_s), id: "participant_#{member.id}", class: "rounded border-slate-300" %>
+            <span><%= member.display_name %></span>
+          </label>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-sm text-slate-500">Add members to this team first, then come back to build the roster.</p>
+    <% end %>
+  </fieldset>
+
+  <%= form.submit "Create retrospective", class: "rounded bg-teal-700 px-4 py-2 text-white hover:bg-teal-800" %>
+<% end %>
