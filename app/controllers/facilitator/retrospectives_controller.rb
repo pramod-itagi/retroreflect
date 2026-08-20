@@ -3,6 +3,11 @@ module Facilitator
     def new
       @team = Team.find(params[:team_id])
       authorize!(@team, :update?)
+      if @team.running_retrospective.present?
+        redirect_to facilitator_team_path(@team), alert: Retrospective::ONE_ACTIVE_MESSAGE
+        return
+      end
+
       @retrospective = @team.retrospectives.new
       load_member_choices
     end
@@ -13,7 +18,7 @@ module Facilitator
       @retrospective.created_by = current_user
       authorize!(@retrospective, :create?)
 
-      if @retrospective.save
+      if save_retrospective
         add_selected_participants
         redirect_to facilitator_retrospective_path(@retrospective), notice: "Retrospective created."
       else
@@ -74,6 +79,16 @@ module Facilitator
 
     def load_member_choices
       @members = @team.members.order(:name)
+    end
+
+    def save_retrospective
+      Team.transaction do
+        @team.lock!
+        @retrospective.save
+      end
+    rescue ActiveRecord::RecordNotUnique
+      @retrospective.errors.add(:base, Retrospective::ONE_ACTIVE_MESSAGE)
+      false
     end
 
     def add_selected_participants

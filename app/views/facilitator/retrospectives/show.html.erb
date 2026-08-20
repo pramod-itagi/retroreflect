@@ -1,4 +1,4 @@
-<p class="mb-2 text-sm text-slate-500"><%= link_to @team.name, facilitator_team_path(@team), class: "underline" %></p>
+<p class="mb-2 text-sm text-slate-500"><%= back_link facilitator_team_path(@team), @team.name %></p>
 <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
   <div>
     <h1 class="text-2xl font-semibold"><%= @retrospective.title %></h1>

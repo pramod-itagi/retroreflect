@@ -9,6 +9,7 @@ module Facilitator
       authorize!(@team, :update?)
       @memberships = @team.memberships.includes(:user).order(:role)
       @retrospectives = @team.retrospectives.active.order(created_at: :desc)
+      @running_retrospective = @team.running_retrospective
       @action_items = @team.action_items.includes(:owner).order(:due_on)
       @candidate_users = User.active.where.not(id: @team.user_ids).where.not(confirmed_at: nil).order(:name)
     end
