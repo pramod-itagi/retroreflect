@@ -14,4 +14,8 @@ class Team < ApplicationRecord
   def facilitators
     users.merge(Membership.facilitator)
   end
+
+  def running_retrospective
+    retrospectives.running.order(:created_at).first
+  end
 end

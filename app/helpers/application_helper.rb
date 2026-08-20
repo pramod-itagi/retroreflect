@@ -1,4 +1,8 @@
 module ApplicationHelper
+  def back_link(path, destination)
+    link_to "Back to #{destination}", path, class: "underline"
+  end
+
   def display_name_for(user)
     user&.display_name || "Unknown User"
   end

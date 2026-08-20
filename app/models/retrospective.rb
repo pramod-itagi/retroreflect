@@ -1,6 +1,10 @@
 class Retrospective < ApplicationRecord
+  self.ignored_columns += %w[running_team_id]
+
   SPRINT_NUMBERS = (1..40)
   SPRINT_LABELS = SPRINT_NUMBERS.map { |number| "Sprint #{number}" }.freeze
+  RUNNING_STATUSES = %w[draft collecting discussing].freeze
+  ONE_ACTIVE_MESSAGE = "This team already has an active retrospective. Close it before creating another.".freeze
 
   CATEGORIES = {
     "went_well" => "What went well",
@@ -26,8 +30,14 @@ class Retrospective < ApplicationRecord
 
   validates :title, presence: true
   validates :sprint_label, inclusion: { in: SPRINT_LABELS }, allow_blank: true
+  validate :team_must_not_have_another_running_retrospective, on: :create
 
   scope :active, -> { where.not(status: :cancelled) }
+  scope :running, -> { where(status: RUNNING_STATUSES) }
+
+  def running?
+    RUNNING_STATUSES.include?(status)
+  end
 
   def roster_frozen?
     collecting? || discussing? || closed? || cancelled?
@@ -39,5 +49,14 @@ class Retrospective < ApplicationRecord
 
   def revealed?
     discussing? || closed?
+  end
+
+  private
+
+  def team_must_not_have_another_running_retrospective
+    return if team.blank? || !running?
+    return unless team.retrospectives.running.exists?
+
+    errors.add(:base, ONE_ACTIVE_MESSAGE)
   end
 end

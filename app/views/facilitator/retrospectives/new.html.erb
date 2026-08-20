@@ -1,4 +1,4 @@
-<p class="mb-2 text-sm text-slate-500"><%= link_to @team.name, facilitator_team_path(@team), class: "underline" %></p>
+<p class="mb-2 text-sm text-slate-500"><%= back_link facilitator_team_path(@team), @team.name %></p>
 <h1 class="mb-2 text-2xl font-semibold">New retrospective</h1>
 <p class="mb-6 max-w-lg text-sm text-slate-600">Name the session, pick the sprint, then choose who will submit notes. You can adjust the roster until collection starts.</p>
 

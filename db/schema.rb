@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_18_180007) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_20_133000) do
   create_table "action_items", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "team_id", null: false
     t.bigint "retrospective_id"
@@ -100,7 +100,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_18_180007) do
     t.datetime "cancelled_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.virtual "running_team_id", type: :bigint, as: "(case when (`status` in (_utf8mb4'draft',_utf8mb4'collecting',_utf8mb4'discussing')) then `team_id` else NULL end)", stored: true
     t.index ["created_by_id"], name: "index_retrospectives_on_created_by_id"
+    t.index ["running_team_id"], name: "index_retrospectives_one_running_per_team", unique: true
     t.index ["team_id", "status"], name: "index_retrospectives_on_team_id_and_status"
     t.index ["team_id"], name: "index_retrospectives_on_team_id"
   end

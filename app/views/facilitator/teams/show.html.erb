@@ -1,5 +1,5 @@
 <div class="mb-8">
-  <p class="text-sm text-slate-500"><%= link_to "Teams", facilitator_teams_path, class: "underline" %></p>
+  <p class="text-sm text-slate-500"><%= back_link facilitator_teams_path, "teams" %></p>
   <h1 class="text-2xl font-semibold"><%= @team.name %></h1>
 </div>
 
@@ -32,9 +32,17 @@
 </section>
 
 <section class="mb-10">
-  <div class="mb-3 flex items-center justify-between">
+  <div class="mb-3 flex items-center justify-between gap-4">
     <h2 class="text-lg font-medium">Retrospectives</h2>
-    <%= link_to "New retrospective", new_facilitator_team_retrospective_path(@team), class: "rounded bg-teal-700 px-3 py-1.5 text-sm text-white hover:bg-teal-800" %>
+    <% if @running_retrospective %>
+      <p class="text-sm text-slate-600">
+        This team already has an active retrospective.
+        <%= link_to @running_retrospective.title, facilitator_retrospective_path(@running_retrospective), class: "text-teal-800 underline" %>
+        must be closed before creating another.
+      </p>
+    <% else %>
+      <%= link_to "New retrospective", new_facilitator_team_retrospective_path(@team), class: "rounded bg-teal-700 px-3 py-1.5 text-sm text-white hover:bg-teal-800" %>
+    <% end %>
   </div>
   <% if @retrospectives.any? %>
     <ul class="divide-y divide-slate-200 rounded border border-slate-200 bg-white">

@@ -1,13 +1,11 @@
+<p class="mb-2 text-sm text-slate-500"><%= back_link facilitator_retrospective_path(@retrospective), @retrospective.title %></p>
 <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
   <div>
     <% if @retrospective.sprint_label.present? %>
       <p class="mb-1 text-sm font-medium uppercase tracking-wide text-teal-800"><%= @retrospective.sprint_label %></p>
     <% end %>
     <h1 class="text-2xl font-semibold">Meeting</h1>
-    <p class="text-sm text-slate-500">
-      <%= link_to @retrospective.title, facilitator_retrospective_path(@retrospective), class: "underline" %>
-      · Notes are anonymous
-    </p>
+    <p class="text-sm text-slate-500">Notes are anonymous</p>
   </div>
   <div class="flex flex-wrap gap-2">
     <% if @retrospective.discussing? %>
