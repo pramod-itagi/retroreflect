@@ -51,6 +51,22 @@ class Retrospective < ApplicationRecord
     discussing? || closed?
   end
 
+  def any_submissions?
+    participations.submitted.exists?
+  end
+
+  def participant_count
+    participations.loaded? ? participations.size : participations.count
+  end
+
+  def submitted_count
+    if participations.loaded?
+      participations.count(&:submitted?)
+    else
+      participations.submitted.count
+    end
+  end
+
   private
 
   def team_must_not_have_another_running_retrospective

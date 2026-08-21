@@ -12,6 +12,8 @@ Rails.application.routes.draw do
 
   get "invitations/:token", to: "invitations#show", as: :invitation
 
+  resources :retrospectives, only: :index
+
   namespace :facilitator do
     resources :teams, only: %i[index show new create] do
       resources :memberships, only: %i[create destroy]

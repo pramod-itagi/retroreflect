@@ -21,6 +21,7 @@ RSpec.describe Retrospectives::Reveal do
     participation = retro.participations.create!(user: alice)
     retro.update!(status: :collecting, collecting_started_at: Time.current)
     participation.feedback_drafts.create!(retrospective: retro, category: :went_well, body: "The pipeline was stable")
+    participation.update!(submitted_at: Time.current)
 
     described_class.new(retro).call
 
@@ -31,5 +32,23 @@ RSpec.describe Retrospectives::Reveal do
     expect(item.body).to eq("The pipeline was stable")
     expect(item.reveal_position).to eq(1)
     expect(item.attributes.keys).not_to include("user_id", "participation_id")
+  end
+
+  it "rejects reveal when nobody has submitted, even if drafts exist" do
+    facilitator = create_user(name: "Facilitator")
+    alice = create_user(name: "Alice")
+    team = create_team_with_roles(facilitator: facilitator, members: [alice])
+    retro = team.retrospectives.create!(title: "Sprint 12", created_by: facilitator)
+    participation = retro.participations.create!(user: alice)
+    retro.update!(status: :collecting, collecting_started_at: Time.current)
+    draft = participation.feedback_drafts.create!(retrospective: retro, category: :went_well, body: "Unsubmitted draft")
+
+    expect { described_class.new(retro).call }.to raise_error(described_class::Error, described_class::NO_SUBMISSIONS_MESSAGE)
+
+    retro.reload
+    expect(retro).to be_collecting
+    expect(retro.feedback_items).to be_empty
+    expect(draft.reload.body).to eq("Unsubmitted draft")
+    expect(retro.revealed_at).to be_nil
   end
 end

@@ -12,7 +12,16 @@
       <%= button_to "Send invitations", start_collecting_facilitator_retrospective_path(@retrospective), class: "rounded bg-teal-700 px-3 py-2 text-sm text-white", form: { data: { turbo_confirm: "Email every participant and freeze the roster?" } } %>
       <%= button_to "Cancel", cancel_facilitator_retrospective_path(@retrospective), class: "rounded border border-slate-300 px-3 py-2 text-sm" %>
     <% elsif @retrospective.collecting? %>
-      <%= button_to "Reveal notes", reveal_facilitator_retrospective_path(@retrospective), class: "rounded bg-teal-700 px-3 py-2 text-sm text-white", form: { data: { turbo_confirm: "Reveal all notes anonymously? Drafts will be deleted." } } %>
+      <div>
+        <%= button_to "Reveal notes",
+                      reveal_facilitator_retrospective_path(@retrospective),
+                      class: "rounded bg-teal-700 px-3 py-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50",
+                      disabled: @submitted_count.zero?,
+                      form: (@submitted_count.positive? ? { data: { turbo_confirm: "Reveal all notes anonymously? Drafts will be deleted." } } : {}) %>
+        <% if @submitted_count.zero? %>
+          <p class="mt-2 max-w-xs text-sm text-slate-500">Reveal will be enabled after at least one participant submits feedback.</p>
+        <% end %>
+      </div>
       <%= button_to "Cancel", cancel_facilitator_retrospective_path(@retrospective), class: "rounded border border-slate-300 px-3 py-2 text-sm" %>
     <% elsif @retrospective.discussing? %>
       <%= link_to "Meeting board", facilitator_retrospective_meeting_path(@retrospective), class: "rounded bg-teal-700 px-3 py-2 text-sm text-white" %>
@@ -25,6 +34,7 @@
 
 <% if @retrospective.collecting? %>
   <p class="mb-4 rounded border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+    <%= @submitted_count %> of <%= @participations.size %> participants have submitted feedback.
     You can see who has submitted, not what they wrote. Notes stay private until you reveal them.
   </p>
 <% end %>
@@ -49,12 +59,15 @@
   </ul>
 
   <% if @retrospective.draft? %>
-    <%= form_with url: facilitator_retrospective_participations_path(@retrospective), class: "flex flex-wrap items-end gap-3" do %>
-      <div>
-        <%= label_tag :user_id, "Add team member", class: "mb-1 block text-sm font-medium" %>
-        <%= select_tag :user_id, options_from_collection_for_select(@available_members, :id, :display_name), prompt: "Select member", class: "rounded border border-slate-300 px-3 py-2" %>
+    <%= form_with url: facilitator_retrospective_participations_path(@retrospective), class: "flex flex-wrap items-start gap-3" do %>
+      <div class="flex w-full min-w-40 flex-col gap-1 sm:w-auto">
+        <%= label_tag :user_id, "Add team member", class: "text-sm font-medium leading-5" %>
+        <%= select_tag :user_id, options_from_collection_for_select(@available_members, :id, :display_name), prompt: "Select member", class: "h-10 w-full rounded border border-slate-300 px-3 text-sm sm:w-auto" %>
       </div>
-      <%= submit_tag "Add to roster", class: "rounded bg-slate-900 px-3 py-2 text-sm text-white" %>
+      <div class="flex w-full flex-col gap-1 sm:w-auto">
+        <span class="hidden text-sm font-medium leading-5 sm:block sm:invisible" aria-hidden="true">Add</span>
+        <%= submit_tag "Add to roster", class: "h-10 w-full rounded bg-slate-900 px-3 text-sm text-white sm:w-auto" %>
+      </div>
     <% end %>
   <% else %>
     <p class="text-sm text-slate-500">Roster is frozen.</p>

@@ -168,6 +168,7 @@ RSpec.describe "Participant feedback", type: :request do
       category: :went_well,
       body: "Before reveal"
     )
+    setup[:alice_participation].update!(submitted_at: Time.current)
     Retrospectives::Reveal.new(setup[:retro]).call
 
     sign_in(setup[:alice])

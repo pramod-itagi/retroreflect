@@ -6,8 +6,8 @@ class Retrospectives::StartCollecting
   end
 
   def call
-    raise Error, "retrospective must be in draft" unless @retrospective.draft?
-    raise Error, "select at least one participant" if @retrospective.participations.none?
+    raise Error, "Retrospective must be in draft" unless @retrospective.draft?
+    raise Error, "Select at least one participant before sending invitations" if @retrospective.participations.none?
 
     invitation_tokens = {}
 

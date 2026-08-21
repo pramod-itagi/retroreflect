@@ -32,6 +32,7 @@ module Facilitator
       authorize!(@retrospective, :view_roster?)
       @team = @retrospective.team
       @participations = @retrospective.participations.includes(:user)
+      @submitted_count = @participations.count(&:submitted?)
       @available_members = @team.members.where.not(id: @participations.select(:user_id)).order(:name)
     end
 

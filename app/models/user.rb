@@ -30,6 +30,10 @@ class User < ApplicationRecord
     discarded? ? "Unknown User" : name
   end
 
+  def facilitator?
+    memberships.facilitator.exists?
+  end
+
   def facilitator_of?(team)
     memberships.exists?(team: team, role: :facilitator)
   end
@@ -44,6 +48,11 @@ class User < ApplicationRecord
 
   def member_teams
     Team.joins(:memberships).where(memberships: { user_id: id, role: :member })
+  end
+
+  def accessible_retrospectives
+    Retrospective.where(team_id: memberships.facilitator.select(:team_id))
+                 .or(Retrospective.where(id: participations.select(:retrospective_id)))
   end
 
   def issue_confirmation_token!
