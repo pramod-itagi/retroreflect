@@ -5,9 +5,9 @@ RSpec.describe "Facilitator retrospective setup", type: :request do
     facilitator = create_user(name: "Jordan", email: "jordan@example.com")
     alice = create_user(name: "Alice", email: "alice@example.com")
     bob = create_user(name: "Bob", email: "bob@example.com")
+    create_team_with_roles(facilitator: facilitator).update!(name: "Existing")
 
     sign_in(facilitator)
-
     post facilitator_teams_path, params: { team: { name: "Platform" } }
     team = Team.find_by!(name: "Platform")
     expect(response).to redirect_to(facilitator_team_path(team))

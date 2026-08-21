@@ -4,12 +4,18 @@
 class Retrospectives::Reveal
   class Error < StandardError; end
 
+  NO_SUBMISSIONS_MESSAGE = [
+    "Cannot reveal feedback yet. No participants have submitted any feedback.",
+    "At least one participant must submit feedback before the retrospective can be revealed."
+  ].join(" ").freeze
+
   def initialize(retrospective)
     @retrospective = retrospective
   end
 
   def call
     raise Error, "retrospective must be collecting" unless @retrospective.collecting?
+    raise Error, NO_SUBMISSIONS_MESSAGE unless @retrospective.any_submissions?
 
     Retrospective.transaction do
       position = 0

@@ -8,7 +8,7 @@ class TeamPolicy < ApplicationPolicy
   end
 
   def create?
-    user&.confirmed?
+    user&.confirmed? && user.facilitator?
   end
 
   def update?

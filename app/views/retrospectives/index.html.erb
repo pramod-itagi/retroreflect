@@ -1,0 +1,30 @@
+<h1 class="mb-2 text-2xl font-semibold">Retrospectives</h1>
+<p class="mb-6 text-sm text-slate-600">Active work, drafts, and previous sessions you can access.</p>
+
+<%= form_with url: retrospectives_path, method: :get, class: "mb-8 flex flex-wrap items-end gap-3" do %>
+  <div class="flex min-w-[10rem] flex-col gap-1">
+    <%= label_tag :team_id, "Team", class: "text-sm font-medium" %>
+    <%= select_tag :team_id,
+                   options_from_collection_for_select(@filter_teams, :id, :name, params[:team_id]),
+                   include_blank: "All teams",
+                   class: "h-10 rounded border border-slate-300 px-3 text-sm" %>
+  </div>
+  <div class="flex min-w-[10rem] flex-col gap-1">
+    <%= label_tag :status, "Status", class: "text-sm font-medium" %>
+    <%= select_tag :status,
+                   options_for_select(
+                     [["All statuses", ""], ["Active", "active"], ["Draft", "draft"], ["Previous", "previous"]],
+                     params[:status]
+                   ),
+                   class: "h-10 rounded border border-slate-300 px-3 text-sm" %>
+  </div>
+  <div class="flex min-w-[12rem] flex-1 flex-col gap-1">
+    <%= label_tag :q, "Search", class: "text-sm font-medium" %>
+    <%= text_field_tag :q, params[:q], placeholder: "Title or sprint", class: "h-10 rounded border border-slate-300 px-3 text-sm" %>
+  </div>
+  <%= submit_tag "Filter", class: "h-10 rounded bg-slate-900 px-3 text-sm text-white" %>
+<% end %>
+
+<%= render "retrospectives/section", title: "Active", empty_text: "No active retrospectives.", retrospectives: @active, facilitated_team_ids: @facilitated_team_ids %>
+<%= render "retrospectives/section", title: "Drafts", empty_text: "No draft retrospectives.", retrospectives: @drafts, facilitated_team_ids: @facilitated_team_ids %>
+<%= render "retrospectives/section", title: "Previous", empty_text: "No previous retrospectives yet.", retrospectives: @previous, facilitated_team_ids: @facilitated_team_ids %>

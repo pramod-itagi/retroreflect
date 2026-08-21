@@ -1,0 +1,15 @@
+<%# locals: title, empty_text, retrospectives, facilitated_team_ids %>
+<section class="mb-10">
+  <h2 class="mb-3 text-lg font-medium"><%= title %></h2>
+  <% if retrospectives.any? %>
+    <ul class="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
+      <% retrospectives.each do |retrospective| %>
+        <%= render "retrospectives/row",
+                   retrospective: retrospective,
+                   facilitated: facilitated_team_ids.include?(retrospective.team_id) %>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-sm text-slate-500"><%= empty_text %></p>
+  <% end %>
+</section>

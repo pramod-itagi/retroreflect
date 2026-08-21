@@ -16,6 +16,15 @@ class Team < ApplicationRecord
   end
 
   def running_retrospective
-    retrospectives.running.order(:created_at).first
+    candidates = if retrospectives.loaded?
+                   retrospectives.select(&:running?)
+                 else
+                   retrospectives.running.to_a
+                 end
+    candidates.min_by(&:created_at)
+  end
+
+  def member_count
+    memberships.loaded? ? memberships.size : memberships.count
   end
 end

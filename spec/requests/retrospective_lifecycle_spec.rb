@@ -45,6 +45,28 @@ RSpec.describe "One active retrospective per team", type: :request do
     expect(team.retrospectives.count).to eq(1)
   end
 
+  it "shows only the current retrospective on the team page, not closed history" do
+    facilitator = create_user(name: "Jordan")
+    team = create_team_with_roles(facilitator: facilitator)
+    closed = team.retrospectives.create!(
+      title: "Ancient closed retro",
+      sprint_label: "Sprint 1",
+      created_by: facilitator,
+      status: :closed,
+      closed_at: 1.month.ago
+    )
+    running = create_running_retro(team, facilitator, title: "Sprint 12")
+
+    sign_in(facilitator)
+    get facilitator_team_path(team)
+
+    expect(response.body).to include(running.title)
+    expect(response.body).not_to include(closed.title)
+    expect(response.body).to include("View retrospective history")
+    expect(response.body).to include(retrospectives_path(team_id: team.id))
+    expect(response.body).not_to include("New retrospective")
+  end
+
   it "lets a team create a new retrospective after the previous one is closed" do
     facilitator = create_user(name: "Jordan")
     team = create_team_with_roles(facilitator: facilitator)

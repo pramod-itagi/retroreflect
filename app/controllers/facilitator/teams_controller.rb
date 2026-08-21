@@ -8,14 +8,14 @@ module Facilitator
       @team = Team.find(params[:id])
       authorize!(@team, :update?)
       @memberships = @team.memberships.includes(:user).order(:role)
-      @retrospectives = @team.retrospectives.active.order(created_at: :desc)
-      @running_retrospective = @team.running_retrospective
+      @running_retrospective = @team.retrospectives.running.includes(:participations).order(:created_at).first
       @action_items = @team.action_items.includes(:owner).order(:due_on)
       @candidate_users = User.active.where.not(id: @team.user_ids).where.not(confirmed_at: nil).order(:name)
     end
 
     def new
       @team = Team.new
+      authorize!(@team, :create?)
     end
 
     def create

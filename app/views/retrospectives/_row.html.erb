@@ -1,0 +1,17 @@
+<%# locals: retrospective, facilitated %>
+<li class="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+  <div class="min-w-0">
+    <p class="font-medium"><%= retrospective.title %></p>
+    <p class="text-sm text-slate-500">
+      <%= retrospective.team.name %>
+      <% if retrospective.sprint_label.present? %> · <%= retrospective.sprint_label %><% end %>
+      · <%= retrospective.status.humanize %>
+      <% if retrospective.collecting? %>
+        · <%= submission_progress(retrospective) %>
+      <% elsif retrospective.draft? && retrospective.participant_count.zero? %>
+        · Participants not configured
+      <% end %>
+    </p>
+  </div>
+  <%= retrospective_cta(retrospective, facilitated: facilitated) %>
+</li>

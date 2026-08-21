@@ -15,16 +15,19 @@
   </ul>
 
   <% if @candidate_users.any? %>
-    <%= form_with url: facilitator_team_memberships_path(@team), class: "flex flex-wrap items-end gap-3" do %>
-      <div>
-        <%= label_tag :user_id, "Add person", class: "mb-1 block text-sm font-medium" %>
-        <%= select_tag :user_id, options_from_collection_for_select(@candidate_users, :id, :display_name), prompt: "Select a confirmed user", class: "rounded border border-slate-300 px-3 py-2" %>
+    <%= form_with url: facilitator_team_memberships_path(@team), class: "flex flex-wrap items-start gap-3" do %>
+      <div class="flex w-full min-w-40 flex-col gap-1 sm:w-auto">
+        <%= label_tag :user_id, "Add person", class: "text-sm font-medium leading-5" %>
+        <%= select_tag :user_id, options_from_collection_for_select(@candidate_users, :id, :display_name), prompt: "Select a confirmed user", class: "h-10 w-full rounded border border-slate-300 px-3 text-sm sm:w-auto" %>
       </div>
-      <div>
-        <%= label_tag :role, "Role", class: "mb-1 block text-sm font-medium" %>
-        <%= select_tag :role, options_for_select([["Member", "member"], ["Facilitator", "facilitator"]], "member"), class: "rounded border border-slate-300 px-3 py-2" %>
+      <div class="flex w-full min-w-32 flex-col gap-1 sm:w-auto">
+        <%= label_tag :role, "Role", class: "text-sm font-medium leading-5" %>
+        <%= select_tag :role, options_for_select([["Member", "member"], ["Facilitator", "facilitator"]], "member"), class: "h-10 w-full rounded border border-slate-300 px-3 text-sm sm:w-auto" %>
       </div>
-      <%= submit_tag "Add", class: "rounded bg-slate-900 px-3 py-2 text-sm text-white" %>
+      <div class="flex w-full flex-col gap-1 sm:w-auto">
+        <span class="hidden text-sm font-medium leading-5 sm:block sm:invisible" aria-hidden="true">Add</span>
+        <%= submit_tag "Add", class: "h-10 w-full rounded bg-slate-900 px-3 text-sm text-white sm:w-auto" %>
+      </div>
     <% end %>
   <% else %>
     <p class="text-sm text-slate-500">Everyone with a confirmed account is already on this team.</p>
@@ -32,37 +35,40 @@
 </section>
 
 <section class="mb-10">
-  <div class="mb-3 flex items-center justify-between gap-4">
-    <h2 class="text-lg font-medium">Retrospectives</h2>
-    <% if @running_retrospective %>
-      <p class="text-sm text-slate-600">
-        This team already has an active retrospective.
-        <%= link_to @running_retrospective.title, facilitator_retrospective_path(@running_retrospective), class: "text-teal-800 underline" %>
-        must be closed before creating another.
-      </p>
-    <% else %>
-      <%= link_to "New retrospective", new_facilitator_team_retrospective_path(@team), class: "rounded bg-teal-700 px-3 py-1.5 text-sm text-white hover:bg-teal-800" %>
-    <% end %>
-  </div>
-  <% if @retrospectives.any? %>
-    <ul class="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
-      <% @retrospectives.each do |retrospective| %>
-        <li class="flex items-center justify-between px-4 py-3">
-          <div>
-            <%= link_to retrospective.title, facilitator_retrospective_path(retrospective), class: "font-medium text-teal-800" %>
-            <p class="text-sm text-slate-500">
-              <%= retrospective.status.humanize %>
-              <% if retrospective.sprint_label.present? %> · <%= retrospective.sprint_label %><% end %>
-            </p>
-          </div>
-          <% if retrospective.revealed? %>
-            <%= link_to "Meeting board", facilitator_retrospective_meeting_path(retrospective), class: "text-sm underline" %>
-          <% end %>
-        </li>
+  <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+    <h2 class="text-lg font-medium">Current retrospective</h2>
+    <div class="flex flex-wrap items-center gap-3">
+      <%= link_to "View retrospective history", retrospectives_path(team_id: @team.id), class: "text-sm text-teal-800 underline" %>
+      <% unless @running_retrospective %>
+        <%= link_to "New retrospective", new_facilitator_team_retrospective_path(@team), class: "rounded bg-teal-700 px-3 py-1.5 text-sm text-white hover:bg-teal-800" %>
       <% end %>
+    </div>
+  </div>
+  <% if @running_retrospective %>
+    <p class="mb-3 text-sm text-slate-600">
+      This team already has an active retrospective.
+      <%= link_to @running_retrospective.title, facilitator_retrospective_path(@running_retrospective), class: "text-teal-800 underline" %>
+      must be closed before creating another.
+    </p>
+    <ul class="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
+      <li class="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="min-w-0">
+          <%= link_to @running_retrospective.title, facilitator_retrospective_path(@running_retrospective), class: "font-medium text-teal-800" %>
+          <p class="text-sm text-slate-500">
+            <%= @running_retrospective.status.humanize %>
+            <% if @running_retrospective.sprint_label.present? %> · <%= @running_retrospective.sprint_label %><% end %>
+            <% if @running_retrospective.collecting? %>
+              · <%= submission_progress(@running_retrospective) %>
+            <% elsif @running_retrospective.draft? && @running_retrospective.participant_count.zero? %>
+              · Participants not configured
+            <% end %>
+          </p>
+        </div>
+        <%= retrospective_cta(@running_retrospective, facilitated: true) %>
+      </li>
     </ul>
   <% else %>
-    <p class="rounded border border-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-500">No retrospectives yet. Create one after you have members on the team.</p>
+    <p class="text-sm text-slate-500">No active retrospective.</p>
   <% end %>
 </section>
 

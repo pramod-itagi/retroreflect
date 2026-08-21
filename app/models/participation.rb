@@ -9,6 +9,8 @@ class Participation < ApplicationRecord
   validate :user_must_be_team_member, on: :create
   validate :roster_must_be_editable, on: :create
 
+  scope :submitted, -> { where.not(submitted_at: nil) }
+
   def submitted?
     submitted_at.present?
   end

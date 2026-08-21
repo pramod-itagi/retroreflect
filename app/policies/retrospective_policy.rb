@@ -31,6 +31,10 @@ class RetrospectivePolicy < ApplicationPolicy
     facilitator? && (record.draft? || record.collecting?)
   end
 
+  def index?
+    user&.confirmed?
+  end
+
   def view_roster?
     facilitator?
   end
