@@ -4,6 +4,7 @@ class Retrospective < ApplicationRecord
   SPRINT_NUMBERS = (1..40)
   SPRINT_LABELS = SPRINT_NUMBERS.map { |number| "Sprint #{number}" }.freeze
   RUNNING_STATUSES = %w[draft collecting discussing].freeze
+  IN_SESSION_STATUSES = %w[collecting discussing].freeze
   ONE_ACTIVE_MESSAGE = "This team already has an active retrospective. Close it before creating another.".freeze
 
   CATEGORIES = {
@@ -34,6 +35,7 @@ class Retrospective < ApplicationRecord
 
   scope :active, -> { where.not(status: :cancelled) }
   scope :running, -> { where(status: RUNNING_STATUSES) }
+  scope :in_session, -> { where(status: IN_SESSION_STATUSES) }
 
   def running?
     RUNNING_STATUSES.include?(status)

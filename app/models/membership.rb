@@ -7,6 +7,12 @@ class Membership < ApplicationRecord
   validates :user_id, uniqueness: { scope: :team_id }
   validate :user_must_be_active_and_confirmed, on: :create
 
+  scope :current, -> { where(deactivated_at: nil) }
+
+  def current?
+    deactivated_at.nil?
+  end
+
   private
 
   def user_must_be_active_and_confirmed

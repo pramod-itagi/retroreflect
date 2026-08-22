@@ -1,0 +1,19 @@
+<p class="mb-2 text-sm text-slate-500"><%= back_link facilitator_team_path(@team), @team.name %></p>
+<h1 class="mb-2 text-2xl font-semibold">Archive this team?</h1>
+<p class="mb-6 max-w-2xl text-sm leading-relaxed text-slate-600">
+  Archiving this team will remove all current members from the team. Their user accounts will not be deleted.
+  Existing retrospective history and completed action items will be retained. The team will no longer be available
+  for new retrospectives.
+</p>
+<p class="mb-6 text-sm font-medium text-red-800">This action cannot be undone.</p>
+
+<%= form_with url: facilitator_team_archive_path(@team), class: "max-w-md space-y-4" do %>
+  <div>
+    <%= label_tag :confirmation_name, "Type #{@team.name} to confirm", class: "mb-1 block text-sm font-medium" %>
+    <%= text_field_tag :confirmation_name, nil, required: true, autocomplete: "off", class: "w-full rounded border border-slate-300 px-3 py-2" %>
+  </div>
+  <div class="flex flex-wrap gap-3">
+    <%= link_to "Cancel", facilitator_team_path(@team), class: "rounded border border-slate-300 bg-white px-3 py-2 text-sm" %>
+    <%= submit_tag "Archive Team", class: "rounded bg-red-700 px-3 py-2 text-sm text-white hover:bg-red-800" %>
+  </div>
+<% end %>

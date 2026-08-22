@@ -1,10 +1,10 @@
 class ActionItemPolicy < ApplicationPolicy
   def create?
-    facilitator_of?(record.team)
+    facilitator_of?(record.team) && record.team.active?
   end
 
   def update?
-    facilitator_of?(record.team)
+    facilitator_of?(record.team) && record.team.active?
   end
 
   def update_as_owner?

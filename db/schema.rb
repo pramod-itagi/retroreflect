@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_20_133000) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_21_200000) do
   create_table "action_items", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "team_id", null: false
     t.bigint "retrospective_id"
@@ -65,6 +65,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_20_133000) do
     t.string "role", limit: 20, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "deactivated_at"
+    t.index ["deactivated_at"], name: "index_memberships_on_deactivated_at"
     t.index ["team_id", "role"], name: "index_memberships_on_team_id_and_role"
     t.index ["team_id", "user_id"], name: "index_memberships_on_team_id_and_user_id", unique: true
     t.index ["team_id"], name: "index_memberships_on_team_id"
@@ -112,6 +114,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_20_133000) do
     t.bigint "created_by_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "archived_at"
+    t.index ["archived_at"], name: "index_teams_on_archived_at"
     t.index ["created_by_id"], name: "index_teams_on_created_by_id"
   end
 
