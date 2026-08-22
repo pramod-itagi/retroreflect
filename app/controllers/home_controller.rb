@@ -1,7 +1,7 @@
 class HomeController < ApplicationController
   def show
     @facilitated_team_ids = current_user.facilitated_teams.pluck(:id)
-    @teams = current_user.teams.includes(:memberships, retrospectives: :participations).order(:name)
+    @teams = current_user.teams.includes(:current_memberships, retrospectives: :participations).order(:name)
     @draft_retrospectives = Retrospective.draft
                                          .where(team_id: @facilitated_team_ids)
                                          .includes(:team, :participations)

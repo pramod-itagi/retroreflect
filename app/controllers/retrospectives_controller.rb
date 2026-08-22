@@ -4,20 +4,22 @@ class RetrospectivesController < ApplicationController
   def index
     authorize!(Retrospective.new, :index?)
 
-    scope = current_user.accessible_retrospectives.includes(:team, :participations)
-    scope = scope.where(team_id: params[:team_id]) if params[:team_id].present?
-    scope = apply_status_group(scope)
-    scope = apply_search(scope)
-
+    scope = filtered_retrospectives
     @active = scope.where(status: %w[collecting discussing]).order(updated_at: :desc, id: :desc)
     @drafts = scope.where(status: :draft).order(created_at: :desc, id: :desc)
     @previous = scope.where(status: %w[closed cancelled])
                      .order(Arel.sql("COALESCE(closed_at, cancelled_at, created_at) DESC"), id: :desc)
-    @filter_teams = current_user.teams.order(:name)
-    @facilitated_team_ids = current_user.facilitated_teams.pluck(:id)
+    @filter_teams = Team.where(id: current_user.memberships.select(:team_id)).order(:name)
+    @facilitated_team_ids = current_user.memberships.facilitator.pluck(:team_id)
   end
 
   private
+
+  def filtered_retrospectives
+    scope = current_user.accessible_retrospectives.includes(:team, :participations)
+    scope = scope.where(team_id: params[:team_id]) if params[:team_id].present?
+    apply_search(apply_status_group(scope))
+  end
 
   def apply_status_group(scope)
     case params[:status]
