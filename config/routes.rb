@@ -19,6 +19,7 @@ Rails.application.routes.draw do
       resources :memberships, only: %i[create destroy]
       resources :retrospectives, only: %i[new create]
       resources :action_items, only: :create
+      resource :archive, only: %i[new create], controller: "team_archives"
     end
 
     resources :retrospectives, only: :show do

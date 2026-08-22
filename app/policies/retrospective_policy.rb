@@ -4,19 +4,19 @@ class RetrospectivePolicy < ApplicationPolicy
   end
 
   def create?
-    facilitator_of?(record.team)
+    facilitator_of?(record.team) && record.team.active?
   end
 
   def update?
-    facilitator? && record.draft?
+    facilitator? && record.draft? && record.team.active?
   end
 
   def manage_roster?
-    facilitator? && record.draft?
+    facilitator? && record.draft? && record.team.active?
   end
 
   def start_collecting?
-    facilitator? && record.draft?
+    facilitator? && record.draft? && record.team.active?
   end
 
   def reveal?
@@ -36,11 +36,11 @@ class RetrospectivePolicy < ApplicationPolicy
   end
 
   def view_roster?
-    facilitator?
+    facilitator? || historically_facilitated?
   end
 
   def view_meeting?
-    facilitator? && record.revealed?
+    (facilitator? || historically_facilitated?) && record.revealed?
   end
 
   def write_drafts?
@@ -60,6 +60,10 @@ class RetrospectivePolicy < ApplicationPolicy
   end
 
   private
+
+  def historically_facilitated?
+    user.present? && user.historically_facilitated?(record.team)
+  end
 
   def facilitator?
     facilitator_of?(record.team)

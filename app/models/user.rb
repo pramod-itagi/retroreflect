@@ -5,7 +5,8 @@ class User < ApplicationRecord
   has_secure_password
 
   has_many :memberships, dependent: :restrict_with_exception
-  has_many :teams, through: :memberships
+  has_many :current_memberships, -> { current }, class_name: "Membership", inverse_of: :user, dependent: false
+  has_many :teams, through: :current_memberships
   has_many :created_teams, class_name: "Team", foreign_key: :created_by_id, inverse_of: :created_by, dependent: :restrict_with_exception
   has_many :participations, dependent: :restrict_with_exception
   has_many :owned_action_items, class_name: "ActionItem", foreign_key: :owner_id, inverse_of: :owner, dependent: :restrict_with_exception
@@ -31,23 +32,33 @@ class User < ApplicationRecord
   end
 
   def facilitator?
-    memberships.facilitator.exists?
+    current_memberships.facilitator.exists?
   end
 
   def facilitator_of?(team)
+    current_memberships.exists?(team: team, role: :facilitator)
+  end
+
+  def historically_facilitated?(team)
     memberships.exists?(team: team, role: :facilitator)
   end
 
   def member_of?(team)
-    memberships.exists?(team: team, role: :member)
+    current_memberships.exists?(team: team, role: :member)
   end
 
   def facilitated_teams
-    Team.joins(:memberships).where(memberships: { user_id: id, role: :facilitator })
+    Team.where(archived_at: nil)
+        .joins(:current_memberships)
+        .where(memberships: { user_id: id, role: :facilitator })
+        .distinct
   end
 
   def member_teams
-    Team.joins(:memberships).where(memberships: { user_id: id, role: :member })
+    Team.where(archived_at: nil)
+        .joins(:current_memberships)
+        .where(memberships: { user_id: id, role: :member })
+        .distinct
   end
 
   def accessible_retrospectives

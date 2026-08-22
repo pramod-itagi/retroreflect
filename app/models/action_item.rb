@@ -1,6 +1,7 @@
 class ActionItem < ApplicationRecord
   STATUSES = %w[open in_progress ready_for_review completed cancelled].freeze
   TERMINAL_STATUSES = %w[completed cancelled].freeze
+  UNRESOLVED_STATUSES = %w[open in_progress ready_for_review].freeze
 
   ALLOWED_TRANSITIONS = {
     "open" => %w[in_progress ready_for_review completed cancelled],
@@ -16,6 +17,8 @@ class ActionItem < ApplicationRecord
   belongs_to :owner, class_name: "User"
   belongs_to :completed_by, class_name: "User", optional: true
   belongs_to :cancelled_by, class_name: "User", optional: true
+
+  scope :unresolved, -> { where(status: UNRESOLVED_STATUSES) }
 
   enum :status, {
     open: "open",
@@ -52,7 +55,7 @@ class ActionItem < ApplicationRecord
   def owner_must_belong_to_team
     return if owner.blank? || team.blank?
 
-    unless team.memberships.exists?(user: owner)
+    unless team.current_memberships.exists?(user: owner)
       errors.add(:owner, "must belong to the team")
       return
     end

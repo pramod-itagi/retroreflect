@@ -12,10 +12,14 @@ class TeamPolicy < ApplicationPolicy
   end
 
   def update?
-    facilitator_of?(record)
+    facilitator_of?(record) && record.active?
   end
 
   def manage_members?
-    facilitator_of?(record)
+    facilitator_of?(record) && record.active?
+  end
+
+  def archive?
+    facilitator_of?(record) && record.active?
   end
 end
