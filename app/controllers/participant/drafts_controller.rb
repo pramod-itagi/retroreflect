@@ -14,6 +14,19 @@ module Participant
       end
     end
 
+    def save
+      authorize!(@retrospective, :write_drafts?)
+      FeedbackDrafts::SaveBatch.new(
+        participation: @participation,
+        retrospective: @retrospective,
+        drafts: drafts_attributes,
+        new_drafts: new_drafts_attributes
+      ).call
+      redirect_to participant_retrospective_path(@retrospective), notice: "Draft saved."
+    rescue ActiveRecord::RecordInvalid => e
+      redirect_to participant_retrospective_path(@retrospective), alert: e.record.errors.full_messages.to_sentence
+    end
+
     def update
       @draft = @retrospective.feedback_drafts.find(params[:id])
       authorize!(@draft, :update?)
@@ -42,6 +55,28 @@ module Participant
 
     def draft_params
       params.require(:feedback_draft).permit(:category, :body)
+    end
+
+    def drafts_attributes
+      raw = params[:drafts]
+      return {} if raw.blank?
+
+      hash = raw.respond_to?(:to_unsafe_h) ? raw.to_unsafe_h : raw.to_h
+      hash.each_with_object({}) do |(id, attrs), assigned|
+        assigned[id] = { body: attrs[:body] || attrs["body"] }
+      end
+    end
+
+    def new_drafts_attributes
+      raw = params[:new_drafts]
+      return {} if raw.blank?
+
+      hash = raw.respond_to?(:to_unsafe_h) ? raw.to_unsafe_h : raw.to_h
+      hash.each_with_object({}) do |(category, bodies), assigned|
+        next unless Retrospective::CATEGORIES.key?(category.to_s)
+
+        assigned[category] = Array(bodies)
+      end
     end
   end
 end

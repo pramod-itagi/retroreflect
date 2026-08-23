@@ -83,8 +83,9 @@ RSpec.describe "Multi-step back navigation", type: :request do
 
     sign_in(alice)
     get participant_retrospective_path(retro)
-    expect(back_link_on_page.text).to eq("Back to home")
-    expect(back_link_on_page["href"]).to eq(root_path)
+    expect(response).to have_http_status(:ok)
+    expect(response.body).not_to include("Back to home")
+    expect(response.parsed_body.at_css("header nav").text).to include("Home")
 
     get root_path
     expect(participation.feedback_drafts.reload.pluck(:body)).to contain_exactly("Standups were focused")

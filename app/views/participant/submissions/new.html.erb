@@ -1,0 +1,9 @@
+<h1 class="mb-2 text-2xl font-semibold">Submit your feedback?</h1>
+<p class="mb-6 max-w-2xl text-sm text-slate-600">Once submitted, you won't be able to edit your feedback.</p>
+
+<div class="flex flex-wrap gap-3">
+  <%= link_to "Cancel", participant_retrospective_path(@retrospective), class: "rounded border border-slate-300 bg-white px-3 py-2 text-sm" %>
+  <%= button_to "Submit Feedback",
+                participant_retrospective_submission_path(@retrospective),
+                class: "rounded bg-slate-900 px-3 py-2 text-sm text-white" %>
+</div>
