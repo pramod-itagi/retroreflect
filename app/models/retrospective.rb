@@ -10,8 +10,8 @@ class Retrospective < ApplicationRecord
   CATEGORIES = {
     "went_well" => "What went well",
     "did_not_go_well" => "What didn't go well",
-    "continue" => "What should we continue",
-    "improve" => "What should we improve"
+    "continue" => "What to continue",
+    "improve" => "What to improve"
   }.freeze
 
   belongs_to :team

@@ -39,8 +39,12 @@ Rails.application.routes.draw do
 
   namespace :participant do
     resources :retrospectives, only: :show do
-      resources :drafts, only: %i[create update destroy]
-      resource :submission, only: :create
+      resources :drafts, only: %i[create update destroy] do
+        collection do
+          post :save
+        end
+      end
+      resource :submission, only: %i[new create]
     end
     resources :action_items, only: %i[index update]
   end

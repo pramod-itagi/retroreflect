@@ -1,58 +1,105 @@
-<p class="mb-2 text-sm text-slate-500"><%= back_link root_path, "home" %></p>
-<% if @retrospective.sprint_label.present? %>
-  <p class="mb-1 text-sm font-medium uppercase tracking-wide text-teal-800"><%= @retrospective.sprint_label %></p>
-<% end %>
 <h1 class="mb-1 text-2xl font-semibold"><%= @retrospective.title %></h1>
-<p class="mb-2 text-sm text-slate-500"><%= @retrospective.team.name %></p>
-<p class="mb-2 text-sm font-medium <%= @participation.submitted? ? "text-teal-800" : "text-slate-600" %>">
-  <%= @participation.submitted? ? "Submitted" : "Draft" %>
+<p class="mb-2 text-sm text-slate-500">
+  <%= @retrospective.team.name %>
+  <% if @retrospective.sprint_label.present? %> · <%= @retrospective.sprint_label %><% end %>
+  · <%= @participation.submitted? ? "Submitted" : "Draft" %>
 </p>
 <p class="mb-8 max-w-2xl text-sm text-slate-600">
-  These notes are only visible to you. The facilitator sees whether you have submitted, not what you wrote.
+  Your feedback is anonymous. The facilitator can see whether you've submitted, but not who wrote each point.
   <% if @participation.submitted? %>
     Your responses are locked until the meeting starts.
-  <% else %>
-    Save as many points as you want, then submit when you are done.
   <% end %>
 </p>
 
-<div class="max-w-3xl space-y-6">
-  <% Retrospective::CATEGORIES.each do |key, label| %>
-    <% category_drafts = @drafts.select { |draft| draft.category == key } %>
-    <section class="rounded border border-slate-200 bg-white p-5">
-      <h2 class="mb-4 text-lg font-medium"><%= label %></h2>
-      <ul class="mb-4 space-y-3">
-        <% category_drafts.each do |draft| %>
-          <li class="rounded border border-slate-100 bg-slate-50 p-3">
-            <% if @participation.submitted? %>
-              <p class="whitespace-pre-wrap text-sm text-slate-800"><%= draft.body %></p>
-            <% else %>
-              <%= form_with model: draft, url: participant_retrospective_draft_path(@retrospective, draft), method: :patch, class: "space-y-2" do |form| %>
-                <%= form.hidden_field :category %>
-                <%= form.text_area :body, rows: 3, class: "w-full rounded border border-slate-300 px-2 py-1 text-sm" %>
-                <div class="flex gap-3 text-sm">
-                  <%= form.submit "Save", class: "text-teal-800 underline" %>
-                  <%= link_to "Remove", participant_retrospective_draft_path(@retrospective, draft), data: { turbo_method: :delete, turbo_confirm: "Remove this point?" }, class: "text-slate-500" %>
-                </div>
-              <% end %>
+<% if @participation.submitted? %>
+  <div class="grid items-stretch gap-6 md:grid-cols-2">
+    <% Retrospective::CATEGORIES.each do |key, label| %>
+      <% category_drafts = @drafts.select { |draft| draft.category == key } %>
+      <section class="flex flex-col rounded border border-slate-200 bg-white p-5">
+        <h2 class="mb-4 text-lg font-medium"><%= label %></h2>
+        <% if category_drafts.any? %>
+          <ul class="space-y-3">
+            <% category_drafts.each do |draft| %>
+              <li class="rounded border border-slate-100 bg-slate-50 p-3">
+                <p class="whitespace-pre-wrap text-sm text-slate-800"><%= draft.body %></p>
+              </li>
             <% end %>
-          </li>
+          </ul>
         <% end %>
-      </ul>
-      <% unless @participation.submitted? %>
-        <%= form_with model: FeedbackDraft.new, url: participant_retrospective_drafts_path(@retrospective), class: "space-y-2" do |form| %>
-          <%= form.hidden_field :category, value: key %>
-          <%= form.text_area :body, rows: 3, placeholder: "Add a point…", class: "w-full rounded border border-slate-300 px-2 py-1 text-sm" %>
-          <%= form.submit "Save draft", class: "rounded bg-teal-700 px-3 py-1.5 text-sm text-white" %>
+      </section>
+    <% end %>
+  </div>
+<% else %>
+  <div class="grid items-stretch gap-6 md:grid-cols-2">
+    <% Retrospective::CATEGORIES.each do |key, label| %>
+      <% category_drafts = @drafts.select { |draft| draft.category == key } %>
+      <section class="flex flex-col rounded border border-slate-200 bg-white p-5">
+        <h2 class="mb-4 text-lg font-medium"><%= label %></h2>
+        <% if category_drafts.any? %>
+          <ul class="mb-4 space-y-3">
+            <% category_drafts.each do |draft| %>
+              <li class="rounded border border-slate-100 bg-slate-50 p-3">
+                <%= text_area_tag "drafts[#{draft.id}][body]",
+                                  draft.body,
+                                  rows: 3,
+                                  form: "save-drafts-form",
+                                  class: "w-full rounded border border-slate-300 px-2 py-1 text-sm" %>
+                <div class="mt-2 text-sm">
+                  <%= link_to "Remove",
+                              participant_retrospective_draft_path(@retrospective, draft),
+                              data: { turbo_method: :delete, turbo_confirm: "Remove this point?" },
+                              class: "text-slate-500" %>
+                </div>
+              </li>
+            <% end %>
+          </ul>
         <% end %>
-      <% end %>
-    </section>
-  <% end %>
-</div>
+        <div data-controller="add-points">
+          <div data-add-points-target="list" class="space-y-3">
+            <div data-add-points-item>
+              <%= text_area_tag "new_drafts[#{key}][]",
+                                nil,
+                                rows: 3,
+                                form: "save-drafts-form",
+                                placeholder: "Add a point…",
+                                class: "w-full rounded border border-slate-300 px-2 py-1 text-sm" %>
+            </div>
+          </div>
+          <button type="button"
+                  class="mt-2 text-sm text-teal-800"
+                  data-action="add-points#add">
+            Add another point
+          </button>
+          <template data-add-points-target="template">
+            <div class="space-y-2" data-add-points-item>
+              <textarea name="new_drafts[<%= key %>][]"
+                        rows="3"
+                        form="save-drafts-form"
+                        placeholder="Add a point…"
+                        class="w-full rounded border border-slate-300 px-2 py-1 text-sm"></textarea>
+              <div class="text-sm">
+                <button type="button" class="text-slate-500" data-action="add-points#remove">Remove</button>
+              </div>
+            </div>
+          </template>
+        </div>
+      </section>
+    <% end %>
+  </div>
 
-<% unless @participation.submitted? %>
-  <div class="mt-8 max-w-3xl rounded border border-slate-200 bg-white px-5 py-4">
-    <p class="mb-3 text-sm text-slate-600">Submit when you are finished. You will not be able to edit after that.</p>
-    <%= button_to "Submit responses", participant_retrospective_submission_path(@retrospective), class: "rounded bg-slate-900 px-4 py-2 text-sm text-white", form: { data: { turbo_confirm: "Submit your responses? You will not be able to edit them after this." } } %>
+  <div class="mt-6">
+    <%= form_with url: save_participant_retrospective_drafts_path(@retrospective),
+                  method: :post,
+                  html: { id: "save-drafts-form" } do %>
+      <%= submit_tag "Save Draft", class: "rounded bg-teal-700 px-4 py-2 text-sm text-white hover:bg-teal-800" %>
+    <% end %>
+  </div>
+
+  <div class="mt-8 rounded border border-slate-200 bg-white px-5 py-4">
+    <p class="font-medium">Ready to submit?</p>
+    <p class="mb-3 text-sm text-slate-600">Once submitted, you won't be able to edit your feedback.</p>
+    <%= link_to "Submit Feedback",
+                new_participant_retrospective_submission_path(@retrospective),
+                class: "inline-block rounded bg-slate-900 px-4 py-2 text-sm text-white" %>
   </div>
 <% end %>

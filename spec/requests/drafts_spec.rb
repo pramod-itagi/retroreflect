@@ -32,14 +32,31 @@ RSpec.describe "Participant feedback", type: :request do
     expect(page).to include("Sprint 12")
     expect(page).to include("What went well")
     expect(page).to include("What didn't go well")
-    expect(page).to include("What should we continue")
-    expect(page).to include("What should we improve")
+    expect(page).to include("What to continue")
+    expect(page).to include("What to improve")
+    expect(page).to include("Add a point")
+    expect(page).to include("Add another point")
+    expect(page).to include("Your feedback is anonymous. The facilitator can see whether you've submitted, but not who wrote each point.")
+    expect(page).not_to include("Back to home")
+    expect(page).not_to include("Save draft")
+    save_buttons = response.parsed_body.css("input[type=submit], button[type=submit]").select do |element|
+      (element["value"] || element.text).strip == "Save Draft"
+    end
+    expect(save_buttons.size).to eq(1)
+    expect(response.parsed_body.at_css("header nav").text).to include("Home")
+    expect(response.parsed_body.at("h1").text).to eq("Retro")
+    expect(response.parsed_body.at("p.text-slate-500").text.gsub(/\s+/, " ").strip).to eq("Platform · Sprint 12 · Draft")
 
-    post participant_retrospective_drafts_path(setup[:retro]), params: {
-      feedback_draft: { category: "went_well", body: "Standups were focused" }
+    post save_participant_retrospective_drafts_path(setup[:retro]), params: {
+      new_drafts: {
+        went_well: "Standups were focused",
+        did_not_go_well: "",
+        continue: "",
+        improve: ""
+      }
     }
-    post participant_retrospective_drafts_path(setup[:retro]), params: {
-      feedback_draft: { category: "went_well", body: "The pipeline was stable" }
+    post save_participant_retrospective_drafts_path(setup[:retro]), params: {
+      new_drafts: { went_well: "The pipeline was stable" }
     }
 
     drafts = setup[:alice_participation].feedback_drafts.where(category: :went_well)
@@ -62,6 +79,80 @@ RSpec.describe "Participant feedback", type: :request do
     }
 
     expect(draft.reload.body).to eq("Edited point")
+    expect(setup[:alice_participation].reload).not_to be_submitted
+  end
+
+  it "saves existing and new points with one Save Draft action" do
+    setup = collecting_setup
+    draft = setup[:alice_participation].feedback_drafts.create!(
+      retrospective: setup[:retro],
+      category: :went_well,
+      body: "Original point"
+    )
+
+    sign_in(setup[:alice])
+    post save_participant_retrospective_drafts_path(setup[:retro]), params: {
+      drafts: { draft.id.to_s => { body: "Edited point" } },
+      new_drafts: { improve: "Handoffs still take too long" }
+    }
+
+    expect(response).to redirect_to(participant_retrospective_path(setup[:retro]))
+    follow_redirect!
+    expect(response.body).to include("Draft saved.")
+    expect(draft.reload.body).to eq("Edited point")
+    expect(setup[:alice_participation].feedback_drafts.pluck(:body)).to contain_exactly(
+      "Edited point",
+      "Handoffs still take too long"
+    )
+  end
+
+  it "saves several new points in one category from a single Save Draft" do
+    setup = collecting_setup
+
+    sign_in(setup[:alice])
+    get participant_retrospective_path(setup[:retro])
+    expect(response.body).to include('data-controller="add-points"')
+    expect(response.body).to include("Add another point")
+
+    post save_participant_retrospective_drafts_path(setup[:retro]), params: {
+      new_drafts: {
+        went_well: [
+          "Deployment went smoothly",
+          "",
+          "Communication between teams was good",
+          "   ",
+          "Testing was completed on time"
+        ],
+        improve: ["Handoffs still take too long", ""]
+      }
+    }
+
+    expect(response).to redirect_to(participant_retrospective_path(setup[:retro]))
+    expect(setup[:alice_participation].feedback_drafts.where(category: :went_well).pluck(:body)).to contain_exactly(
+      "Deployment went smoothly",
+      "Communication between teams was good",
+      "Testing was completed on time"
+    )
+    expect(setup[:alice_participation].feedback_drafts.where(category: :improve).pluck(:body)).to contain_exactly(
+      "Handoffs still take too long"
+    )
+    expect(setup[:alice_participation].feedback_drafts.count).to eq(4)
+    expect(setup[:alice_participation].reload).not_to be_submitted
+  end
+
+  it "lets a participant remove their own draft before submitting" do
+    setup = collecting_setup
+    draft = setup[:alice_participation].feedback_drafts.create!(
+      retrospective: setup[:retro],
+      category: :went_well,
+      body: "Remove this point"
+    )
+
+    sign_in(setup[:alice])
+    delete participant_retrospective_draft_path(setup[:retro], draft)
+
+    expect(response).to redirect_to(participant_retrospective_path(setup[:retro]))
+    expect(setup[:alice_participation].feedback_drafts.reload).to be_empty
     expect(setup[:alice_participation].reload).not_to be_submitted
   end
 
@@ -131,6 +222,18 @@ RSpec.describe "Participant feedback", type: :request do
     expect(setup[:alice_participation].reload).to be_submitted
     expect(setup[:alice_participation].response_status_label).to eq("Submitted")
 
+    get participant_retrospective_path(setup[:retro])
+    expect(response.body).not_to include("Save Draft")
+    expect(response.body).not_to include("Submit Feedback")
+    expect(response.body).to include("Submitted")
+
+    post save_participant_retrospective_drafts_path(setup[:retro]), params: {
+      drafts: { draft.id.to_s => { body: "Changed after submit" } },
+      new_drafts: { improve: "Too late from bulk save" }
+    }
+    expect(response).to redirect_to(root_path)
+    expect(draft.reload.body).to eq("Standups were focused")
+
     patch participant_retrospective_draft_path(setup[:retro], draft), params: {
       feedback_draft: { category: "went_well", body: "Changed after submit" }
     }
@@ -141,6 +244,9 @@ RSpec.describe "Participant feedback", type: :request do
       feedback_draft: { category: "improve", body: "Too late" }
     }
     expect(setup[:alice_participation].feedback_drafts.count).to eq(1)
+
+    get new_participant_retrospective_submission_path(setup[:retro])
+    expect(response).to redirect_to(root_path)
 
     sign_in(setup[:facilitator])
     get facilitator_retrospective_path(setup[:retro])
@@ -182,5 +288,34 @@ RSpec.describe "Participant feedback", type: :request do
     expect(FeedbackDraft.where(retrospective: setup[:retro])).to be_empty
     expect(setup[:retro].feedback_items.pluck(:body)).to eq(["Before reveal"])
     expect(FeedbackItem.column_names).not_to include("user_id")
+  end
+
+  it "asks for confirmation before submitting and leaves drafts unchanged on cancel" do
+    setup = collecting_setup
+    setup[:alice_participation].feedback_drafts.create!(
+      retrospective: setup[:retro],
+      category: :went_well,
+      body: "Standups were focused"
+    )
+
+    sign_in(setup[:alice])
+    get participant_retrospective_path(setup[:retro])
+    expect(response.body).to include("Submit Feedback")
+    expect(response.body).to include(new_participant_retrospective_submission_path(setup[:retro]))
+
+    get new_participant_retrospective_submission_path(setup[:retro])
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Submit your feedback?")
+    expect(response.body).to include("Once submitted, you won't be able to edit your feedback.")
+    cancel = response.parsed_body.css("a").find { |anchor| anchor.text.strip == "Cancel" }
+    expect(cancel).to be_present
+    expect(cancel["href"]).to eq(participant_retrospective_path(setup[:retro]))
+
+    get participant_retrospective_path(setup[:retro])
+    expect(setup[:alice_participation].reload).not_to be_submitted
+    expect(setup[:alice_participation].feedback_drafts.pluck(:body)).to contain_exactly("Standups were focused")
+
+    post participant_retrospective_submission_path(setup[:retro])
+    expect(setup[:alice_participation].reload).to be_submitted
   end
 end
