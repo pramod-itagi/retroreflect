@@ -18,6 +18,12 @@ module Facilitator
       end
     end
 
+    def confirm
+      @team = Team.find(params[:team_id])
+      authorize!(@team, :manage_members?)
+      @membership = @team.memberships.find(params[:id])
+    end
+
     def destroy
       team = Team.find(params[:team_id])
       authorize!(team, :manage_members?)

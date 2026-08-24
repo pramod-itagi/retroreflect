@@ -16,7 +16,9 @@ Rails.application.routes.draw do
 
   namespace :facilitator do
     resources :teams, only: %i[index show new create] do
-      resources :memberships, only: %i[create destroy]
+      resources :memberships, only: %i[create destroy] do
+        get :confirm, on: :member
+      end
       resources :retrospectives, only: %i[new create]
       resources :action_items, only: :create
       resource :archive, only: %i[new create], controller: "team_archives"

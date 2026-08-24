@@ -1,0 +1,12 @@
+<h1 class="mb-2 text-2xl font-semibold">Remove <%= display_name_for(@membership.user) %> from <%= @team.name %>?</h1>
+<p class="mb-6 max-w-2xl text-sm text-slate-600">
+  <%= display_name_for(@membership.user) %> will no longer be a member of this team.
+</p>
+
+<div class="flex flex-wrap gap-3">
+  <%= link_to "Cancel", facilitator_team_path(@team), class: "rounded border border-slate-300 bg-white px-3 py-2 text-sm" %>
+  <%= button_to "Remove",
+                facilitator_team_membership_path(@team, @membership),
+                method: :delete,
+                class: "rounded bg-red-700 px-3 py-2 text-sm text-white hover:bg-red-800" %>
+</div>

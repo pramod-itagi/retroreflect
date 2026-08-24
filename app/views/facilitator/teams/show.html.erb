@@ -9,7 +9,9 @@
     <% @memberships.each do |membership| %>
       <li class="flex items-center justify-between px-4 py-3 text-sm">
         <span><%= display_name_for(membership.user) %> · <%= membership.role.humanize %></span>
-        <%= button_to "Remove", facilitator_team_membership_path(@team, membership), method: :delete, class: "text-slate-500 hover:text-red-700", form: { data: { turbo_confirm: "Remove this person?" } } %>
+        <%= link_to "Remove",
+                    confirm_facilitator_team_membership_path(@team, membership),
+                    class: "text-slate-500 hover:text-red-700" %>
       </li>
     <% end %>
   </ul>
@@ -18,7 +20,10 @@
     <%= form_with url: facilitator_team_memberships_path(@team), class: "flex flex-wrap items-start gap-3" do %>
       <div class="flex w-full min-w-40 flex-col gap-1 sm:w-auto">
         <%= label_tag :user_id, "Add person", class: "text-sm font-medium leading-5" %>
-        <%= select_tag :user_id, options_from_collection_for_select(@candidate_users, :id, :display_name), prompt: "Select a confirmed user", class: "h-10 w-full rounded border border-slate-300 px-3 text-sm sm:w-auto" %>
+        <%= select_tag :user_id,
+                       options_from_collection_for_select(@candidate_users, :id, :display_name),
+                       prompt: "Select a confirmed user",
+                       class: "h-10 w-full min-w-0 rounded border border-slate-300 py-2 pl-3 pr-10 text-sm sm:w-72" %>
       </div>
       <div class="flex w-full min-w-32 flex-col gap-1 sm:w-auto">
         <%= label_tag :role, "Role", class: "text-sm font-medium leading-5" %>
@@ -72,16 +77,31 @@
   <% end %>
 </section>
 
-<section>
-  <h2 class="mb-3 text-lg font-medium">Action items</h2>
-  <%= render "facilitator/action_items/form", team: @team, retrospective: nil, owners: @team.users.active.order(:name) %>
-  <%= render "facilitator/action_items/list", action_items: @action_items %>
+<section class="mb-10">
+  <h2 class="mb-3 text-lg font-medium">Current Action Items</h2>
+  <% if @action_items.any? %>
+    <ul class="mb-3 divide-y divide-slate-200 rounded border border-slate-200 bg-white">
+      <% @action_items.each do |item| %>
+        <li class="px-4 py-3">
+          <p class="font-medium"><%= item.title %></p>
+          <p class="text-sm text-slate-500">
+            <%= display_name_for(item.owner) %>
+            · <%= action_status_label(item.status) %>
+            · Due <%= item.due_on.strftime("%b #{item.due_on.day}") %>
+          </p>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="mb-3 text-sm text-slate-500">No current action items.</p>
+  <% end %>
+  <%= link_to "View all action items", participant_action_items_path, class: "text-sm text-teal-800 underline" %>
 </section>
 
 <section class="mt-10 border-t border-slate-200 pt-8">
-  <h2 class="mb-2 text-lg font-medium">Archive team</h2>
+  <h2 class="mb-2 text-lg font-medium">Archive Team</h2>
   <p class="mb-3 max-w-2xl text-sm text-slate-600">
-    Archiving removes everyone from this team and stops new retrospectives. History is kept.
+    Archiving removes all current members from this team and prevents new retrospectives. Historical retrospectives and action items are retained.
   </p>
   <%= link_to "Archive Team", new_facilitator_team_archive_path(@team), class: "rounded border border-red-700 px-3 py-1.5 text-sm text-red-800 hover:bg-red-50" %>
 </section>
