@@ -106,6 +106,13 @@ RSpec.describe "Authorization", type: :request do
     post facilitator_team_memberships_path(setup[:team]), params: { user_id: extra.id, role: "member" }
     expect(response).to redirect_to(root_path)
     expect(setup[:team].memberships.where(user: extra)).to be_empty
+
+    member_membership = setup[:team].memberships.find_by!(user: setup[:member])
+    get confirm_facilitator_team_membership_path(setup[:team], member_membership)
+    expect(response).to redirect_to(root_path)
+    delete facilitator_team_membership_path(setup[:team], member_membership)
+    expect(response).to redirect_to(root_path)
+    expect(setup[:team].memberships.find_by(user: setup[:member])).to be_present
   end
 
   it "does not let a facilitator of one team manage another team" do

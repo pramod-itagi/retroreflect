@@ -39,6 +39,46 @@ RSpec.describe "Facilitator retrospective setup", type: :request do
     expect(retro.reload.participations.map(&:user)).to contain_exactly(alice, bob)
   end
 
+  it "asks for confirmation before removing a member" do
+    facilitator = create_user(name: "Jordan")
+    alice = create_user(name: "Alice")
+    team = create_team_with_roles(facilitator: facilitator, members: [alice])
+    membership = team.memberships.find_by!(user: alice)
+
+    sign_in(facilitator)
+    get facilitator_team_path(team)
+    expect(response.body).to include(confirm_facilitator_team_membership_path(team, membership))
+    expect(response.body).not_to include("Remove this person?")
+
+    get confirm_facilitator_team_membership_path(team, membership)
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Remove Alice from #{team.name}?")
+    expect(response.body).to include("Alice will no longer be a member of this team.")
+
+    get facilitator_team_path(team)
+    expect(team.memberships.find_by(user: alice)).to be_present
+
+    delete facilitator_team_membership_path(team, membership)
+    expect(response).to redirect_to(facilitator_team_path(team))
+    expect(team.memberships.find_by(user: alice)).to be_nil
+  end
+
+  it "still prevents a facilitator from removing themselves" do
+    facilitator = create_user(name: "Jordan")
+    team = create_team_with_roles(facilitator: facilitator)
+    membership = team.memberships.find_by!(user: facilitator)
+
+    sign_in(facilitator)
+    get confirm_facilitator_team_membership_path(team, membership)
+    expect(response).to have_http_status(:ok)
+
+    delete facilitator_team_membership_path(team, membership)
+    expect(response).to redirect_to(facilitator_team_path(team))
+    follow_redirect!
+    expect(response.body).to include("You cannot remove yourself as a facilitator.")
+    expect(team.memberships.find_by(user: facilitator)).to be_facilitator
+  end
+
   it "ignores outsiders and facilitators when building the roster" do
     facilitator = create_user(name: "Jordan")
     alice = create_user(name: "Alice")

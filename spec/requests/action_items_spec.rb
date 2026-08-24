@@ -42,6 +42,75 @@ RSpec.describe "Action items", type: :request do
     expect(item.retrospective).to eq(context[:retro])
   end
 
+  it "shows unresolved team action items on the team page without a create form" do
+    context = setup_item
+    due = Date.new(2026, 8, 25)
+    context[:item].update!(due_on: due, title: "Improve CI pipeline")
+    context[:team].action_items.create!(
+      title: "Improve deployment",
+      owner: context[:owner],
+      created_by: context[:facilitator],
+      due_on: Date.new(2026, 8, 28),
+      status: :in_progress
+    )
+    context[:team].action_items.create!(
+      title: "Ready for review item",
+      owner: context[:other],
+      created_by: context[:facilitator],
+      due_on: Date.new(2026, 8, 30),
+      status: :ready_for_review
+    )
+    context[:team].action_items.create!(
+      title: "Update documentation",
+      owner: context[:owner],
+      created_by: context[:facilitator],
+      due_on: due,
+      status: :completed,
+      completed_at: Time.current,
+      completed_by: context[:owner]
+    )
+    context[:team].action_items.create!(
+      title: "Cancelled extra work",
+      owner: context[:owner],
+      created_by: context[:facilitator],
+      due_on: due,
+      status: :cancelled,
+      cancelled_at: Time.current,
+      cancelled_by: context[:facilitator]
+    )
+    create_user(name: "Available Person")
+
+    sign_in(context[:facilitator])
+    get facilitator_team_path(context[:team])
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Current Action Items")
+    expect(response.body).to include("Improve CI pipeline")
+    expect(response.body).to include("Improve deployment")
+    expect(response.body).to include("Ready for review item")
+    expect(response.body).to include("Owner ·")
+    expect(response.body).to include("In progress")
+    expect(response.body).to include("Ready for review")
+    expect(response.body).to include("Due Aug 25")
+    expect(response.body).not_to include("Update documentation")
+    expect(response.body).not_to include("Cancelled extra work")
+    expect(response.body).not_to include("Add action item")
+    expect(response.body).not_to include(facilitator_team_action_items_path(context[:team]))
+    expect(response.body).to include("View all action items")
+    expect(response.body).to include(participant_action_items_path)
+    expect(response.body).to include("Current retrospective")
+    expect(response.body).to include("View retrospective history")
+    expect(response.body).to include("Select a confirmed user")
+    expect(response.body).to include("pr-10")
+    expect(response.body).to include("Archive Team")
+    expect(response.body).to include("Archiving removes all current members from this team and prevents new retrospectives.")
+    expect(response.body).not_to include("Archive team")
+
+    get facilitator_retrospective_meeting_path(context[:retro])
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Add action item")
+  end
+
   it "rejects an item whose owner is not on the team" do
     context = setup_item
     outsider = create_user(name: "Outsider")
