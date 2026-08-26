@@ -16,6 +16,7 @@ class User < ApplicationRecord
   validates :name, presence: true, length: { maximum: 100 }
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :password, length: { minimum: 8 }, allow_nil: true
+  validates :password_confirmation, presence: true, if: -> { password.present? }
 
   scope :active, -> { where(discarded_at: nil) }
 

@@ -15,6 +15,24 @@ RSpec.describe User, type: :model do
     nameless = User.new(name: "", email: "cee@example.com", password: "password123")
     expect(nameless).not_to be_valid
     expect(nameless.errors[:name]).to be_present
+
+    missing_confirmation = User.new(name: "Dee", email: "dee@example.com", password: "password123")
+    expect(missing_confirmation).not_to be_valid
+    expect(missing_confirmation.errors[:password_confirmation]).to be_present
+  end
+
+  it "stores a password digest and unique email index, not a plaintext password" do
+    user = create_user(name: "Ada", email: "ada@example.com")
+
+    expect(User.column_names).to include("password_digest")
+    expect(User.column_names).not_to include("password", "password_confirmation")
+    expect(user.password_digest).to be_present
+    expect(user.password_digest).not_to eq("password123")
+    expect(user.authenticate("password123")).to eq(user)
+
+    email_index = ActiveRecord::Base.connection.indexes(:users).find { |index| index.columns == ["email"] }
+    expect(email_index).to be_present
+    expect(email_index.unique).to be true
   end
 
   it "treats discarded users as inactive" do
