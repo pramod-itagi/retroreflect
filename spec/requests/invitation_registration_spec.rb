@@ -140,7 +140,7 @@ RSpec.describe "Invitation and registration workflows", type: :request do
     expect(response.body).to include("This invitation is for a different account")
 
     expect do
-      post facilitator_teams_path, params: { team: { name: "Rogue team" } }
+      post system_admin_teams_path, params: { team: { name: "Rogue team" }, facilitator_id: bob.id }
     end.not_to change(Team, :count)
   end
 

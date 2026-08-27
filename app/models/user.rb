@@ -19,6 +19,7 @@ class User < ApplicationRecord
   validates :password_confirmation, presence: true, if: -> { password.present? }
 
   scope :active, -> { where(discarded_at: nil) }
+  scope :system_admins, -> { active.where(system_admin: true) }
 
   def discarded?
     discarded_at.present?
@@ -26,6 +27,10 @@ class User < ApplicationRecord
 
   def confirmed?
     confirmed_at.present?
+  end
+
+  def last_system_admin?
+    system_admin? && self.class.system_admins.where.not(id: id).none?
   end
 
   def display_name
@@ -112,6 +117,19 @@ class User < ApplicationRecord
     update!(password_reset_token_digest: nil, password_reset_sent_at: nil)
   end
 
+  def grant_system_admin!
+    update!(system_admin: true)
+  end
+
+  def revoke_system_admin
+    if last_system_admin?
+      errors.add(:base, "At least one System Admin must remain.")
+      return false
+    end
+
+    update(system_admin: false)
+  end
+
   def discard!
     random_password = SecureRandom.hex(20)
     update!(
@@ -121,7 +139,8 @@ class User < ApplicationRecord
       password: random_password,
       password_confirmation: random_password,
       confirmation_token_digest: nil,
-      password_reset_token_digest: nil
+      password_reset_token_digest: nil,
+      system_admin: false
     )
   end
 end

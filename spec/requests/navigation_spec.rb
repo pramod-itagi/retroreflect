@@ -5,15 +5,11 @@ RSpec.describe "Multi-step back navigation", type: :request do
     response.parsed_body.css("a").find { |anchor| anchor.text.strip.start_with?("Back to") }
   end
 
-  it "returns from new-team and new-retrospective forms without creating records" do
+  it "returns from new-retrospective forms without creating records" do
     facilitator = create_user(name: "Jordan")
     team = create_team_with_roles(facilitator: facilitator)
 
     sign_in(facilitator)
-
-    get new_facilitator_team_path
-    expect(back_link_on_page.text).to eq("Back to teams")
-    expect(back_link_on_page["href"]).to eq(facilitator_teams_path)
 
     get facilitator_teams_path
     expect(Team.count).to eq(1)

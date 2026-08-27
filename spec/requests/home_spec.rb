@@ -104,6 +104,7 @@ RSpec.describe "Home dashboard", type: :request do
     expect(nav).to include("Teams")
     expect(nav).to include("Retrospectives")
     expect(nav).to include("Actions")
+    expect(nav).not_to include("System Administration")
     expect(nav).not_to include("Previous Retros")
     expect(nav).not_to include("Action items")
   end

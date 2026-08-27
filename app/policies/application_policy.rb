@@ -11,4 +11,8 @@ class ApplicationPolicy
   def facilitator_of?(team)
     user.present? && team.present? && user.facilitator_of?(team)
   end
+
+  def system_admin?
+    user.present? && user.system_admin?
+  end
 end

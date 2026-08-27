@@ -1,8 +1,5 @@
-<div class="mb-6 flex items-center justify-between">
+<div class="mb-6">
   <h1 class="text-2xl font-semibold">Teams</h1>
-  <% if can_create_team? %>
-    <%= link_to "New team", new_facilitator_team_path, class: "rounded bg-teal-700 px-3 py-1.5 text-sm text-white hover:bg-teal-800" %>
-  <% end %>
 </div>
 
 <% if @teams.any? %>
@@ -14,11 +11,5 @@
     <% end %>
   </ul>
 <% else %>
-  <p class="text-sm text-slate-500">
-    <% if can_create_team? %>
-      Create a team to run retrospectives.
-    <% else %>
-      You are not facilitating any teams yet.
-    <% end %>
-  </p>
+  <p class="text-sm text-slate-500">You are not facilitating any teams yet.</p>
 <% end %>

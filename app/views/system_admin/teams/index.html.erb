@@ -1,0 +1,36 @@
+<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+  <div>
+    <p class="text-sm text-slate-500"><%= back_link system_admin_root_path, "system administration" %></p>
+    <h1 class="text-2xl font-semibold">Teams</h1>
+  </div>
+  <%= link_to "Create Team", new_system_admin_team_path, class: "rounded bg-teal-700 px-3 py-1.5 text-sm text-white hover:bg-teal-800" %>
+</div>
+
+<section class="mb-10">
+  <h2 class="mb-3 text-lg font-medium">Active teams</h2>
+  <% if @active_teams.any? %>
+    <ul class="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
+      <% @active_teams.each do |team| %>
+        <li class="flex items-center justify-between px-4 py-3 text-sm">
+          <%= link_to team.name, system_admin_team_path(team), class: "font-medium text-teal-800" %>
+          <span class="text-slate-500"><%= pluralize(team.member_count, "member") %></span>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-sm text-slate-500">No active teams.</p>
+  <% end %>
+</section>
+
+<section>
+  <h2 class="mb-3 text-lg font-medium">Archived teams</h2>
+  <% if @archived_teams.any? %>
+    <ul class="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
+      <% @archived_teams.each do |team| %>
+        <li class="px-4 py-3 text-sm text-slate-700"><%= team.name_for_select %></li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-sm text-slate-500">No archived teams.</p>
+  <% end %>
+</section>

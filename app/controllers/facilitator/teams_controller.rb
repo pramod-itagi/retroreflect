@@ -12,29 +12,5 @@ module Facilitator
       @action_items = @team.action_items.unresolved.includes(:owner).order(:due_on, :title)
       @candidate_users = User.active.where.not(id: @team.user_ids).where.not(confirmed_at: nil).order(:name)
     end
-
-    def new
-      @team = Team.new
-      authorize!(@team, :create?)
-    end
-
-    def create
-      @team = Team.new(team_params)
-      @team.created_by = current_user
-      authorize!(@team, :create?)
-
-      if @team.save
-        @team.memberships.create!(user: current_user, role: :facilitator)
-        redirect_to facilitator_team_path(@team), notice: "Team created."
-      else
-        render :new, status: :unprocessable_content
-      end
-    end
-
-    private
-
-    def team_params
-      params.require(:team).permit(:name)
-    end
   end
 end

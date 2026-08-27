@@ -273,7 +273,7 @@ RSpec.describe "Authentication", type: :request do
     expect(response).to redirect_to(new_session_path)
 
     expect do
-      post facilitator_teams_path, params: { team: { name: "Should not create" } }
+      post system_admin_teams_path, params: { team: { name: "Should not create" }, facilitator_id: user.id }
     end.not_to change(Team, :count)
     expect(response).to redirect_to(new_session_path)
   end

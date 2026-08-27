@@ -35,6 +35,12 @@ module Authentication
     redirect_to root_path, alert: "Confirm your email to continue."
   end
 
+  def require_system_admin
+    return if current_user&.system_admin?
+
+    raise NotAuthorized
+  end
+
   def start_session_for(user)
     return_to = session[:return_to]
     reset_session

@@ -65,19 +65,37 @@ The retrospective board uses a **2×2 layout**:
 
 ## User Roles
 
-Retroreflect currently has two primary roles.
+Retroreflect has three distinct role concepts.
+
+### System Admin
+
+System Admin is an application-level role.
+
+System Admins can:
+
+- Access System Administration.
+- Create teams and assign an initial Facilitator.
+- View and archive teams.
+- Manage System Admin access.
+
+System Admin status does not automatically grant team membership, Facilitator
+privileges, or access to retrospective feedback.
+
+The first System Admin is created with an explicit bootstrap task, not by
+registration or deployment:
+
+    bin/rails retroreflect:create_system_admin
 
 ### Facilitator
 
-A facilitator is responsible for running retrospectives and managing the
-team.
+A facilitator is a team-level role responsible for running retrospectives and
+managing that team.
 
 Facilitators can:
 
-- Create teams.
-- Manage team membership.
-- Add confirmed users to teams.
-- Assign team roles.
+- Manage team membership on their own team.
+- Add confirmed users to their team.
+- Assign Facilitator/Member roles on their own team.
 - Create retrospectives.
 - Invite team members to retrospectives.
 - Monitor participant submission status.
@@ -87,9 +105,11 @@ Facilitators can:
 - Manage action items.
 - Mark action items completed after confirmation.
 - Close retrospectives.
-- Archive teams.
+- Archive their own team.
 
-Multiple facilitators can belong to the same team.
+Multiple facilitators can belong to the same team. Facilitators cannot create
+teams or access System Administration unless they are also granted System Admin
+independently.
 
 ### Participant / Member
 
@@ -123,11 +143,15 @@ anonymous feedback as part of the team submission.
 
 ## 1. Create a Team
 
-A facilitator creates a team and adds confirmed users as members.
+A System Admin creates a team and assigns a confirmed user as the initial
+Facilitator.
 
-Only facilitators are allowed to create teams.
+The System Admin does not become a team member automatically. The initial
+Facilitator then adds confirmed users as members.
 
 Team creation is enforced by backend authorization as well as the UI.
+
+Active team names must be unique. An archived team's name may be reused.
 
 ---
 

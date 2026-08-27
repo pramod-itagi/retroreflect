@@ -26,24 +26,23 @@ RSpec.describe "Authorization", type: :request do
     expect(response).to redirect_to(new_session_path)
   end
 
-  it "lets a facilitator open the new-team page and create a team" do
+  it "does not let a facilitator create a team or access system administration" do
     setup = team_context
 
     sign_in(setup[:facilitator])
     get root_path
-    expect(response.body).to include("New team")
+    expect(response.body).not_to include("New team")
+    expect(response.body).not_to include("System Administration")
 
-    get new_facilitator_team_path
-    expect(response).to have_http_status(:ok)
-    expect(response.body).to include("Create team")
+    get system_admin_root_path
+    expect(response).to redirect_to(root_path)
+    follow_redirect!
+    expect(response.body).to include("You are not allowed to do that.")
 
     expect do
-      post facilitator_teams_path, params: { team: { name: "Growth" } }
-    end.to change(Team, :count).by(1)
-
-    team = Team.find_by!(name: "Growth")
-    expect(response).to redirect_to(facilitator_team_path(team))
-    expect(team.memberships.find_by(user: setup[:facilitator])).to be_facilitator
+      post system_admin_teams_path, params: { team: { name: "Growth" }, facilitator_id: setup[:member].id }
+    end.not_to change(Team, :count)
+    expect(response).to redirect_to(root_path)
   end
 
   it "does not let a regular member access team creation" do
@@ -55,25 +54,28 @@ RSpec.describe "Authorization", type: :request do
 
     get facilitator_teams_path
     expect(response.body).not_to include("New team")
+    expect(response.body).not_to include("System Administration")
 
-    get new_facilitator_team_path
+    get system_admin_root_path
     expect(response).to redirect_to(root_path)
     follow_redirect!
     expect(response.body).to include("You are not allowed to do that.")
 
     expect do
-      post facilitator_teams_path, params: { team: { name: "Rogue team" } }
+      post system_admin_teams_path, params: { team: { name: "Rogue team" }, facilitator_id: setup[:member].id }
     end.not_to change(Team, :count)
     expect(response).to redirect_to(root_path)
     expect(Team.find_by(name: "Rogue team")).to be_nil
   end
 
   it "does not let an unauthenticated user create a team" do
-    get new_facilitator_team_path
+    member = create_user(name: "Member")
+
+    get system_admin_root_path
     expect(response).to redirect_to(new_session_path)
 
     expect do
-      post facilitator_teams_path, params: { team: { name: "Unauthenticated team" } }
+      post system_admin_teams_path, params: { team: { name: "Unauthenticated team" }, facilitator_id: member.id }
     end.not_to change(Team, :count)
     expect(response).to redirect_to(new_session_path)
     expect(Team.find_by(name: "Unauthenticated team")).to be_nil
@@ -86,11 +88,11 @@ RSpec.describe "Authorization", type: :request do
     get root_path
     expect(response.body).not_to include("New team")
 
-    get new_facilitator_team_path
+    get system_admin_root_path
     expect(response).to redirect_to(root_path)
 
     expect do
-      post facilitator_teams_path, params: { team: { name: "First team" } }
+      post system_admin_teams_path, params: { team: { name: "First team" }, facilitator_id: user.id }
     end.not_to change(Team, :count)
     expect(Team.find_by(name: "First team")).to be_nil
   end
@@ -118,7 +120,7 @@ RSpec.describe "Authorization", type: :request do
   it "does not let a facilitator of one team manage another team" do
     setup = team_context
     other_facilitator = create_user(name: "Other Facilitator")
-    create_team_with_roles(facilitator: other_facilitator)
+    create_team_with_roles(facilitator: other_facilitator, name: "Mobile")
 
     sign_in(other_facilitator)
     get facilitator_team_path(setup[:team])

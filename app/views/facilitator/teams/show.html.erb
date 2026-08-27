@@ -9,9 +9,26 @@
     <% @memberships.each do |membership| %>
       <li class="flex items-center justify-between px-4 py-3 text-sm">
         <span><%= display_name_for(membership.user) %> · <%= membership.role.humanize %></span>
-        <%= link_to "Remove",
-                    confirm_facilitator_team_membership_path(@team, membership),
-                    class: "text-slate-500 hover:text-red-700" %>
+        <span class="flex items-center gap-3">
+          <% if membership.member? %>
+            <%= button_to "Make Facilitator",
+                          facilitator_team_membership_path(@team, membership),
+                          method: :patch,
+                          params: { role: "facilitator" },
+                          class: "text-slate-500 hover:text-slate-800" %>
+          <% elsif !membership.last_current_facilitator? %>
+            <%= button_to "Make Member",
+                          facilitator_team_membership_path(@team, membership),
+                          method: :patch,
+                          params: { role: "member" },
+                          class: "text-slate-500 hover:text-slate-800" %>
+          <% end %>
+          <% unless membership.last_current_facilitator? %>
+            <%= link_to "Remove",
+                        confirm_facilitator_team_membership_path(@team, membership),
+                        class: "text-slate-500 hover:text-red-700" %>
+          <% end %>
+        </span>
       </li>
     <% end %>
   </ul>

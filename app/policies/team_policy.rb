@@ -8,7 +8,7 @@ class TeamPolicy < ApplicationPolicy
   end
 
   def create?
-    user&.confirmed? && user.facilitator?
+    user&.confirmed? && system_admin?
   end
 
   def update?
@@ -19,7 +19,11 @@ class TeamPolicy < ApplicationPolicy
     facilitator_of?(record) && record.active?
   end
 
+  def administer?
+    system_admin?
+  end
+
   def archive?
-    facilitator_of?(record) && record.active?
+    (facilitator_of?(record) || system_admin?) && record.active?
   end
 end
