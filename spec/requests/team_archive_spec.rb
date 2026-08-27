@@ -227,11 +227,16 @@ RSpec.describe "Team archiving", type: :request do
 
   it "allows a new active team to reuse an archived team's name" do
     setup = archive_setup
+    admin = create_user(name: "Priya", system_admin: true)
     sign_in(setup[:jordan])
     post_archive(setup[:platform])
 
-    post facilitator_teams_path, params: { team: { name: "Platform" } }
-    expect(response).to redirect_to(facilitator_team_path(Team.order(:id).last))
+    sign_in(admin)
+    post system_admin_teams_path, params: {
+      team: { name: "Platform" },
+      facilitator_id: setup[:jordan].id
+    }
+    expect(response).to redirect_to(system_admin_team_path(Team.order(:id).last))
     expect(Team.active.where(name: "Platform").count).to eq(1)
     expect(Team.where(name: "Platform").count).to eq(2)
   end

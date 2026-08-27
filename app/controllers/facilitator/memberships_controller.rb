@@ -18,6 +18,18 @@ module Facilitator
       end
     end
 
+    def update
+      team = Team.find(params[:team_id])
+      authorize!(team, :manage_members?)
+      membership = team.memberships.find(params[:id])
+
+      if membership.update(role: params[:role])
+        redirect_to facilitator_team_path(team), notice: "#{membership.user.display_name} is now a #{membership.role}."
+      else
+        redirect_to facilitator_team_path(team), alert: membership.errors.full_messages.to_sentence.presence || "Unable to change role."
+      end
+    end
+
     def confirm
       @team = Team.find(params[:team_id])
       authorize!(@team, :manage_members?)
@@ -29,13 +41,21 @@ module Facilitator
       authorize!(team, :manage_members?)
       membership = team.memberships.find(params[:id])
 
+      if membership.last_current_facilitator?
+        redirect_to facilitator_team_path(team), alert: "This team must have at least one Facilitator."
+        return
+      end
+
       if membership.user_id == current_user.id && membership.facilitator?
         redirect_to facilitator_team_path(team), alert: "You cannot remove yourself as a facilitator."
         return
       end
 
-      membership.destroy!
-      redirect_to facilitator_team_path(team), notice: "Member removed."
+      if membership.destroy
+        redirect_to facilitator_team_path(team), notice: "Member removed."
+      else
+        redirect_to facilitator_team_path(team), alert: membership.errors.full_messages.to_sentence
+      end
     end
   end
 end

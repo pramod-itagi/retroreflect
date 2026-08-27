@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_21_200000) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_27_120000) do
   create_table "action_items", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "team_id", null: false
     t.bigint "retrospective_id"
@@ -115,6 +115,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_21_200000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "archived_at"
+    t.virtual "active_name", type: :string, limit: 100, as: "(case when (`archived_at` is null) then `name` else NULL end)", stored: true
+    t.index ["active_name"], name: "index_teams_on_active_name", unique: true
     t.index ["archived_at"], name: "index_teams_on_archived_at"
     t.index ["created_by_id"], name: "index_teams_on_created_by_id"
   end
@@ -131,10 +133,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_21_200000) do
     t.datetime "discarded_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "system_admin", default: false, null: false
     t.index ["confirmation_token_digest"], name: "index_users_on_confirmation_token_digest", unique: true
     t.index ["discarded_at"], name: "index_users_on_discarded_at"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["password_reset_token_digest"], name: "index_users_on_password_reset_token_digest", unique: true
+    t.index ["system_admin"], name: "index_users_on_system_admin"
   end
 
   add_foreign_key "action_items", "retrospectives", on_delete: :nullify

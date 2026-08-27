@@ -1,0 +1,38 @@
+<p class="mb-2 text-sm text-slate-500"><%= back_link system_admin_root_path, "system administration" %></p>
+<div class="mb-6">
+  <h1 class="text-2xl font-semibold">System Admins</h1>
+</div>
+
+<ul class="mb-8 divide-y divide-slate-200 rounded border border-slate-200 bg-white">
+  <% @system_admins.each do |admin| %>
+    <li class="flex items-center justify-between px-4 py-3 text-sm">
+      <span><%= admin.display_name %> · <%= admin.email %></span>
+      <% if admin.last_system_admin? %>
+        <span class="text-slate-400">At least one System Admin must remain.</span>
+      <% else %>
+        <%= button_to "Remove",
+                      system_admin_admin_path(admin),
+                      method: :delete,
+                      class: "text-slate-500 hover:text-red-700" %>
+      <% end %>
+    </li>
+  <% end %>
+</ul>
+
+<% if @candidate_users.any? %>
+  <%= form_with url: system_admin_admins_path, class: "flex flex-wrap items-start gap-3" do %>
+    <div class="flex w-full min-w-40 flex-col gap-1 sm:w-auto">
+      <%= label_tag :user_id, "Add System Admin", class: "text-sm font-medium leading-5" %>
+      <%= select_tag :user_id,
+                     options_from_collection_for_select(@candidate_users, :id, :display_name),
+                     prompt: "Select a confirmed user",
+                     class: "h-10 w-full min-w-0 rounded border border-slate-300 py-2 pl-3 pr-10 text-sm sm:w-72" %>
+    </div>
+    <div class="flex w-full flex-col gap-1 sm:w-auto">
+      <span class="hidden text-sm font-medium leading-5 sm:block sm:invisible" aria-hidden="true">Add</span>
+      <%= submit_tag "Add", class: "h-10 w-full rounded bg-slate-900 px-3 text-sm text-white sm:w-auto" %>
+    </div>
+  <% end %>
+<% else %>
+  <p class="text-sm text-slate-500">Everyone with a confirmed account is already a System Admin.</p>
+<% end %>

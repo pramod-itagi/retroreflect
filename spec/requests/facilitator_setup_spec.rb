@@ -5,14 +5,11 @@ RSpec.describe "Facilitator retrospective setup", type: :request do
     facilitator = create_user(name: "Jordan", email: "jordan@example.com")
     alice = create_user(name: "Alice", email: "alice@example.com")
     bob = create_user(name: "Bob", email: "bob@example.com")
-    create_team_with_roles(facilitator: facilitator).update!(name: "Existing")
-
-    sign_in(facilitator)
-    post facilitator_teams_path, params: { team: { name: "Platform" } }
-    team = Team.find_by!(name: "Platform")
-    expect(response).to redirect_to(facilitator_team_path(team))
+    create_team_with_roles(facilitator: facilitator, name: "Existing")
+    team = create_team_with_roles(facilitator: facilitator, name: "Platform")
     expect(team.memberships.find_by(user: facilitator)).to be_facilitator
 
+    sign_in(facilitator)
     post facilitator_team_memberships_path(team), params: { user_id: alice.id, role: "member" }
     post facilitator_team_memberships_path(team), params: { user_id: bob.id, role: "member" }
     expect(team.memberships.find_by(user: alice)).to be_member
@@ -75,7 +72,7 @@ RSpec.describe "Facilitator retrospective setup", type: :request do
     delete facilitator_team_membership_path(team, membership)
     expect(response).to redirect_to(facilitator_team_path(team))
     follow_redirect!
-    expect(response.body).to include("You cannot remove yourself as a facilitator.")
+    expect(response.body).to include("This team must have at least one Facilitator.")
     expect(team.memberships.find_by(user: facilitator)).to be_facilitator
   end
 

@@ -81,7 +81,7 @@ RSpec.describe "Anonymous meeting board", type: :request do
   it "does not let a participant or another team's facilitator open the meeting board" do
     setup = revealed_setup
     other_facilitator = create_user(name: "Other Facilitator")
-    create_team_with_roles(facilitator: other_facilitator)
+    create_team_with_roles(facilitator: other_facilitator, name: "Mobile")
 
     sign_in(setup[:alice])
     get facilitator_retrospective_meeting_path(setup[:retro])

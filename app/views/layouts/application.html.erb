@@ -19,6 +19,9 @@
             <%= link_to "Teams", facilitator_teams_path, class: "text-slate-600 hover:text-slate-900" %>
             <%= link_to "Retrospectives", retrospectives_path, class: "text-slate-600 hover:text-slate-900" %>
             <%= link_to "Actions", participant_action_items_path, class: "text-slate-600 hover:text-slate-900" %>
+            <% if current_user.system_admin? %>
+              <%= link_to "System Administration", system_admin_root_path, class: "text-slate-600 hover:text-slate-900" %>
+            <% end %>
             <span class="text-slate-500"><%= current_user.display_name %></span>
             <%= button_to "Sign out", session_path, method: :delete, class: "text-slate-600 hover:text-slate-900" %>
           </nav>

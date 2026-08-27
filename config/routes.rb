@@ -15,8 +15,8 @@ Rails.application.routes.draw do
   resources :retrospectives, only: :index
 
   namespace :facilitator do
-    resources :teams, only: %i[index show new create] do
-      resources :memberships, only: %i[create destroy] do
+    resources :teams, only: %i[index show] do
+      resources :memberships, only: %i[create update destroy] do
         get :confirm, on: :member
       end
       resources :retrospectives, only: %i[new create]
@@ -37,6 +37,14 @@ Rails.application.routes.draw do
     end
 
     resources :action_items, only: :update
+  end
+
+  namespace :system_admin do
+    root to: "dashboards#show"
+    resources :teams, only: %i[index show new create] do
+      resource :archive, only: %i[new create], controller: "team_archives"
+    end
+    resources :admins, only: %i[index create destroy]
   end
 
   namespace :participant do

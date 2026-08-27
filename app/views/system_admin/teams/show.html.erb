@@ -1,0 +1,33 @@
+<div class="mb-8">
+  <p class="text-sm text-slate-500"><%= back_link system_admin_teams_path, "teams" %></p>
+  <h1 class="text-2xl font-semibold"><%= @team.name %></h1>
+  <% if @team.archived? %>
+    <p class="mt-2 text-sm text-slate-500">This team is archived.</p>
+  <% end %>
+</div>
+
+<section class="mb-10">
+  <h2 class="mb-3 text-lg font-medium">People</h2>
+  <% if @memberships.any? %>
+    <ul class="mb-4 divide-y divide-slate-200 rounded border border-slate-200 bg-white">
+      <% @memberships.each do |membership| %>
+        <li class="px-4 py-3 text-sm">
+          <%= display_name_for(membership.user) %> · <%= membership.role.humanize %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="mb-4 text-sm text-slate-500">No current members.</p>
+  <% end %>
+  <p class="text-sm text-slate-500">Team facilitators manage membership and retrospectives for this team.</p>
+</section>
+
+<% if @team.active? %>
+  <section class="mt-10 border-t border-slate-200 pt-8">
+    <h2 class="mb-2 text-lg font-medium">Archive Team</h2>
+    <p class="mb-3 max-w-2xl text-sm text-slate-600">
+      Archiving removes all current members from this team and prevents new retrospectives. Historical retrospectives and action items are retained.
+    </p>
+    <%= link_to "Archive Team", new_system_admin_team_archive_path(@team), class: "rounded border border-red-700 px-3 py-1.5 text-sm text-red-800 hover:bg-red-50" %>
+  </section>
+<% end %>

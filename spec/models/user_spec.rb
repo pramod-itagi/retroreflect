@@ -21,6 +21,18 @@ RSpec.describe User, type: :model do
     expect(missing_confirmation.errors[:password_confirmation]).to be_present
   end
 
+  it "treats system admin as independent from team facilitator membership" do
+    admin = create_user(name: "Priya", system_admin: true)
+    jordan = create_user(name: "Jordan")
+    team = create_team_with_roles(facilitator: jordan)
+
+    expect(admin).to be_system_admin
+    expect(admin).not_to be_facilitator
+    expect(jordan).not_to be_system_admin
+    expect(jordan).to be_facilitator
+    expect(team.memberships.find_by(user: admin)).to be_nil
+  end
+
   it "stores a password digest and unique email index, not a plaintext password" do
     user = create_user(name: "Ada", email: "ada@example.com")
 
