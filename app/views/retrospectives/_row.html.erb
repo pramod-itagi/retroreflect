@@ -1,17 +1,35 @@
-<%# locals: retrospective, facilitated %>
-<li class="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-  <div class="min-w-0">
-    <p class="font-medium"><%= retrospective.title %></p>
-    <p class="text-sm text-slate-500">
-      <%= retrospective.team.name %>
-      <% if retrospective.sprint_label.present? %> · <%= retrospective.sprint_label %><% end %>
-      · <%= retrospective.status.humanize %>
-      <% if retrospective.collecting? %>
-        · <%= submission_progress(retrospective) %>
-      <% elsif retrospective.draft? && retrospective.participant_count.zero? %>
-        · Participants not configured
+<%# locals: retrospective, facilitated, variant %>
+<% previous = variant.to_s == "previous" %>
+<li>
+  <article class="home-card workspace-card-interactive <%= previous ? 'px-6 py-4' : 'px-6 py-5' %>">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div class="min-w-0">
+        <% if previous %>
+          <p class="break-words text-lg font-semibold leading-snug text-ink"><%= retrospective.title %></p>
+        <% else %>
+          <h3 class="display-face break-words text-2xl font-bold leading-tight text-ink"><%= retrospective.title %></h3>
+        <% end %>
+        <p class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-[#466057]">
+          <span><%= retrospective.team.name %></span>
+          <% if retrospective.sprint_label.present? %>
+            <span aria-hidden="true">·</span>
+            <span><%= retrospective.sprint_label %></span>
+          <% end %>
+          <span aria-hidden="true">·</span>
+          <span class="<%= retrospective_status_badge_classes(retrospective.status) %>"><%= retrospective.status.humanize %></span>
+          <% if retrospective.collecting? %>
+            <span aria-hidden="true">·</span>
+            <span><%= submission_progress(retrospective) %></span>
+          <% elsif retrospective.draft? && retrospective.participant_count.zero? %>
+            <span aria-hidden="true">·</span>
+            <span>Participants not configured</span>
+          <% end %>
+        </p>
+      </div>
+      <% label, path = retrospective_cta_parts(retrospective, facilitated: facilitated) %>
+      <% if path.present? %>
+        <%= link_to label, path, class: retrospective_listing_cta_classes(variant) %>
       <% end %>
-    </p>
-  </div>
-  <%= retrospective_cta(retrospective, facilitated: facilitated) %>
+    </div>
+  </article>
 </li>

@@ -1,124 +1,178 @@
-<div class="mb-8">
-  <p class="text-sm text-slate-500"><%= back_link facilitator_teams_path, "teams" %></p>
-  <h1 class="text-2xl font-semibold"><%= @team.name %></h1>
-</div>
+<% content_for :full_bleed, true %>
+<% content_for :head do %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<% end %>
 
-<section class="mb-10">
-  <h2 class="mb-3 text-lg font-medium">People</h2>
-  <ul class="mb-4 divide-y divide-slate-200 rounded border border-slate-200 bg-white">
-    <% @memberships.each do |membership| %>
-      <li class="flex items-center justify-between px-4 py-3 text-sm">
-        <span><%= display_name_for(membership.user) %> · <%= membership.role.humanize %></span>
-        <span class="flex items-center gap-3">
-          <% if membership.member? %>
-            <%= button_to "Make Facilitator",
-                          facilitator_team_membership_path(@team, membership),
-                          method: :patch,
-                          params: { role: "facilitator" },
-                          class: "text-slate-500 hover:text-slate-800" %>
-          <% elsif !membership.last_current_facilitator? %>
-            <%= button_to "Make Member",
-                          facilitator_team_membership_path(@team, membership),
-                          method: :patch,
-                          params: { role: "member" },
-                          class: "text-slate-500 hover:text-slate-800" %>
-          <% end %>
-          <% unless membership.last_current_facilitator? %>
-            <%= link_to "Remove",
-                        confirm_facilitator_team_membership_path(@team, membership),
-                        class: "text-slate-500 hover:text-red-700" %>
-          <% end %>
-        </span>
-      </li>
-    <% end %>
-  </ul>
-
-  <% if @candidate_users.any? %>
-    <%= form_with url: facilitator_team_memberships_path(@team), class: "flex flex-wrap items-start gap-3" do %>
-      <div class="flex w-full min-w-40 flex-col gap-1 sm:w-auto">
-        <%= label_tag :user_id, "Add person", class: "text-sm font-medium leading-5" %>
-        <%= select_tag :user_id,
-                       options_from_collection_for_select(@candidate_users, :id, :display_name),
-                       prompt: "Select a confirmed user",
-                       class: "h-10 w-full min-w-0 rounded border border-slate-300 py-2 pl-3 pr-10 text-sm sm:w-72" %>
-      </div>
-      <div class="flex w-full min-w-32 flex-col gap-1 sm:w-auto">
-        <%= label_tag :role, "Role", class: "text-sm font-medium leading-5" %>
-        <%= select_tag :role, options_for_select([["Member", "member"], ["Facilitator", "facilitator"]], "member"), class: "h-10 w-full rounded border border-slate-300 px-3 text-sm sm:w-auto" %>
-      </div>
-      <div class="flex w-full flex-col gap-1 sm:w-auto">
-        <span class="hidden text-sm font-medium leading-5 sm:block sm:invisible" aria-hidden="true">Add</span>
-        <%= submit_tag "Add", class: "h-10 w-full rounded bg-slate-900 px-3 text-sm text-white sm:w-auto" %>
-      </div>
-    <% end %>
-  <% else %>
-    <p class="text-sm text-slate-500">Everyone with a confirmed account is already on this team.</p>
-  <% end %>
-</section>
-
-<section class="mb-10">
-  <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
-    <h2 class="text-lg font-medium">Current retrospective</h2>
-    <div class="flex flex-wrap items-center gap-3">
-      <%= link_to "View retrospective history", retrospectives_path(team_id: @team.id), class: "text-sm text-teal-800 underline" %>
-      <% unless @running_retrospective %>
-        <%= link_to "New retrospective", new_facilitator_team_retrospective_path(@team), class: "rounded bg-teal-700 px-3 py-1.5 text-sm text-white hover:bg-teal-800" %>
-      <% end %>
-    </div>
-  </div>
-  <% if @running_retrospective %>
-    <p class="mb-3 text-sm text-slate-600">
-      This team already has an active retrospective.
-      <%= link_to @running_retrospective.title, facilitator_retrospective_path(@running_retrospective), class: "text-teal-800 underline" %>
-      must be closed before creating another.
+<div class="workspace-page workspace-shell">
+  <div class="workspace-container">
+    <p class="mb-5">
+      <%= link_to "Back to teams", facilitator_teams_path, class: home_quiet_link_classes %>
     </p>
-    <ul class="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
-      <li class="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-        <div class="min-w-0">
-          <%= link_to @running_retrospective.title, facilitator_retrospective_path(@running_retrospective), class: "font-medium text-teal-800" %>
-          <p class="text-sm text-slate-500">
-            <%= @running_retrospective.status.humanize %>
-            <% if @running_retrospective.sprint_label.present? %> · <%= @running_retrospective.sprint_label %><% end %>
-            <% if @running_retrospective.collecting? %>
-              · <%= submission_progress(@running_retrospective) %>
-            <% elsif @running_retrospective.draft? && @running_retrospective.participant_count.zero? %>
-              · Participants not configured
-            <% end %>
-          </p>
+
+    <p class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-ink">
+      <span class="inline-block h-2 w-2 rounded-full bg-coral" aria-hidden="true"></span>
+      Team
+    </p>
+    <h1 class="display-face break-words text-4xl font-bold leading-[0.98] tracking-[-0.045em] text-ink sm:text-5xl"><%= @team.name %></h1>
+
+    <section class="mt-8">
+      <p class="text-sm font-bold uppercase tracking-[0.16em] text-[#466057]">Members</p>
+      <h2 class="display-face mt-2 text-2xl font-bold leading-tight tracking-[-0.035em] text-ink sm:text-3xl">People</h2>
+
+      <% if @memberships.any? %>
+        <ul class="home-card mt-5 divide-y divide-[var(--line)] overflow-hidden">
+          <% @memberships.each do |membership| %>
+            <li class="flex flex-col gap-2 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <div class="min-w-0">
+                <p class="break-words font-semibold text-ink"><%= display_name_for(membership.user) %></p>
+                <p class="mt-1.5">
+                  <span class="<%= membership.facilitator? ? 'inline-flex rounded-full bg-ink px-2.5 py-0.5 text-xs font-semibold text-white' : 'inline-flex rounded-full bg-sand px-2.5 py-0.5 text-xs font-semibold text-ink' %>">
+                    <%= membership.role.humanize %>
+                  </span>
+                </p>
+              </div>
+              <span class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <% if membership.member? %>
+                  <%= button_to "Make Facilitator",
+                                facilitator_team_membership_path(@team, membership),
+                                method: :patch,
+                                params: { role: "facilitator" },
+                                class: "text-sm font-semibold text-[#466057] hover:text-coral" %>
+                <% elsif !membership.last_current_facilitator? %>
+                  <%= button_to "Make Member",
+                                facilitator_team_membership_path(@team, membership),
+                                method: :patch,
+                                params: { role: "member" },
+                                class: "text-sm font-semibold text-[#466057] hover:text-coral" %>
+                <% end %>
+                <% unless membership.last_current_facilitator? %>
+                  <%= link_to "Remove",
+                              confirm_facilitator_team_membership_path(@team, membership),
+                              class: "text-sm font-semibold text-[#466057] hover:text-coral" %>
+                <% end %>
+              </span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <div class="home-card mt-5 px-6 py-5">
+          <p class="font-semibold text-ink">No people on this team</p>
+          <p class="mt-2 leading-6 text-[#466057]">Confirmed users you add will appear here.</p>
         </div>
-        <%= retrospective_cta(@running_retrospective, facilitated: true) %>
-      </li>
-    </ul>
-  <% else %>
-    <p class="text-sm text-slate-500">No active retrospective.</p>
-  <% end %>
-</section>
-
-<section class="mb-10">
-  <h2 class="mb-3 text-lg font-medium">Current Action Items</h2>
-  <% if @action_items.any? %>
-    <ul class="mb-3 divide-y divide-slate-200 rounded border border-slate-200 bg-white">
-      <% @action_items.each do |item| %>
-        <li class="px-4 py-3">
-          <p class="font-medium"><%= item.title %></p>
-          <p class="text-sm text-slate-500">
-            <%= display_name_for(item.owner) %>
-            · <%= action_status_label(item.status) %>
-            · Due <%= item.due_on.strftime("%b #{item.due_on.day}") %>
-          </p>
-        </li>
       <% end %>
-    </ul>
-  <% else %>
-    <p class="mb-3 text-sm text-slate-500">No current action items.</p>
-  <% end %>
-  <%= link_to "View all action items", participant_action_items_path, class: "text-sm text-teal-800 underline" %>
-</section>
 
-<section class="mt-10 border-t border-slate-200 pt-8">
-  <h2 class="mb-2 text-lg font-medium">Archive Team</h2>
-  <p class="mb-3 max-w-2xl text-sm text-slate-600">
-    Archiving removes all current members from this team and prevents new retrospectives. Historical retrospectives and action items are retained.
-  </p>
-  <%= link_to "Archive Team", new_facilitator_team_archive_path(@team), class: "rounded border border-red-700 px-3 py-1.5 text-sm text-red-800 hover:bg-red-50" %>
-</section>
+      <% if @candidate_users.any? %>
+        <%= form_with url: facilitator_team_memberships_path(@team), class: "home-card mt-4 grid gap-4 px-6 py-5 sm:grid-cols-[minmax(0,1fr)_10rem_auto] sm:items-end" do %>
+          <div class="flex min-w-0 flex-col gap-1.5">
+            <%= label_tag :user_id, "Add person", class: "text-xs font-semibold uppercase tracking-[0.12em] text-[#466057]" %>
+            <%= select_tag :user_id,
+                           options_from_collection_for_select(@candidate_users, :id, :display_name),
+                           prompt: "Select a confirmed user",
+                           class: "workspace-filter-field pr-10" %>
+          </div>
+          <div class="flex min-w-0 flex-col gap-1.5">
+            <%= label_tag :role, "Role", class: "text-xs font-semibold uppercase tracking-[0.12em] text-[#466057]" %>
+            <%= select_tag :role, options_for_select([["Member", "member"], ["Facilitator", "facilitator"]], "member"), class: "workspace-filter-field" %>
+          </div>
+          <%= submit_tag "Add", class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto" %>
+        <% end %>
+      <% else %>
+        <p class="mt-5 text-sm leading-6 text-[#466057]">Everyone with a confirmed account is already on this team.</p>
+      <% end %>
+    </section>
+
+    <section class="mt-10">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div class="min-w-0">
+          <p class="text-sm font-bold uppercase tracking-[0.16em] text-coral">Right now</p>
+          <h2 class="display-face mt-2 text-2xl font-bold leading-tight tracking-[-0.035em] text-ink sm:text-3xl">Current retrospective</h2>
+        </div>
+        <div class="flex flex-wrap items-center gap-4">
+          <%= link_to "View retrospective history", retrospectives_path(team_id: @team.id), class: home_quiet_link_classes %>
+          <% unless @running_retrospective %>
+            <%= link_to "New retrospective", new_facilitator_team_retrospective_path(@team), class: "#{home_primary_button_classes} w-full sm:w-auto" %>
+          <% end %>
+        </div>
+      </div>
+
+      <% if @running_retrospective %>
+        <p class="mt-4 max-w-2xl leading-6 text-[#466057]">
+          This team already has an active retrospective.
+          <%= link_to @running_retrospective.title, facilitator_retrospective_path(@running_retrospective), class: "font-semibold text-ink hover:text-coral" %>
+          must be closed before creating another.
+        </p>
+        <article class="home-card mt-5 px-6 py-5">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div class="min-w-0">
+              <%= link_to @running_retrospective.title, facilitator_retrospective_path(@running_retrospective), class: "display-face break-words text-2xl font-bold leading-tight text-ink hover:text-coral" %>
+              <p class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-[#466057]">
+                <span class="<%= retrospective_status_badge_classes(@running_retrospective.status) %>"><%= @running_retrospective.status.humanize %></span>
+                <% if @running_retrospective.sprint_label.present? %>
+                  <span aria-hidden="true">·</span>
+                  <span><%= @running_retrospective.sprint_label %></span>
+                <% end %>
+                <% if @running_retrospective.collecting? %>
+                  <span aria-hidden="true">·</span>
+                  <span><%= submission_progress(@running_retrospective) %></span>
+                <% elsif @running_retrospective.draft? && @running_retrospective.participant_count.zero? %>
+                  <span aria-hidden="true">·</span>
+                  <span>Participants not configured</span>
+                <% end %>
+              </p>
+            </div>
+            <% label, path = retrospective_cta_parts(@running_retrospective, facilitated: true) %>
+            <% if path.present? %>
+              <%= link_to label, path, class: "#{home_primary_button_classes} shrink-0" %>
+            <% end %>
+          </div>
+        </article>
+      <% else %>
+        <div class="home-card mt-5 px-6 py-5">
+          <p class="font-semibold text-ink">No active retrospective.</p>
+          <p class="mt-2 leading-6 text-[#466057]">When this team starts a retrospective, it will appear here.</p>
+        </div>
+      <% end %>
+    </section>
+
+    <section class="mt-10">
+      <p class="text-sm font-bold uppercase tracking-[0.16em] text-[#466057]">Follow-through</p>
+      <h2 class="display-face mt-2 text-2xl font-bold leading-tight tracking-[-0.035em] text-ink sm:text-3xl">Current Action Items</h2>
+
+      <% if @action_items.any? %>
+        <ul class="home-card mt-5 divide-y divide-[var(--line)] overflow-hidden">
+          <% @action_items.each do |item| %>
+            <li class="px-6 py-4">
+              <p class="break-words font-semibold text-ink"><%= item.title %></p>
+              <p class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-[#466057]">
+                <%= display_name_for(item.owner) %> ·
+                <span class="<%= action_item_badge_classes(item.status) %>"><%= action_status_label(item.status) %></span>
+                · Due <%= item.due_on.strftime("%b #{item.due_on.day}") %>
+              </p>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <div class="home-card mt-5 px-6 py-5">
+          <p class="font-semibold text-ink">No current action items.</p>
+          <p class="mt-2 leading-6 text-[#466057]">Open follow-ups for this team will appear here.</p>
+        </div>
+      <% end %>
+
+      <p class="mt-5">
+        <%= link_to "View all action items", participant_action_items_path, class: home_quiet_link_classes %>
+      </p>
+    </section>
+
+    <section class="mt-10 border-t border-[var(--line)] pt-8">
+      <h2 class="display-face text-2xl font-bold leading-tight tracking-[-0.035em] text-ink">Archive Team</h2>
+      <p class="mt-3 max-w-2xl leading-6 text-[#466057]">
+        Archiving removes all current members from this team and prevents new retrospectives. Historical retrospectives and action items are retained.
+      </p>
+      <div class="mt-5">
+        <%= link_to "Archive Team", new_facilitator_team_archive_path(@team), class: "home-action home-action-danger inline-flex" %>
+      </div>
+    </section>
+  </div>
+</div>

@@ -39,17 +39,19 @@ RSpec.describe "Home dashboard", type: :request do
     get root_path
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include("Active teams")
+    expect(response.body).to include("Your teams")
     expect(response.body).to include("Platform")
     expect(response.body).to include("Sprint 24 collecting")
     expect(response.body).to include("Collecting")
     expect(response.body).to include("0 / 1 submitted")
     expect(response.body).to include("Sprint 25 setup")
     expect(response.body).to include("Continue Setup")
+    expect(response.body).to include("Make room for what your team is learning.")
     expect(response.body).not_to include("Ancient closed retro")
     expect(response.body).not_to include("Recent Retrospectives")
     expect(response.body).not_to include("Previous Retrospectives")
     expect(response.body).not_to include("Previous Retros")
+    expect(response.body).not_to include("Draft retrospectives")
   end
 
   it "lets a facilitator start a retrospective when the team has none running" do
@@ -61,7 +63,7 @@ RSpec.describe "Home dashboard", type: :request do
     get root_path
 
     expect(response.body).to include("No active retrospective")
-    expect(response.body).to include("Start Retrospective")
+    expect(response.body).to include("Create retrospective")
     expect(response.body).to include(new_facilitator_team_retrospective_path(team))
   end
 
@@ -107,5 +109,38 @@ RSpec.describe "Home dashboard", type: :request do
     expect(nav).not_to include("System Administration")
     expect(nav).not_to include("Previous Retros")
     expect(nav).not_to include("Action items")
+  end
+
+  it "lets a member continue an in-progress retrospective without team-management actions" do
+    context = setup_home
+    collecting = context[:platform].retrospectives.create!(
+      title: "Sprint 24 collecting",
+      created_by: context[:facilitator]
+    )
+    collecting.participations.create!(user: context[:alice])
+    collecting.update!(status: :collecting, collecting_started_at: Time.current)
+
+    sign_in(context[:alice])
+    get root_path
+
+    expect(response.body).to include("Sprint 24 collecting")
+    expect(response.body).to include("Continue")
+    expect(response.body).to include(participant_retrospective_path(collecting))
+    expect(response.body).not_to include("Create retrospective")
+    expect(response.body).not_to include("Start Retrospective")
+    expect(response.body).not_to include("New team")
+    expect(response.body).not_to include(facilitator_team_path(context[:platform]))
+  end
+
+  it "keeps a sign-in notice in its own bar above the Home canvas" do
+    facilitator = create_user(name: "Jordan")
+
+    post session_path, params: { email: facilitator.email, password: "password123" }
+    follow_redirect!
+
+    expect(response.body).to include("Signed in.")
+    expect(response.body).to include("home-flash-bar")
+    expect(response.body).to include("Make room for what your team is learning.")
+    expect(response.body).not_to include("-mt-8")
   end
 end

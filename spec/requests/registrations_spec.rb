@@ -152,6 +152,8 @@ RSpec.describe "Registration and confirmation", type: :request do
     get new_registration_path
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Create an account")
+    expect(response.body).to include("Back to sign in")
+    expect(response.body).to include(new_session_path)
     expect(response.body).not_to include("Facilitator")
     expect(response.body).not_to include('name="user[role]"')
   end

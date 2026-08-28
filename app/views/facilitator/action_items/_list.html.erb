@@ -1,17 +1,20 @@
+<%# locals: action_items, branded: false %>
+<% branded = local_assigns.fetch(:branded, false) %>
+
 <% if action_items.any? %>
-  <ul class="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
+  <ul class="<%= branded ? 'home-card divide-y divide-[var(--line)] overflow-hidden' : 'divide-y divide-slate-200 rounded border border-slate-200 bg-white' %>">
     <% action_items.each do |item| %>
-      <li class="px-4 py-3">
-        <div class="flex flex-wrap items-start justify-between gap-3">
+      <li class="<%= branded ? 'px-5 py-4' : 'px-4 py-3' %>">
+        <div class="<%= branded ? 'flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-start lg:justify-between' : 'flex flex-wrap items-start justify-between gap-3' %>">
           <div class="min-w-0 max-w-2xl">
-            <p class="font-medium"><%= item.title %></p>
+            <p class="<%= branded ? 'break-words font-semibold text-ink' : 'font-medium' %>"><%= item.title %></p>
             <% if item.description.present? %>
-              <p class="mt-1 whitespace-pre-wrap text-sm text-slate-600"><%= item.description %></p>
+              <p class="<%= branded ? 'mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-[#466057]' : 'mt-1 whitespace-pre-wrap text-sm text-slate-600' %>"><%= item.description %></p>
             <% end %>
-            <p class="mt-1 text-sm text-slate-500">
+            <p class="<%= branded ? 'mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-[#466057]' : 'mt-1 text-sm text-slate-500' %>">
               <%= display_name_for(item.owner) %>
               · due <%= item.due_on %>
-              · <%= action_status_label(item.status) %>
+              · <% if branded %><span class="<%= action_item_badge_classes(item.status) %>"><%= action_status_label(item.status) %></span><% else %><%= action_status_label(item.status) %><% end %>
               <% if item.completed_at.present? %>
                 · completed <%= item.completed_at.to_date %>
               <% elsif item.cancelled_at.present? %>
@@ -20,9 +23,13 @@
             </p>
           </div>
           <% unless item.terminal? %>
-            <%= form_with model: item, url: facilitator_action_item_path(item), method: :patch, class: "flex items-center gap-2" do |form| %>
-              <%= form.select :status, item.available_statuses.map { |status| [action_status_label(status), status] }, {}, class: "rounded border border-slate-300 px-2 py-1 text-sm" %>
-              <%= form.submit "Update", class: "text-sm text-teal-800 underline" %>
+            <%= form_with model: item, url: facilitator_action_item_path(item), method: :patch, class: (branded ? "flex flex-wrap items-center gap-2" : "flex items-center gap-2") do |form| %>
+              <%= form.select :status, item.available_statuses.map { |status| [action_status_label(status), status] }, {}, class: (branded ? "workspace-select" : "rounded border border-slate-300 px-2 py-1 text-sm") %>
+              <% if branded %>
+                <%= form.submit "Update", class: "home-action home-action-secondary" %>
+              <% else %>
+                <%= form.submit "Update", class: "text-sm text-teal-800 underline" %>
+              <% end %>
             <% end %>
           <% end %>
         </div>
@@ -30,5 +37,11 @@
     <% end %>
   </ul>
 <% else %>
-  <p class="rounded border border-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-500">No action items yet.</p>
+  <% if branded %>
+    <div class="home-card px-5 py-4">
+      <p class="text-sm leading-6 text-[#466057]">No action items yet.</p>
+    </div>
+  <% else %>
+    <p class="rounded border border-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-500">No action items yet.</p>
+  <% end %>
 <% end %>

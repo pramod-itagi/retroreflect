@@ -1,0 +1,22 @@
+<%# locals: team, retrospective, facilitated %>
+<article class="home-card px-6 py-5">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div class="min-w-0">
+      <p class="text-xs font-bold uppercase tracking-[0.16em] text-coral"><%= team.name %></p>
+      <h3 class="display-face mt-2 break-words text-2xl font-bold leading-tight text-ink"><%= retrospective.title %></h3>
+      <p class="mt-2 text-sm leading-6 text-[#466057]">
+        <% if retrospective.sprint_label.present? %><%= retrospective.sprint_label %> · <% end %>
+        <span class="<%= home_status_badge_classes(retrospective.status) %>"><%= retrospective.status.humanize %></span>
+        <% if retrospective.collecting? %>
+          · <%= submission_progress(retrospective) %>
+        <% elsif retrospective.draft? && retrospective.participant_count.zero? %>
+          · Participants not configured
+        <% end %>
+      </p>
+    </div>
+    <% label, path = retrospective_cta_parts(retrospective, facilitated: facilitated) %>
+    <% if path.present? %>
+      <%= link_to label, path, class: home_primary_button_classes %>
+    <% end %>
+  </div>
+</article>

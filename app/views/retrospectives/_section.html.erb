@@ -1,15 +1,24 @@
-<%# locals: title, empty_text, retrospectives, facilitated_team_ids %>
-<section class="mb-10">
-  <h2 class="mb-3 text-lg font-medium"><%= title %></h2>
-  <% if retrospectives.any? %>
-    <ul class="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
-      <% retrospectives.each do |retrospective| %>
-        <%= render "retrospectives/row",
-                   retrospective: retrospective,
-                   facilitated: facilitated_team_ids.include?(retrospective.team_id) %>
-      <% end %>
-    </ul>
-  <% else %>
-    <p class="text-sm text-slate-500"><%= empty_text %></p>
-  <% end %>
+<%# locals: title, eyebrow, empty_title, empty_text, retrospectives, facilitated_team_ids, variant %>
+<% emphasized = variant.to_s == "active" %>
+<section class="<%= emphasized ? 'border-y border-[var(--line)] bg-[#eee5d7] px-5 py-8 sm:px-8 lg:px-10 lg:py-10' : 'mt-10 first:mt-8' %>">
+  <div class="<%= emphasized ? 'mx-auto max-w-7xl' : '' %>">
+    <p class="text-sm font-bold uppercase tracking-[0.16em] <%= emphasized ? 'text-coral' : 'text-[#466057]' %>"><%= eyebrow %></p>
+    <h2 class="display-face mt-2 font-bold leading-tight tracking-[-0.035em] text-ink <%= emphasized ? 'text-3xl sm:text-4xl' : 'text-2xl sm:text-3xl' %>"><%= title %></h2>
+    <% if retrospectives.any? %>
+      <p class="mt-1.5 text-sm leading-6 text-[#466057]"><%= pluralize(retrospectives.size, "session") %></p>
+      <ul class="mt-5 grid gap-4">
+        <% retrospectives.each do |retrospective| %>
+          <%= render "retrospectives/row",
+                     retrospective: retrospective,
+                     facilitated: facilitated_team_ids.include?(retrospective.team_id),
+                     variant: variant %>
+        <% end %>
+      </ul>
+    <% else %>
+      <div class="home-card mt-5 px-6 py-5">
+        <p class="font-semibold text-ink"><%= empty_title %></p>
+        <p class="mt-2 leading-6 text-[#466057]"><%= empty_text %></p>
+      </div>
+    <% end %>
+  </div>
 </section>

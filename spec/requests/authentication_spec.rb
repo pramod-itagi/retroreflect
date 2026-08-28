@@ -240,6 +240,18 @@ RSpec.describe "Authentication", type: :request do
     expect(user.authenticate("anotherpassword")).to be_falsey
   end
 
+  it "presents a focused sign-in form with existing account actions" do
+    get new_session_path
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Sign in")
+    expect(response.body).to include("Continue to your team's reflections.")
+    expect(response.body).to include("Create an account")
+    expect(response.body).to include("Forgot password?")
+    expect(response.body).to include(new_registration_path)
+    expect(response.body).to include(new_password_reset_path)
+  end
+
   it "redirects an authenticated user away from the sign-in page" do
     user = create_user(name: "Ada", email: "ada@example.com")
 

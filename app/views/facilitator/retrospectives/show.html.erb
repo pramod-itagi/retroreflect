@@ -1,83 +1,135 @@
-<p class="mb-2 text-sm text-slate-500"><%= back_link facilitator_team_path(@team), @team.name %></p>
-<div class="mb-6 flex flex-wrap items-start justify-between gap-4">
-  <div>
-    <h1 class="text-2xl font-semibold"><%= @retrospective.title %></h1>
-    <p class="text-sm text-slate-500">
-      <%= @retrospective.status.humanize %>
-      <% if @retrospective.sprint_label.present? %> · <%= @retrospective.sprint_label %><% end %>
+<% content_for :full_bleed, true %>
+<% content_for :head do %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<% end %>
+
+<div class="workspace-page workspace-shell">
+  <div class="workspace-container">
+    <p class="mb-5">
+      <%= link_to "Back to #{@team.name}", facilitator_team_path(@team), class: home_quiet_link_classes %>
     </p>
-  </div>
-  <div class="flex flex-wrap gap-2">
-    <% if @retrospective.draft? %>
-      <%= button_to "Send invitations", start_collecting_facilitator_retrospective_path(@retrospective), class: "rounded bg-teal-700 px-3 py-2 text-sm text-white", form: { data: { turbo_confirm: "Email every participant and freeze the roster?" } } %>
-      <%= button_to "Cancel", cancel_facilitator_retrospective_path(@retrospective), class: "rounded border border-slate-300 px-3 py-2 text-sm" %>
-    <% elsif @retrospective.collecting? %>
-      <div>
-        <%= button_to "Reveal notes",
-                      reveal_facilitator_retrospective_path(@retrospective),
-                      class: "rounded bg-teal-700 px-3 py-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50",
-                      disabled: @submitted_count.zero?,
-                      form: (@submitted_count.positive? ? { data: { turbo_confirm: "Reveal all notes anonymously? Drafts will be deleted." } } : {}) %>
-        <% if @submitted_count.zero? %>
-          <p class="mt-2 max-w-xs text-sm text-slate-500">Reveal will be enabled after at least one participant submits feedback.</p>
-        <% end %>
+
+    <p class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-ink">
+      <span class="inline-block h-2 w-2 rounded-full bg-coral" aria-hidden="true"></span>
+      Session
+    </p>
+    <h1 class="display-face break-words text-4xl font-bold leading-[0.98] tracking-[-0.045em] text-ink sm:text-5xl"><%= @retrospective.title %></h1>
+    <p class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-[#466057]">
+      <span class="<%= retrospective_status_badge_classes(@retrospective.status) %>"><%= @retrospective.status.humanize %></span>
+      <% if @retrospective.sprint_label.present? %>
+        <span aria-hidden="true">·</span>
+        <span><%= @retrospective.sprint_label %></span>
+      <% end %>
+    </p>
+
+    <% if @retrospective.cancelled? %>
+      <div class="home-card mt-6 px-6 py-5">
+        <p class="font-semibold text-ink">This retrospective was cancelled.</p>
+        <p class="mt-2 leading-6 text-[#466057]">No further collecting or reveal is available for this session.</p>
       </div>
-      <%= button_to "Cancel", cancel_facilitator_retrospective_path(@retrospective), class: "rounded border border-slate-300 px-3 py-2 text-sm" %>
-    <% elsif @retrospective.discussing? %>
-      <%= link_to "Meeting board", facilitator_retrospective_meeting_path(@retrospective), class: "rounded bg-teal-700 px-3 py-2 text-sm text-white" %>
-      <%= button_to "Close retrospective", close_facilitator_retrospective_path(@retrospective), class: "rounded border border-slate-300 px-3 py-2 text-sm" %>
-    <% elsif @retrospective.closed? %>
-      <%= link_to "Meeting board", facilitator_retrospective_meeting_path(@retrospective), class: "rounded bg-slate-900 px-3 py-2 text-sm text-white" %>
+    <% end %>
+
+    <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start">
+      <% if @retrospective.draft? %>
+        <%= button_to "Send invitations",
+                      start_collecting_facilitator_retrospective_path(@retrospective),
+                      class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto",
+                      form_class: "w-full sm:w-auto",
+                      form: { data: { turbo_confirm: "Email every participant and freeze the roster?" } } %>
+        <%= button_to "Cancel",
+                      cancel_facilitator_retrospective_path(@retrospective),
+                      class: "home-action home-action-secondary w-full sm:w-auto",
+                      form_class: "w-full sm:w-auto" %>
+      <% elsif @retrospective.collecting? %>
+        <div class="min-w-0 sm:max-w-md">
+          <%= button_to "Reveal notes",
+                        reveal_facilitator_retrospective_path(@retrospective),
+                        class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto disabled:cursor-not-allowed disabled:opacity-50",
+                        disabled: @submitted_count.zero?,
+                        form_class: "w-full sm:w-auto",
+                        form: (@submitted_count.positive? ? { data: { turbo_confirm: "Reveal all notes anonymously? Drafts will be deleted." } } : {}) %>
+          <% if @submitted_count.zero? %>
+            <p class="mt-3 max-w-xs text-sm leading-6 text-[#466057]">Reveal will be enabled after at least one participant submits feedback.</p>
+          <% end %>
+        </div>
+        <%= button_to "Cancel",
+                      cancel_facilitator_retrospective_path(@retrospective),
+                      class: "home-action home-action-secondary w-full sm:w-auto",
+                      form_class: "w-full sm:w-auto" %>
+      <% elsif @retrospective.discussing? %>
+        <%= link_to "Meeting board", facilitator_retrospective_meeting_path(@retrospective), class: "#{home_primary_button_classes} w-full sm:w-auto" %>
+        <%= button_to "Close retrospective",
+                      close_facilitator_retrospective_path(@retrospective),
+                      class: "home-action home-action-secondary w-full sm:w-auto",
+                      form_class: "w-full sm:w-auto" %>
+      <% elsif @retrospective.closed? %>
+        <%= link_to "Meeting board", facilitator_retrospective_meeting_path(@retrospective), class: "home-action home-action-secondary w-full sm:w-auto" %>
+      <% end %>
+    </div>
+
+    <% if @retrospective.collecting? %>
+      <section class="home-card mt-8 px-6 py-5">
+        <p class="text-sm font-bold uppercase tracking-[0.16em] text-coral">Feedback submitted</p>
+        <p class="mt-3 text-lg font-semibold leading-6 text-ink">
+          <%= @submitted_count %> of <%= @participations.size %> participants have submitted feedback.
+        </p>
+        <p class="mt-2 max-w-xl leading-6 text-[#466057]">
+          You can see who has submitted, not what they wrote. Notes stay private until you reveal them.
+        </p>
+      </section>
+    <% end %>
+
+    <section class="mt-10">
+      <p class="text-sm font-bold uppercase tracking-[0.16em] text-[#466057]">Participants</p>
+      <h2 class="display-face mt-2 text-2xl font-bold leading-tight tracking-[-0.035em] text-ink sm:text-3xl">Roster</h2>
+
+      <ul class="home-card mt-5 divide-y divide-[var(--line)] overflow-hidden">
+        <% @participations.each do |participation| %>
+          <li class="flex flex-col gap-2 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="min-w-0">
+              <p class="break-words font-semibold text-ink"><%= display_name_for(participation.user) %></p>
+              <p class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-[#466057]">
+                <span class="<%= participation_status_badge_classes(participation.invitation_status_label) %>"><%= participation.invitation_status_label %></span>
+                <% if @retrospective.collecting? || @retrospective.revealed? %>
+                  <span aria-hidden="true">·</span>
+                  <span class="<%= participation_status_badge_classes(participation.response_status_label) %>"><%= participation.response_status_label %></span>
+                <% end %>
+              </p>
+            </div>
+            <% if @retrospective.draft? %>
+              <%= button_to "Remove",
+                            facilitator_retrospective_participation_path(@retrospective, participation),
+                            method: :delete,
+                            class: "text-sm font-semibold text-[#466057] hover:text-coral" %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+
+      <% if @retrospective.draft? %>
+        <%= form_with url: facilitator_retrospective_participations_path(@retrospective), class: "home-card mt-4 flex flex-col gap-4 px-6 py-5 sm:flex-row sm:flex-wrap sm:items-end" do %>
+          <div class="flex min-w-0 flex-1 flex-col gap-1.5">
+            <%= label_tag :user_id, "Add team member", class: "text-xs font-semibold uppercase tracking-[0.12em] text-[#466057]" %>
+            <%= select_tag :user_id, options_from_collection_for_select(@available_members, :id, :display_name), prompt: "Select member", class: "workspace-filter-field" %>
+          </div>
+          <%= submit_tag "Add to roster", class: "home-action home-action-secondary w-full cursor-pointer sm:w-auto" %>
+        <% end %>
+      <% else %>
+        <p class="mt-5 text-sm leading-6 text-[#466057]">Roster is frozen.</p>
+      <% end %>
+    </section>
+
+    <% if @retrospective.discussing? || @retrospective.closed? %>
+      <section class="mt-10">
+        <p class="text-sm font-bold uppercase tracking-[0.16em] text-coral">Follow-through</p>
+        <h2 class="display-face mt-2 text-2xl font-bold leading-tight tracking-[-0.035em] text-ink sm:text-3xl">Action items</h2>
+        <div class="mt-5">
+          <%= render "facilitator/action_items/form", team: @team, retrospective: @retrospective, owners: @team.users.active.order(:name) %>
+          <%= render "facilitator/action_items/list", action_items: @retrospective.action_items.includes(:owner) %>
+        </div>
+      </section>
     <% end %>
   </div>
 </div>
-
-<% if @retrospective.collecting? %>
-  <p class="mb-4 rounded border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-    <%= @submitted_count %> of <%= @participations.size %> participants have submitted feedback.
-    You can see who has submitted, not what they wrote. Notes stay private until you reveal them.
-  </p>
-<% end %>
-
-<section class="mb-10">
-  <h2 class="mb-3 text-lg font-medium">Roster</h2>
-  <ul class="mb-4 divide-y divide-slate-200 rounded border border-slate-200 bg-white">
-    <% @participations.each do |participation| %>
-      <li class="flex items-center justify-between px-4 py-3 text-sm">
-        <span>
-          <%= display_name_for(participation.user) %>
-          · <%= participation.invitation_status_label %>
-          <% if @retrospective.collecting? || @retrospective.revealed? %>
-            · <%= participation.response_status_label %>
-          <% end %>
-        </span>
-        <% if @retrospective.draft? %>
-          <%= button_to "Remove", facilitator_retrospective_participation_path(@retrospective, participation), method: :delete, class: "text-slate-500" %>
-        <% end %>
-      </li>
-    <% end %>
-  </ul>
-
-  <% if @retrospective.draft? %>
-    <%= form_with url: facilitator_retrospective_participations_path(@retrospective), class: "flex flex-wrap items-start gap-3" do %>
-      <div class="flex w-full min-w-40 flex-col gap-1 sm:w-auto">
-        <%= label_tag :user_id, "Add team member", class: "text-sm font-medium leading-5" %>
-        <%= select_tag :user_id, options_from_collection_for_select(@available_members, :id, :display_name), prompt: "Select member", class: "h-10 w-full rounded border border-slate-300 px-3 text-sm sm:w-auto" %>
-      </div>
-      <div class="flex w-full flex-col gap-1 sm:w-auto">
-        <span class="hidden text-sm font-medium leading-5 sm:block sm:invisible" aria-hidden="true">Add</span>
-        <%= submit_tag "Add to roster", class: "h-10 w-full rounded bg-slate-900 px-3 text-sm text-white sm:w-auto" %>
-      </div>
-    <% end %>
-  <% else %>
-    <p class="text-sm text-slate-500">Roster is frozen.</p>
-  <% end %>
-</section>
-
-<% if @retrospective.discussing? || @retrospective.closed? %>
-  <section>
-    <h2 class="mb-3 text-lg font-medium">Action items</h2>
-    <%= render "facilitator/action_items/form", team: @team, retrospective: @retrospective, owners: @team.users.active.order(:name) %>
-    <%= render "facilitator/action_items/list", action_items: @retrospective.action_items.includes(:owner) %>
-  </section>
-<% end %>
