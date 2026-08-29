@@ -60,4 +60,31 @@ module ApplicationHelper
   def collecting_participant?(retrospective)
     retrospective.collecting? && retrospective.participations.any? { |participation| participation.user_id == current_user.id }
   end
+
+  def nav_link(name, path)
+    active = current_page?(path)
+    html_options = { class: active ? "font-semibold text-[#10211d]" : "text-slate-600 hover:text-slate-900" }
+    html_options[:aria] = { current: "page" } if active
+    link_to name, path, html_options
+  end
+
+  def action_item_overdue?(item)
+    item.due_on < Date.current && !item.terminal?
+  end
+
+  def action_item_badge_classes(status)
+    base = "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold"
+    case status.to_s
+    when "in_progress"
+      "#{base} bg-moss text-white"
+    when "ready_for_review"
+      "#{base} bg-ink text-white"
+    when "completed"
+      "#{base} bg-[#dce9df] text-moss"
+    when "cancelled"
+      "#{base} bg-sand text-[#5C574E]"
+    else
+      "#{base} bg-sand text-ink"
+    end
+  end
 end

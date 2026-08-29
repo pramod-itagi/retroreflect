@@ -2,12 +2,422 @@
 @tailwind components;
 @tailwind utilities;
 
-/*
-
 @layer components {
-  .btn-primary {
-    @apply py-2 px-4 bg-blue-200;
+  /* Auth pages share Canva brand tokens. Selectors stay page-scoped so other views are unchanged. */
+  .home-page,
+  .login-page,
+  .register-page,
+  .workspace-page {
+    --ink: #10211d;
+    --paper: #f7f3eb;
+    --coral: #e65e48;
+    --moss: #315d4f;
+    --sand: #e8ddcb;
+    --line: rgba(16, 33, 29, 0.16);
+    font-family: "Work Sans", sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+  }
+
+  .home-page .display-face,
+  .login-page .display-face,
+  .register-page .display-face,
+  .workspace-page .display-face {
+    font-family: "Fraunces", serif;
+  }
+
+  .home-flash-bar {
+    position: relative;
+    z-index: 10;
+    background: #f7f3eb;
+    border-bottom: 1px solid rgba(16, 33, 29, 0.16);
+  }
+
+  .workspace-shell {
+    min-height: calc(100vh - 5.5rem);
+  }
+
+  .workspace-container {
+    margin-inline: auto;
+    max-width: 80rem;
+    padding: 1.5rem 1.25rem 2rem;
+  }
+
+  @media (min-width: 640px) {
+    .workspace-container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .workspace-container {
+      padding: 1.75rem 2.5rem 2.25rem;
+    }
+  }
+
+  .workspace-container-tight {
+    padding-bottom: 1.25rem;
+  }
+
+  .home-content {
+    margin-inline: auto;
+    max-width: 90rem;
+  }
+
+  body.home-layout {
+    background: #f7f3eb;
+  }
+
+  body.home-layout header .app-header-inner {
+    max-width: 90rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  body.home-layout header .app-header-brand {
+    font-size: 1.25rem;
+  }
+
+  body.home-layout header nav {
+    font-size: 0.9375rem;
+    column-gap: 1.25rem;
+  }
+
+  @media (min-width: 640px) {
+    body.home-layout header .app-header-inner {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    body.home-layout header .app-header-inner {
+      padding-left: 2.5rem;
+      padding-right: 2.5rem;
+    }
+  }
+
+  body.home-layout .home-flash-bar > div {
+    max-width: 90rem;
+  }
+
+  .home-page a:focus-visible,
+  .home-page .home-action:focus-visible,
+  .login-page a:focus-visible,
+  .login-page .home-action:focus-visible,
+  .login-page .login-field:focus-visible,
+  .register-page a:focus-visible,
+  .register-page .home-action:focus-visible,
+  .register-page .login-field:focus-visible,
+  .workspace-page a:focus-visible,
+  .workspace-page .home-action:focus-visible,
+  .workspace-page .home-action-danger:focus-visible,
+  .workspace-page .workspace-select:focus-visible,
+  .workspace-page .workspace-filter-field:focus-visible,
+  .workspace-page .workspace-field:focus-visible,
+  .workspace-page input[type="checkbox"]:focus-visible {
+    outline: 3px solid #e65e48;
+    outline-offset: 4px;
+  }
+
+  .home-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    padding: 0.7rem 1.35rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.25;
+    text-decoration: none;
+    transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  }
+
+  .home-action-primary {
+    background: var(--coral);
+    color: #fff;
+    border: 0;
+  }
+
+  .home-action-primary:hover {
+    background: #d44f3b;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 0 rgba(16, 33, 29, 0.14);
+  }
+
+  .home-action-primary:disabled,
+  .home-action-primary[disabled] {
+    background: var(--coral);
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .home-action-primary:disabled:hover,
+  .home-action-primary[disabled]:hover {
+    background: var(--coral);
+    transform: none;
+    box-shadow: none;
+  }
+
+  .home-quiet-link {
+    position: relative;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--coral);
+    text-decoration: none;
+  }
+
+  .home-quiet-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -5px;
+    width: 0;
+    height: 1px;
+    background: currentColor;
+    transition: width 180ms ease;
+  }
+
+  .home-quiet-link:hover::after,
+  .home-quiet-link:focus-visible::after {
+    width: 100%;
+  }
+
+  .home-hero-panel {
+    position: relative;
+    min-height: 200px;
+    height: 100%;
+    background: var(--moss);
+    overflow: hidden;
+  }
+
+  .home-hero-panel::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(16, 33, 29, 0.02), rgba(16, 33, 29, 0.28));
+    pointer-events: none;
+  }
+
+  .home-reflection-card {
+    position: relative;
+    z-index: 1;
+    max-width: 18.5rem;
+    transform: rotate(-3deg);
+    box-shadow: 0 20px 40px rgba(16, 33, 29, 0.18);
+  }
+
+  .home-card {
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 2px;
+  }
+
+  @media (min-width: 1024px) {
+    .home-hero-panel {
+      min-height: 280px;
+    }
+
+    .home-reflection-card {
+      position: absolute;
+      bottom: 2rem;
+      left: 2rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-action,
+    .home-quiet-link::after,
+    .workspace-card-interactive,
+    .meeting-note {
+      transition: none;
+    }
+
+    .home-action-primary:hover,
+    .home-action-secondary:hover,
+    .home-action-danger:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
+    .home-reflection-card {
+      transform: none;
+    }
+  }
+
+  .login-form-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 26rem;
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 2px;
+    padding: 1.5rem 1.5rem;
+    box-shadow: 0 20px 40px rgba(16, 33, 29, 0.18);
+  }
+
+  .login-field {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: #fff;
+    color: var(--ink);
+    padding: 0.65rem 0.9rem;
+    font-size: 1rem;
+    line-height: 1.4;
+    box-shadow: none;
+  }
+
+  .login-field:focus {
+    border-color: #e65e48;
+  }
+
+  .login-alert {
+    margin-bottom: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 0.75rem 0.9rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .login-alert-alert {
+    border-color: #e65e48;
+    background: #fdf0ed;
+    color: var(--ink);
+  }
+
+  .login-alert-notice {
+    border-color: #315d4f;
+    background: #dce9df;
+    color: var(--ink);
+  }
+
+  .login-page .home-action,
+  .register-page .home-action {
+    width: 100%;
+    cursor: pointer;
+    border: 0;
+  }
+
+  .register-page .home-hero-panel {
+    overflow: visible;
+  }
+
+  .register-page .field_with_errors {
+    display: contents;
+  }
+
+  .workspace-page .field_with_errors {
+    display: contents;
+  }
+
+  .workspace-page .field_with_errors .workspace-field {
+    border-color: #e65e48;
+  }
+
+  .register-page .login-alert ul {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+
+  .register-page .login-alert li + li {
+    margin-top: 0.25rem;
+  }
+
+  .home-action-secondary {
+    background: #fff;
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    cursor: pointer;
+  }
+
+  .home-action-secondary:hover {
+    background: var(--sand);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 0 rgba(16, 33, 29, 0.14);
+  }
+
+  .workspace-select {
+    border: 1px solid var(--line);
+    border-radius: 9999px;
+    background: #fff;
+    color: var(--ink);
+    padding: 0.5rem 0.9rem;
+    font-size: 0.875rem;
+    line-height: 1.25;
+    box-shadow: none;
+  }
+
+  .workspace-filter-field {
+    width: 100%;
+    height: 2.5rem;
+    border: 1px solid var(--line);
+    border-radius: 9999px;
+    background: #fff;
+    color: var(--ink);
+    padding: 0 1rem;
+    font-size: 0.875rem;
+    line-height: 1.25;
+    box-shadow: none;
+  }
+
+  .workspace-filter-field:focus {
+    border-color: #e65e48;
+  }
+
+  .workspace-card-interactive {
+    transition: border-color 180ms ease;
+  }
+
+  .workspace-card-interactive:hover {
+    border-color: rgba(16, 33, 29, 0.32);
+  }
+
+  .workspace-field {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: #fff;
+    color: var(--ink);
+    padding: 0.55rem 0.85rem;
+    font-size: 0.875rem;
+    line-height: 1.35;
+    box-shadow: none;
+  }
+
+  select.workspace-field {
+    padding-right: 2.5rem;
+  }
+
+  .workspace-field:focus {
+    border-color: #e65e48;
+  }
+
+  .meeting-note {
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 2px;
+    transition: border-color 180ms ease;
+  }
+
+  .meeting-note:hover {
+    border-color: rgba(16, 33, 29, 0.32);
+  }
+
+  .home-action-danger {
+    background: #fff;
+    color: var(--coral);
+    border: 1px solid var(--coral);
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .home-action-danger:hover {
+    background: #fdf0ed;
   }
 }
-
-*/

@@ -165,6 +165,7 @@ RSpec.describe "Action items", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Fix flaky test")
     expect(response.body).to include("Stabilize the login spec")
+    expect(response.body).to include("Update")
 
     patch participant_action_item_path(context[:item]), params: { action_item: { status: "in_progress" } }
     expect(context[:item].reload).to be_in_progress
@@ -220,5 +221,20 @@ RSpec.describe "Action items", type: :request do
 
     patch facilitator_action_item_path(context[:item]), params: { action_item: { status: "open" } }
     expect(context[:item].reload).to be_completed
+  end
+
+  it "marks overdue owned items and shows an empty state when none are assigned" do
+    context = setup_item
+    context[:item].update!(due_on: Date.current - 1)
+
+    sign_in(context[:owner])
+    get participant_action_items_path
+    expect(response.body).to include("Overdue")
+    expect(response.body).to include("Your action items")
+
+    sign_in(context[:other])
+    get participant_action_items_path
+    expect(response.body).to include("No action items")
+    expect(response.body).not_to include("Fix flaky test")
   end
 end

@@ -1,19 +1,45 @@
-<h1 class="mb-6 text-2xl font-semibold">Sign in</h1>
-
-<%= form_with url: session_path, class: "max-w-md space-y-4" do %>
-  <div>
-    <%= label_tag :email, "Email", class: "mb-1 block text-sm font-medium" %>
-    <%= email_field_tag :email, params[:email], required: true, class: "w-full rounded border border-slate-300 px-3 py-2" %>
-  </div>
-  <div>
-    <%= label_tag :password, "Password", class: "mb-1 block text-sm font-medium" %>
-    <%= password_field_tag :password, nil, required: true, class: "w-full rounded border border-slate-300 px-3 py-2" %>
-  </div>
-  <%= submit_tag "Sign in", class: "rounded bg-teal-700 px-4 py-2 text-white hover:bg-teal-800" %>
+<% content_for :full_bleed, true %>
+<% content_for :embedded_flash, true %>
+<% content_for :head do %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <% end %>
 
-<p class="mt-4 text-sm text-slate-600">
-  <%= link_to "Create an account", new_registration_path, class: "text-teal-800 underline" %>
-  ·
-  <%= link_to "Forgot password?", new_password_reset_path, class: "text-teal-800 underline" %>
-</p>
+<div class="login-page workspace-shell">
+  <section class="mx-auto grid min-h-[calc(100vh-5.5rem)] max-w-7xl grid-cols-1 lg:grid-cols-[1.04fr_0.96fr]">
+    <div class="flex flex-col justify-center px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
+      <p class="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-ink">
+        <span class="inline-block h-2 w-2 rounded-full bg-coral" aria-hidden="true"></span>
+        Retroreflect
+      </p>
+      <h1 class="display-face max-w-xl text-4xl font-bold leading-[0.98] tracking-[-0.045em] text-ink sm:text-5xl">Sign in</h1>
+      <p class="mt-4 max-w-md text-lg leading-7 text-[#39514a]">Continue to your team's reflections.</p>
+    </div>
+
+    <div class="home-hero-panel flex items-center justify-center px-5 py-10 sm:px-8 lg:px-10">
+      <div class="login-form-card">
+        <% flash.each do |type, message| %>
+          <p class="login-alert login-alert-<%= type %>" role="alert"><%= message %></p>
+        <% end %>
+
+        <%= form_with url: session_path, class: "space-y-5" do %>
+          <div>
+            <%= label_tag :email, "Email", class: "mb-2 block text-sm font-semibold text-ink" %>
+            <%= email_field_tag :email, params[:email], required: true, autocomplete: "username", class: "login-field" %>
+          </div>
+          <div>
+            <%= label_tag :password, "Password", class: "mb-2 block text-sm font-semibold text-ink" %>
+            <%= password_field_tag :password, nil, required: true, autocomplete: "current-password", class: "login-field" %>
+          </div>
+          <%= submit_tag "Sign in", class: "home-action home-action-primary mt-1" %>
+        <% end %>
+
+        <p class="mt-6 flex flex-wrap gap-x-4 gap-y-2 text-sm">
+          <%= link_to "Create an account", new_registration_path, class: "home-quiet-link" %>
+          <%= link_to "Forgot password?", new_password_reset_path, class: "home-quiet-link" %>
+        </p>
+      </div>
+    </div>
+  </section>
+</div>

@@ -1,85 +1,140 @@
-<h1 class="mb-2 text-2xl font-semibold">Home</h1>
-<p class="mb-8 text-slate-600">Current teams, retrospectives that need attention, and action items.</p>
-
-<section class="mb-10">
-  <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
-    <h2 class="text-lg font-medium">Active teams</h2>
-    <% if can_create_team? %>
-      <%= link_to "New team", new_system_admin_team_path, class: "rounded bg-teal-700 px-3 py-1.5 text-sm text-white hover:bg-teal-800" %>
-    <% end %>
-  </div>
-  <% if @teams.any? %>
-    <ul class="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
-      <% @teams.each do |team| %>
-        <% facilitated = @facilitated_team_ids.include?(team.id) %>
-        <% running = team.running_retrospective %>
-        <li class="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <div class="min-w-0">
-            <% if facilitated %>
-              <%= link_to team.name, facilitator_team_path(team), class: "font-medium text-teal-800" %>
-            <% else %>
-              <p class="font-medium text-slate-900"><%= team.name %></p>
-            <% end %>
-            <p class="text-sm text-slate-500">
-              <%= pluralize(team.member_count, "member") %>
-              <% if running %>
-                · <%= running.title %> — <%= running.status.humanize %>
-                <% if running.collecting? %>
-                  · <%= submission_progress(running) %>
-                <% elsif running.draft? && running.participant_count.zero? %>
-                  · Participants not configured
-                <% end %>
-              <% else %>
-                · No active retrospective
-              <% end %>
-            </p>
-          </div>
-          <div class="shrink-0">
-            <% if running %>
-              <%= retrospective_cta(running, facilitated: facilitated) %>
-            <% elsif facilitated %>
-              <%= link_to "Start Retrospective", new_facilitator_team_retrospective_path(team), class: "rounded bg-teal-700 px-3 py-1.5 text-sm text-white hover:bg-teal-800" %>
-            <% end %>
-          </div>
-        </li>
-      <% end %>
-    </ul>
-  <% else %>
-    <p class="text-sm text-slate-500">You are not on any teams yet.</p>
-  <% end %>
-</section>
-
-<% if @draft_retrospectives.any? %>
-  <section class="mb-10">
-    <h2 class="mb-3 text-lg font-medium">Draft retrospectives</h2>
-    <ul class="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
-      <% @draft_retrospectives.each do |retrospective| %>
-        <%= render "retrospectives/row", retrospective: retrospective, facilitated: true %>
-      <% end %>
-    </ul>
-  </section>
+<% content_for :body_class, "home-layout" %>
+<% content_for :full_bleed, true %>
+<% content_for :head do %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <% end %>
 
-<section>
-  <div class="mb-3 flex items-center justify-between">
-    <h2 class="text-lg font-medium">Action items needing attention</h2>
-    <%= link_to "View all", participant_action_items_path, class: "text-sm text-teal-800 underline" %>
-  </div>
-  <% if @attention_action_items.any? %>
-    <ul class="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
-      <% @attention_action_items.each do |item| %>
-        <li class="px-4 py-3">
-          <p class="font-medium"><%= item.title %></p>
-          <p class="text-sm text-slate-500">
-            <%= item.team.name %>
-            · <%= action_status_label(item.status) %>
-            · due <%= item.due_on %>
-            <% if item.due_on < Date.current %> · overdue<% end %>
-          </p>
-        </li>
+<div class="home-page">
+  <section class="home-content grid grid-cols-1 lg:grid-cols-[1.04fr_0.96fr]">
+    <div class="flex flex-col justify-center px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
+      <p class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-ink">
+        <span class="inline-block h-2 w-2 rounded-full bg-coral" aria-hidden="true"></span>
+        The space between sprints
+      </p>
+      <h1 class="display-face max-w-3xl text-4xl font-bold leading-[0.98] tracking-[-0.045em] text-ink sm:text-5xl lg:text-6xl">Make room for what your team is learning.</h1>
+      <p class="mt-4 max-w-xl text-lg leading-7 text-[#39514a]">
+        Retroreflect helps teams pause, notice what went well and what to improve, decide what to continue, and turn that reflection into follow-through.
+      </p>
+      <div class="mt-6 flex items-start gap-4 border-t border-[var(--line)] pt-4">
+        <div class="mt-1 rounded-full bg-[#dce9df] p-2 text-moss" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.3L18 9l-4.4 1.7L12 15l-1.6-4.3L6 9l4.4-1.7L12 3z"/><path d="M19 14l.8 2.1L22 17l-2.2.9L19 20l-.8-2.1L16 17l2.2-.9L19 14z"/></svg>
+        </div>
+        <p class="max-w-md text-sm leading-6 text-[#496057]">Designed for the honest conversations that make teams stronger—not just another status meeting.</p>
+      </div>
+    </div>
+    <div class="home-hero-panel flex items-end px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
+      <aside class="home-reflection-card rounded-sm bg-paper p-5 text-ink" aria-label="Retrospective prompts">
+        <p class="text-xs font-bold uppercase tracking-[0.16em] text-coral">The prompt</p>
+        <p class="display-face mt-3 text-2xl font-bold leading-tight">How should we move forward?</p>
+        <div class="mt-4 flex items-start gap-2 border-t border-[#8a6b49]/30 pt-3 text-sm font-semibold">
+          <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-coral text-white" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
+          </span>
+          <span>What went well. What didn't. What to continue. What to improve.</span>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="w-full border-y border-[var(--line)] bg-[#eee5d7] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
+    <div class="home-content">
+      <div class="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+        <div>
+          <p class="text-sm font-bold uppercase tracking-[0.16em] text-coral">Right now</p>
+          <h2 class="display-face mt-2 text-3xl font-bold leading-tight tracking-[-0.035em] text-ink sm:text-4xl">Current retrospective</h2>
+        </div>
+        <p class="max-w-sm text-base leading-6 text-[#466057]">What you can work on now.</p>
+      </div>
+
+      <% running_work = home_running_work %>
+      <% idle_facilitated_teams = home_idle_facilitated_teams %>
+
+      <% if running_work.any? %>
+        <ul class="mt-6 grid gap-4">
+          <% running_work.each do |item| %>
+            <li>
+              <%= render "home/current_retrospective",
+                         team: item[:team],
+                         retrospective: item[:retrospective],
+                         facilitated: item[:facilitated] %>
+            </li>
+          <% end %>
+        </ul>
+        <% if idle_facilitated_teams.any? %>
+          <ul class="mt-4 grid gap-4">
+            <% idle_facilitated_teams.each do |team| %>
+              <%= render "home/idle_facilitated_team", team: team %>
+            <% end %>
+          </ul>
+        <% end %>
+      <% elsif idle_facilitated_teams.any? %>
+        <ul class="mt-6 grid gap-4">
+          <% idle_facilitated_teams.each do |team| %>
+            <%= render "home/idle_facilitated_team", team: team %>
+          <% end %>
+        </ul>
+      <% else %>
+        <div class="home-card mt-6 px-6 py-5">
+          <p class="font-semibold text-ink">No active retrospective right now.</p>
+          <p class="mt-2 leading-6 text-[#466057]">When a team starts collecting or discussing, it will appear here.</p>
+        </div>
       <% end %>
-    </ul>
-  <% else %>
-    <p class="text-sm text-slate-500">No action items need attention.</p>
-  <% end %>
-</section>
+    </div>
+  </section>
+
+  <section class="px-5 pb-12 pt-8 sm:px-8 lg:px-10 lg:pb-14">
+    <div class="home-content space-y-10">
+      <div>
+        <h2 class="display-face text-3xl font-bold tracking-[-0.035em] text-ink">Your teams</h2>
+        <p class="mt-2 max-w-sm text-base leading-6 text-[#466057]">A concise view of the teams you belong to.</p>
+        <% if @teams.any? %>
+          <ul class="home-card mt-5 divide-y divide-[var(--line)] overflow-hidden">
+            <% @teams.each do |team| %>
+              <li class="flex items-baseline justify-between gap-4 px-6 py-3.5">
+                <div class="min-w-0">
+                  <% if home_facilitator_of?(team) %>
+                    <%= link_to team.name, facilitator_team_path(team), class: "truncate font-semibold text-ink hover:text-coral" %>
+                  <% else %>
+                    <p class="truncate font-semibold text-ink"><%= team.name %></p>
+                  <% end %>
+                </div>
+                <p class="shrink-0 text-sm text-[#466057]"><%= pluralize(team.member_count, "member") %></p>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="mt-5 text-sm leading-6 text-[#496057]">You are not on any teams yet.</p>
+        <% end %>
+      </div>
+
+      <div>
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 class="display-face text-3xl font-bold tracking-[-0.035em] text-ink">Action items needing attention</h2>
+            <p class="mt-2 max-w-sm text-base leading-6 text-[#466057]">Open action items assigned to you.</p>
+          </div>
+          <%= link_to "View all", participant_action_items_path, class: home_quiet_link_classes %>
+        </div>
+        <% if @attention_action_items.any? %>
+          <ul class="home-card mt-5 divide-y divide-[var(--line)] overflow-hidden">
+            <% @attention_action_items.each do |item| %>
+              <li class="px-6 py-3.5">
+                <p class="break-words font-semibold text-ink"><%= item.title %></p>
+                <p class="mt-2 text-sm leading-6 text-[#466057]">
+                  <%= item.team.name %>
+                  · <%= action_status_label(item.status) %>
+                  · due <%= item.due_on %>
+                  <% if item.due_on < Date.current %> · overdue<% end %>
+                </p>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="mt-5 text-sm leading-6 text-[#496057]">No action items need attention.</p>
+        <% end %>
+      </div>
+    </div>
+  </section>
+</div>

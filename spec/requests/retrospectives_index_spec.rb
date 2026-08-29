@@ -83,9 +83,9 @@ RSpec.describe "Retrospectives listing", type: :request do
     sign_in(user)
     get retrospectives_path
 
-    expect(response.body).to include("No active retrospectives.")
-    expect(response.body).to include("No draft retrospectives.")
-    expect(response.body).to include("No previous retrospectives yet.")
+    expect(response.body).to include("No active retrospectives")
+    expect(response.body).to include("No drafts yet")
+    expect(response.body).to include("No previous retrospectives yet")
   end
 
   it "filters by team, status group, and title search" do
@@ -105,6 +105,10 @@ RSpec.describe "Retrospectives listing", type: :request do
     expect(response.body).to include("Sprint 24 collecting")
     expect(response.body).not_to include("Sprint 25 draft")
     expect(response.body).not_to include("Growth only retro")
+
+    get retrospectives_path, params: { q: "zzzz-not-a-retrospective" }
+    expect(response.body).to include("No retrospectives found")
+    expect(response.body).not_to include("Sprint 24 collecting")
   end
 
   it "opens historical feedback without exposing authors" do

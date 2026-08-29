@@ -16,7 +16,7 @@ RSpec.describe "System administration", type: :request do
     sign_in(admin)
     get root_path
     expect(response.body).to include("System Administration")
-    expect(response.body).to include("New team")
+    expect(response.body).not_to include("New team")
 
     get system_admin_root_path
     expect(response).to have_http_status(:ok)

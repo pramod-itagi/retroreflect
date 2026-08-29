@@ -55,6 +55,7 @@ RSpec.describe "Authorization", type: :request do
     get facilitator_teams_path
     expect(response.body).not_to include("New team")
     expect(response.body).not_to include("System Administration")
+    expect(response.body).to include("No teams yet")
 
     get system_admin_root_path
     expect(response).to redirect_to(root_path)

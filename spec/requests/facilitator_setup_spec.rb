@@ -23,6 +23,13 @@ RSpec.describe "Facilitator retrospective setup", type: :request do
     expect(response.body).not_to include("participant_#{facilitator.id}")
 
     post facilitator_team_retrospectives_path(team), params: {
+      retrospective: { title: "", sprint_label: "Sprint 12" }
+    }
+    expect(response).to have_http_status(:unprocessable_content)
+    expect(response.parsed_body.at("#retrospective-title-error").text).to eq("Title can't be blank.")
+    expect(team.retrospectives).to be_empty
+
+    post facilitator_team_retrospectives_path(team), params: {
       retrospective: { title: "Sprint 12 retro", sprint_label: "Sprint 12" },
       participant_ids: [alice.id]
     }

@@ -8,19 +8,20 @@
     <%= stylesheet_link_tag "tailwind", "inter-font", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+    <%= yield :head %>
   </head>
-  <body class="min-h-screen bg-slate-50 text-slate-900">
+  <body class="min-h-screen bg-slate-50 text-slate-900 <%= yield(:body_class) %>">
     <header class="border-b border-slate-200 bg-white">
-      <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-        <%= link_to "Retroreflect", root_path, class: "text-lg font-semibold tracking-tight" %>
+      <div class="app-header-inner mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+        <%= link_to "Retroreflect", root_path, class: "app-header-brand text-lg font-semibold tracking-tight" %>
         <% if authenticated? %>
           <nav class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-            <%= link_to "Home", root_path, class: "text-slate-600 hover:text-slate-900" %>
-            <%= link_to "Teams", facilitator_teams_path, class: "text-slate-600 hover:text-slate-900" %>
-            <%= link_to "Retrospectives", retrospectives_path, class: "text-slate-600 hover:text-slate-900" %>
-            <%= link_to "Actions", participant_action_items_path, class: "text-slate-600 hover:text-slate-900" %>
+            <%= nav_link "Home", root_path %>
+            <%= nav_link "Teams", facilitator_teams_path %>
+            <%= nav_link "Retrospectives", retrospectives_path %>
+            <%= nav_link "Actions", participant_action_items_path %>
             <% if current_user.system_admin? %>
-              <%= link_to "System Administration", system_admin_root_path, class: "text-slate-600 hover:text-slate-900" %>
+              <%= nav_link "System Administration", system_admin_root_path %>
             <% end %>
             <span class="text-slate-500"><%= current_user.display_name %></span>
             <%= button_to "Sign out", session_path, method: :delete, class: "text-slate-600 hover:text-slate-900" %>
@@ -34,11 +35,26 @@
       </div>
     </header>
 
-    <main class="mx-auto max-w-6xl px-4 py-8">
-      <% flash.each do |type, message| %>
-        <p class="mb-6 rounded border px-4 py-3 text-sm <%= flash_class(type) %>"><%= message %></p>
+    <% if content_for?(:full_bleed) %>
+      <% if flash.any? && !content_for?(:embedded_flash) %>
+        <div class="home-flash-bar">
+          <div class="mx-auto max-w-7xl px-5 py-3 sm:px-8 lg:px-10">
+            <% flash.each do |type, message| %>
+              <p class="rounded border px-4 py-3 text-sm <%= flash_class(type) %>"><%= message %></p>
+            <% end %>
+          </div>
+        </div>
       <% end %>
-      <%= yield %>
-    </main>
+      <main>
+        <%= yield %>
+      </main>
+    <% else %>
+      <main class="mx-auto max-w-6xl px-4 py-8">
+        <% flash.each do |type, message| %>
+          <p class="mb-6 rounded border px-4 py-3 text-sm <%= flash_class(type) %>"><%= message %></p>
+        <% end %>
+        <%= yield %>
+      </main>
+    <% end %>
   </body>
 </html>
