@@ -27,10 +27,18 @@
   }
 
   .home-flash-bar {
-    position: relative;
-    z-index: 10;
-    background: #f7f3eb;
-    border-bottom: 1px solid rgba(16, 33, 29, 0.16);
+    position: fixed;
+    top: 5.5rem;
+    left: 50%;
+    z-index: 80;
+    width: min(28rem, calc(100vw - 1.5rem));
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .home-flash-bar .app-alert {
+    pointer-events: auto;
+    max-width: none;
   }
 
   .workspace-shell {
@@ -69,56 +77,307 @@
     background: #f7f3eb;
   }
 
-  body.home-layout header .app-header-inner {
+  .app-header {
+    --ink: #10211d;
+    --paper: #f7f3eb;
+    --coral: #e65e48;
+    --line: rgba(16, 33, 29, 0.16);
+    position: relative;
+    z-index: 40;
+    font-family: "Work Sans", sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .app-header-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1.25rem;
+    margin-inline: auto;
     max-width: 90rem;
-    padding-left: 1.25rem;
-    padding-right: 1.25rem;
-  }
-
-  body.home-layout header .app-header-brand {
-    font-size: 1.25rem;
-  }
-
-  body.home-layout header nav {
-    font-size: 0.9375rem;
-    column-gap: 1.25rem;
+    padding: 0.8rem 1.25rem;
   }
 
   @media (min-width: 640px) {
-    body.home-layout header .app-header-inner {
+    .app-header-inner {
       padding-left: 2rem;
       padding-right: 2rem;
     }
   }
 
   @media (min-width: 1024px) {
-    body.home-layout header .app-header-inner {
+    .app-header-inner {
       padding-left: 2.5rem;
       padding-right: 2.5rem;
     }
   }
 
-  body.home-layout .home-flash-bar > div {
-    max-width: 90rem;
+  @media (min-width: 768px) {
+    .app-header-inner:has(.app-account) {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: center;
+    }
+
+    .app-nav:not(.app-nav-auth) {
+      justify-self: center;
+    }
+
+    .app-account {
+      justify-self: end;
+    }
+  }
+
+  .app-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-width: 0;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .app-brand-mark {
+    display: flex;
+    flex: none;
+    width: 1.85rem;
+    height: 1.85rem;
+  }
+
+  .app-brand-mark svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .app-brand-name {
+    font-family: "Fraunces", serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--ink);
+  }
+
+  .app-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 1.35rem;
+  }
+
+  .app-nav:not(.app-nav-auth) {
+    order: 3;
+    width: 100%;
+  }
+
+  @media (min-width: 768px) {
+    .app-nav:not(.app-nav-auth) {
+      order: 0;
+      width: auto;
+    }
+  }
+
+  .app-nav-link {
+    position: relative;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--ink);
+    text-decoration: none;
+    padding: 0.2rem 0;
+  }
+
+  .app-nav-link:hover {
+    color: var(--coral);
+  }
+
+  .app-nav-link.is-active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.45rem;
+    height: 2px;
+    background: var(--coral);
+    border-radius: 9999px;
+  }
+
+  .app-header-register {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    padding: 0.45rem 0.95rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #fff;
+    background: var(--coral);
+    text-decoration: none;
+  }
+
+  .app-header-register:hover {
+    background: #d44f3b;
+  }
+
+  .app-account {
+    position: relative;
+    justify-self: end;
+  }
+
+  .app-account-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    max-width: 14rem;
+    padding: 0.4rem 0.8rem 0.4rem 0.95rem;
+    border: 1px solid var(--line);
+    border-radius: 9999px;
+    background: #fff;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+  }
+
+  .app-account-trigger:hover,
+  .app-account.is-open .app-account-trigger {
+    border-color: rgba(16, 33, 29, 0.32);
+  }
+
+  .app-account-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .app-account-chevron {
+    flex: none;
+    width: 0.75rem;
+    height: 0.75rem;
+    transition: transform 160ms ease;
+  }
+
+  .app-account.is-open .app-account-chevron {
+    transform: rotate(180deg);
+  }
+
+  .app-account-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    z-index: 55;
+    width: min(18.5rem, calc(100vw - 2rem));
+    padding: 0.9rem 0.95rem 0.75rem;
+    background: #fff;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 16px 36px rgba(16, 33, 29, 0.14);
+  }
+
+  .app-account-menu-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-bottom: 0.7rem;
+    margin-bottom: 0.55rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .app-account-menu-name {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  .app-account-close {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin: -0.15rem -0.15rem 0 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: inherit;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.7;
+  }
+
+  .app-account-close:hover {
+    opacity: 1;
+    background: var(--paper, #f7f3eb);
+  }
+
+  .app-account-menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .app-account-menu-form {
+    margin: 0;
+    width: 100%;
+  }
+
+  .app-account-menu-item {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.55rem;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .app-account-menu-item:hover {
+    background: var(--paper, #f7f3eb);
+    color: var(--coral);
+  }
+
+  .app-header a:focus-visible,
+  .app-account-trigger:focus-visible,
+  .app-account-close:focus-visible,
+  .app-account-menu-item:focus-visible {
+    outline: 2px solid #e65e48;
+    outline-offset: 2px;
   }
 
   .home-page a:focus-visible,
   .home-page .home-action:focus-visible,
   .login-page a:focus-visible,
   .login-page .home-action:focus-visible,
-  .login-page .login-field:focus-visible,
   .register-page a:focus-visible,
   .register-page .home-action:focus-visible,
-  .register-page .login-field:focus-visible,
   .workspace-page a:focus-visible,
   .workspace-page .home-action:focus-visible,
   .workspace-page .home-action-danger:focus-visible,
-  .workspace-page .workspace-select:focus-visible,
-  .workspace-page .workspace-filter-field:focus-visible,
-  .workspace-page .workspace-field:focus-visible,
-  .workspace-page input[type="checkbox"]:focus-visible {
-    outline: 3px solid #e65e48;
-    outline-offset: 4px;
+  .workspace-page .home-action-danger-solid:focus-visible,
+  .workspace-page .workspace-tooltip-host:focus-visible {
+    outline: 2px solid #e65e48;
+    outline-offset: 2px;
   }
 
   .home-action {
@@ -238,13 +497,23 @@
 
     .home-action-primary:hover,
     .home-action-secondary:hover,
-    .home-action-danger:hover {
+    .home-action-danger:hover,
+    .home-action-danger-solid:hover {
       transform: none;
       box-shadow: none;
     }
 
     .home-reflection-card {
       transform: none;
+    }
+
+    .app-alert,
+    .app-alert.is-leaving {
+      animation: none;
+    }
+
+    .app-account-chevron {
+      transition: none;
     }
   }
 
@@ -272,29 +541,94 @@
     box-shadow: none;
   }
 
-  .login-field:focus {
+  .login-field:focus,
+  .login-field:focus-visible {
     border-color: #e65e48;
+    box-shadow: 0 0 0 1px #e65e48;
   }
 
-  .login-alert {
+  .login-form-card .app-alert {
     margin-bottom: 1rem;
-    border: 1px solid var(--line);
-    border-radius: 2px;
-    padding: 0.75rem 0.9rem;
+  }
+
+  .app-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    margin: 0;
+    padding: 0.7rem 0.75rem 0.7rem 0.9rem;
+    border: 1px solid transparent;
+    border-radius: 10px;
     font-size: 0.875rem;
-    line-height: 1.5;
+    line-height: 1.4;
+    font-weight: 500;
+    box-shadow: 0 10px 28px rgba(16, 33, 29, 0.14);
+    animation: app-alert-in 180ms ease-out;
   }
 
-  .login-alert-alert {
-    border-color: #e65e48;
-    background: #fdf0ed;
-    color: var(--ink);
+  .app-alert.is-leaving {
+    animation: app-alert-out 160ms ease-in forwards;
   }
 
-  .login-alert-notice {
-    border-color: #315d4f;
-    background: #dce9df;
-    color: var(--ink);
+  .app-alert + .app-alert {
+    margin-top: 0.5rem;
+  }
+
+  .app-alert-icon {
+    flex: none;
+    display: flex;
+    margin-top: 0.08rem;
+  }
+
+  .app-alert-icon svg {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+
+  .app-alert-body {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .app-alert-body p,
+  .app-alert-body ul {
+    margin: 0;
+  }
+
+  .app-alert-body ul {
+    padding-left: 1.1rem;
+  }
+
+  .app-alert-body li + li {
+    margin-top: 0.2rem;
+  }
+
+  .app-alert-dismiss {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin: -0.12rem -0.05rem 0 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.72;
+    border-radius: 6px;
+  }
+
+  .app-alert-dismiss:hover {
+    opacity: 1;
+  }
+
+  .app-alert-dismiss:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 1px;
+    opacity: 1;
   }
 
   .login-page .home-action,
@@ -308,6 +642,7 @@
     overflow: visible;
   }
 
+  .login-page .field_with_errors,
   .register-page .field_with_errors {
     display: contents;
   }
@@ -318,15 +653,6 @@
 
   .workspace-page .field_with_errors .workspace-field {
     border-color: #e65e48;
-  }
-
-  .register-page .login-alert ul {
-    margin: 0;
-    padding-left: 1.1rem;
-  }
-
-  .register-page .login-alert li + li {
-    margin-top: 0.25rem;
   }
 
   .home-action-secondary {
@@ -340,6 +666,14 @@
     background: var(--sand);
     transform: translateY(-2px);
     box-shadow: 0 10px 0 rgba(16, 33, 29, 0.14);
+  }
+
+  .home-action-secondary:disabled,
+  .home-action-secondary[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
 
   .workspace-select {
@@ -366,8 +700,12 @@
     box-shadow: none;
   }
 
-  .workspace-filter-field:focus {
+  .workspace-filter-field:focus,
+  .workspace-filter-field:focus-visible,
+  .workspace-select:focus,
+  .workspace-select:focus-visible {
     border-color: #e65e48;
+    box-shadow: 0 0 0 1px #e65e48;
   }
 
   .workspace-card-interactive {
@@ -394,8 +732,10 @@
     padding-right: 2.5rem;
   }
 
-  .workspace-field:focus {
+  .workspace-field:focus,
+  .workspace-field:focus-visible {
     border-color: #e65e48;
+    box-shadow: 0 0 0 1px #e65e48;
   }
 
   .meeting-note {
@@ -420,4 +760,285 @@
   .home-action-danger:hover {
     background: #fdf0ed;
   }
+
+  .home-action-danger-solid {
+    background: var(--coral);
+    color: #fff;
+    border: 0;
+    cursor: pointer;
+  }
+
+  .home-action-danger-solid:hover {
+    background: #d44f3b;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 0 rgba(16, 33, 29, 0.14);
+  }
+
+  .workspace-tooltip-host {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .workspace-tooltip {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 0.55rem);
+    z-index: 70;
+    width: max-content;
+    max-width: min(16.5rem, calc(100vw - 2rem));
+    padding: 0.45rem 0.7rem;
+    background: #10211d;
+    color: #f7f3eb;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.4;
+    box-shadow: 0 8px 24px rgba(16, 33, 29, 0.22);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .workspace-tooltip-arrow {
+    position: absolute;
+    left: 1.15rem;
+    top: 100%;
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+    border-top-color: #10211d;
+  }
+
+  .workspace-tooltip-host:hover .workspace-tooltip,
+  .workspace-tooltip-host:focus-visible .workspace-tooltip,
+  .workspace-tooltip-host:focus-within .workspace-tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .workspace-tooltip-host[data-placement="bottom"] .workspace-tooltip {
+    top: calc(100% + 0.55rem);
+    bottom: auto;
+  }
+
+  .workspace-tooltip-host[data-placement="bottom"] .workspace-tooltip-arrow {
+    top: auto;
+    bottom: 100%;
+    border-top-color: transparent;
+    border-bottom-color: #10211d;
+  }
+
+  .workspace-tooltip-host[data-placement="right"] .workspace-tooltip {
+    left: calc(100% + 0.55rem);
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+  }
+
+  .workspace-tooltip-host[data-placement="right"] .workspace-tooltip-arrow {
+    left: auto;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    border-top-color: transparent;
+    border-right-color: #10211d;
+  }
+
+  .workspace-tooltip-host[data-placement="left"] .workspace-tooltip {
+    left: auto;
+    right: calc(100% + 0.55rem);
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+  }
+
+  .workspace-tooltip-host[data-placement="left"] .workspace-tooltip-arrow {
+    left: 100%;
+    right: auto;
+    top: 50%;
+    transform: translateY(-50%);
+    border-top-color: transparent;
+    border-left-color: #10211d;
+  }
+
+  .member-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.35rem 1rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .member-row-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.65rem;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .member-row-name {
+    margin: 0;
+    font-weight: 600;
+    color: var(--ink, #10211d);
+    overflow-wrap: anywhere;
+  }
+
+  .member-row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.85rem;
+  }
+}
+
+.app-alert-success {
+  background: #dce9df;
+  border-color: rgba(49, 93, 79, 0.28);
+  color: #24473c;
+}
+
+.app-alert-error {
+  background: #fdf0ed;
+  border-color: rgba(230, 94, 72, 0.4);
+  color: #9a2f20;
+}
+
+.app-alert-warning {
+  background: #f8f0d6;
+  border-color: rgba(184, 134, 11, 0.35);
+  color: #7a5b12;
+}
+
+.app-confirm {
+  --ink: #10211d;
+  --coral: #e65e48;
+  --sand: #e8ddcb;
+  --line: rgba(16, 33, 29, 0.16);
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.app-confirm.is-open {
+  display: flex;
+}
+
+.app-confirm-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(16, 33, 29, 0.45);
+}
+
+.app-confirm-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(26rem, 100%);
+  max-height: calc(100vh - 2.5rem);
+  overflow: auto;
+  padding: 1.35rem 1.4rem 1.2rem;
+  border: 1px solid rgba(16, 33, 29, 0.16);
+  background: #fff;
+  color: #10211d;
+  border-radius: 10px;
+  box-shadow: 0 20px 40px rgba(16, 33, 29, 0.18);
+}
+
+.app-confirm-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.app-confirm-copy {
+  margin: 0.45rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #466057;
+  font-weight: 400;
+}
+
+.app-confirm-copy[hidden] {
+  display: none;
+}
+
+.app-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 1.15rem;
+}
+
+.app-confirm .home-action {
+  min-width: 7.5rem;
+  cursor: pointer;
+}
+
+.app-confirm .home-action:disabled,
+.app-confirm .home-action[disabled] {
+  cursor: not-allowed;
+}
+
+@keyframes app-alert-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes app-alert-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-8px); }
+}
+
+/* Single coral focus for form controls. Unlayered so it overrides @tailwindcss/forms rings. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]),
+textarea,
+select {
+  --tw-ring-color: transparent;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]):focus,
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]):focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+select:focus-visible {
+  outline: none;
+  outline-offset: 0;
+  border-color: #e65e48;
+  --tw-ring-inset: ;
+  --tw-ring-offset-width: 0px;
+  --tw-ring-offset-color: transparent;
+  --tw-ring-color: transparent;
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+  box-shadow: 0 0 0 1px #e65e48;
+}
+
+input[type="checkbox"]:focus,
+input[type="checkbox"]:focus-visible,
+input[type="radio"]:focus,
+input[type="radio"]:focus-visible {
+  outline: 2px solid #e65e48;
+  outline-offset: 2px;
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+  box-shadow: none;
+}
+
+button:focus-visible,
+[type="submit"]:focus-visible,
+[type="button"]:focus-visible,
+[type="reset"]:focus-visible {
+  outline: 2px solid #e65e48;
+  outline-offset: 2px;
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
 }

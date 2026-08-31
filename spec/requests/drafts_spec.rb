@@ -45,7 +45,10 @@ RSpec.describe "Participant feedback", type: :request do
     expect(save_buttons.size).to eq(1)
     expect(response.parsed_body.at_css("header nav").text).to include("Home")
     expect(response.parsed_body.at("h1").text).to eq("Retro")
-    expect(response.parsed_body.at("p.text-slate-500").text.gsub(/\s+/, " ").strip).to eq("Platform · Sprint 12 · Draft")
+    meta = response.parsed_body.at(".session-meta").text.gsub(/\s+/, " ").strip
+    expect(meta).to include("Platform")
+    expect(meta).to include("Sprint 12")
+    expect(meta).to include("Draft")
 
     post save_participant_retrospective_drafts_path(setup[:retro]), params: {
       new_drafts: {
@@ -300,16 +303,15 @@ RSpec.describe "Participant feedback", type: :request do
 
     sign_in(setup[:alice])
     get participant_retrospective_path(setup[:retro])
-    expect(response.body).to include("Submit Feedback")
-    expect(response.body).to include(new_participant_retrospective_submission_path(setup[:retro]))
+    page = CGI.unescapeHTML(response.body)
+    expect(page).to include("Submit Feedback")
+    expect(page).to include("Submit your feedback?")
+    expect(page).to include("Once submitted, you won't be able to edit your feedback.")
+    expect(page).to include(participant_retrospective_submission_path(setup[:retro]))
+    expect(page).not_to include(new_participant_retrospective_submission_path(setup[:retro]))
 
     get new_participant_retrospective_submission_path(setup[:retro])
-    expect(response).to have_http_status(:ok)
-    expect(response.body).to include("Submit your feedback?")
-    expect(response.body).to include("Once submitted, you won't be able to edit your feedback.")
-    cancel = response.parsed_body.css("a").find { |anchor| anchor.text.strip == "Cancel" }
-    expect(cancel).to be_present
-    expect(cancel["href"]).to eq(participant_retrospective_path(setup[:retro]))
+    expect(response).to redirect_to(participant_retrospective_path(setup[:retro]))
 
     get participant_retrospective_path(setup[:retro])
     expect(setup[:alice_participation].reload).not_to be_submitted

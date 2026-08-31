@@ -1,5 +1,4 @@
 <% content_for :full_bleed, true %>
-<% content_for :embedded_flash, true %>
 <% content_for :head do %>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,10 +18,6 @@
 
     <div class="home-hero-panel flex items-center justify-center px-5 py-10 sm:px-8 lg:px-10">
       <div class="login-form-card">
-        <% flash.each do |type, message| %>
-          <p class="login-alert login-alert-<%= type %>" role="alert"><%= message %></p>
-        <% end %>
-
         <%= form_with url: session_path, class: "space-y-5" do %>
           <div>
             <%= label_tag :email, "Email", class: "mb-2 block text-sm font-semibold text-ink" %>

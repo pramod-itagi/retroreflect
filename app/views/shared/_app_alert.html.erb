@@ -1,0 +1,46 @@
+<%
+  messages = Array(local_assigns[:messages]).compact_blank
+  alert_classes = {
+    "success" => "app-alert app-alert-success",
+    "error" => "app-alert app-alert-error",
+    "warning" => "app-alert app-alert-warning"
+  }
+%>
+<div class="<%= alert_classes.fetch(kind.to_s) %>"
+     role="alert"
+     data-controller="alert"
+     data-alert-autohide-value="<%= local_assigns.fetch(:autohide, true) %>">
+  <span class="app-alert-icon" aria-hidden="true">
+    <% if kind == "success" %>
+      <svg viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="10" r="8.25" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M6.4 10.3 8.7 12.6 13.6 7.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    <% elsif kind == "warning" %>
+      <svg viewBox="0 0 20 20" fill="none">
+        <path d="M10 3.4 2.6 16.2h14.8L10 3.4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M10 8.2v4.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="10" cy="14.4" r="0.8" fill="currentColor"/>
+      </svg>
+    <% else %>
+      <svg viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="10" r="8.25" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M7.4 7.4 12.6 12.6M12.6 7.4 7.4 12.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+    <% end %>
+  </span>
+  <div class="app-alert-body">
+    <% if messages.many? %>
+      <ul>
+        <% messages.each do |item| %>
+          <li><%= item %></li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p><%= messages.first || message %></p>
+    <% end %>
+  </div>
+  <button type="button" class="app-alert-dismiss" data-action="alert#dismiss" aria-label="Dismiss">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>

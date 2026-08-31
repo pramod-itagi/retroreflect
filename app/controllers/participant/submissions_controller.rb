@@ -4,6 +4,7 @@ module Participant
 
     def new
       authorize!(@retrospective, :submit_notes?)
+      redirect_to participant_retrospective_path(@retrospective)
     end
 
     def create

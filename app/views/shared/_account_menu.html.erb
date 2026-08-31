@@ -1,0 +1,39 @@
+<div class="app-account" data-controller="account-menu">
+  <button type="button"
+          class="app-account-trigger"
+          data-account-menu-target="button"
+          data-action="account-menu#toggle"
+          aria-haspopup="menu"
+          aria-expanded="false"
+          aria-controls="account-menu">
+    <span class="app-account-name"><%= current_user.display_name %></span>
+    <svg class="app-account-chevron" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <path d="M2.4 4.4 6 8l3.6-3.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+
+  <div id="account-menu"
+       class="app-account-menu"
+       data-account-menu-target="menu"
+       role="menu"
+       aria-label="Account"
+       hidden>
+    <div class="app-account-menu-header">
+      <p class="app-account-menu-name"><%= current_user.display_name %></p>
+      <button type="button"
+              class="app-account-close"
+              data-action="account-menu#close"
+              aria-label="Close account menu">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="app-account-menu-list">
+      <%= button_to "Sign out",
+                    session_path,
+                    method: :delete,
+                    role: "menuitem",
+                    class: "app-account-menu-item",
+                    form_class: "app-account-menu-form" %>
+    </div>
+  </div>
+</div>

@@ -42,7 +42,9 @@ RSpec.describe "Retrospective reveal", type: :request do
     get facilitator_retrospective_path(setup[:retro])
     expect(response.body).to include("0 of 10 participants have submitted feedback.")
     expect(reveal_button["disabled"]).to be_present
-    expect(response.body).to include("Reveal will be enabled after at least one participant submits feedback.")
+    tooltip = response.parsed_body.at_css("[role='tooltip']")
+    expect(tooltip.text).to include("Reveal will be enabled after at least one participant submits feedback.")
+    expect(response.body).not_to include("<p class=\"mt-3 max-w-xs")
 
     post reveal_facilitator_retrospective_path(setup[:retro])
     expect(response).to redirect_to(facilitator_retrospective_path(setup[:retro]))

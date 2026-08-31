@@ -1,0 +1,33 @@
+<header class="app-header">
+  <div class="app-header-inner">
+    <%= link_to root_path, class: "app-brand" do %>
+      <span class="app-brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="16" fill="#e65e48"/>
+          <path d="M11.2 16.2a4.8 4.8 0 1 0 1.4-3.4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/>
+          <path d="M9.4 9.8v4.05h4.05" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="app-brand-name">Retroreflect</span>
+    <% end %>
+
+    <% if authenticated? %>
+      <nav class="app-nav" aria-label="Main">
+        <%= nav_link "Home", root_path %>
+        <%= nav_link "Teams", facilitator_teams_path %>
+        <%= nav_link "Retrospectives", retrospectives_path %>
+        <%= nav_link "Actions", participant_action_items_path %>
+        <% if current_user.system_admin? %>
+          <%= nav_link "System Administration", system_admin_root_path %>
+        <% end %>
+      </nav>
+
+      <%= render "shared/account_menu" %>
+    <% else %>
+      <nav class="app-nav app-nav-auth" aria-label="Account">
+        <%= nav_link "Sign in", new_session_path %>
+        <%= link_to "Register", new_registration_path, class: "app-header-register" %>
+      </nav>
+    <% end %>
+  </div>
+</header>

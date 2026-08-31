@@ -11,11 +11,26 @@ module ApplicationHelper
     user&.display_name || "Unknown User"
   end
 
-  def flash_class(type)
+  def app_alert_kind(type)
     case type.to_s
-    when "notice" then "bg-teal-50 text-teal-900 border-teal-200"
-    else "bg-red-50 text-red-900 border-red-200"
+    when "notice", "success" then "success"
+    when "warning" then "warning"
+    else "error"
     end
+  end
+
+  def app_alert(kind:, message: nil, messages: nil, autohide: true)
+    render partial: "shared/app_alert", locals: { kind: kind.to_s, message: message, messages: messages, autohide: autohide }
+  end
+
+  def render_app_alerts
+    safe_join(
+      flash.filter_map do |type, message|
+        next if message.blank?
+
+        app_alert(kind: app_alert_kind(type), message: message)
+      end
+    )
   end
 
   def category_label(category)
@@ -62,10 +77,16 @@ module ApplicationHelper
   end
 
   def nav_link(name, path)
-    active = current_page?(path)
-    html_options = { class: active ? "font-semibold text-[#10211d]" : "text-slate-600 hover:text-slate-900" }
+    active = nav_link_active?(path)
+    html_options = { class: ["app-nav-link", ("is-active" if active)].compact.join(" ") }
     html_options[:aria] = { current: "page" } if active
     link_to name, path, html_options
+  end
+
+  def nav_link_active?(path)
+    return current_page?(root_path) if path == root_path
+
+    current_page?(path) || request.path.start_with?("#{path}/")
   end
 
   def action_item_overdue?(item)
