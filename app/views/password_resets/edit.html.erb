@@ -1,21 +1,41 @@
-<p class="mb-2 text-sm text-slate-500"><%= back_link new_session_path, "sign in" %></p>
-<h1 class="mb-6 text-2xl font-semibold">Choose a new password</h1>
-
-<%= form_with model: @user, url: password_reset_path(token: params[:token]), method: :patch, class: "max-w-md space-y-4" do |form| %>
-  <% if @user.errors.any? %>
-    <ul class="list-disc pl-5 text-sm text-red-700">
-      <% @user.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
-      <% end %>
-    </ul>
-  <% end %>
-  <div>
-    <%= form.label :password, class: "mb-1 block text-sm font-medium" %>
-    <%= form.password_field :password, required: true, class: "w-full rounded border border-slate-300 px-3 py-2" %>
-  </div>
-  <div>
-    <%= form.label :password_confirmation, class: "mb-1 block text-sm font-medium" %>
-    <%= form.password_field :password_confirmation, required: true, class: "w-full rounded border border-slate-300 px-3 py-2" %>
-  </div>
-  <%= form.submit "Update password", class: "rounded bg-teal-700 px-4 py-2 text-white hover:bg-teal-800" %>
+<% content_for :full_bleed, true %>
+<% content_for :head do %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <% end %>
+
+<div class="login-page workspace-shell">
+  <section class="mx-auto grid min-h-[calc(100vh-5.5rem)] max-w-7xl grid-cols-1 lg:grid-cols-[1.04fr_0.96fr]">
+    <div class="flex flex-col justify-center px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
+      <p class="mb-5">
+        <%= link_to "Back to sign in", new_session_path, class: "home-quiet-link" %>
+      </p>
+      <p class="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-ink">
+        <span class="inline-block h-2 w-2 rounded-full bg-coral" aria-hidden="true"></span>
+        Retroreflect
+      </p>
+      <h1 class="display-face max-w-xl text-4xl font-bold leading-[0.98] tracking-[-0.045em] text-ink sm:text-5xl">Choose a new password</h1>
+    </div>
+
+    <div class="home-hero-panel flex items-center justify-center px-5 py-10 sm:px-8 lg:px-10">
+      <div class="login-form-card">
+        <%= form_with model: @user, url: password_reset_path(token: params[:token]), method: :patch, class: "space-y-5" do |form| %>
+          <% if @user.errors.any? %>
+            <%= app_alert(kind: "error", messages: @user.errors.full_messages, autohide: false) %>
+          <% end %>
+
+          <div>
+            <%= form.label :password, class: "mb-2 block text-sm font-semibold text-ink" %>
+            <%= form.password_field :password, required: true, autocomplete: "new-password", class: "login-field" %>
+          </div>
+          <div>
+            <%= form.label :password_confirmation, class: "mb-2 block text-sm font-semibold text-ink" %>
+            <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", class: "login-field" %>
+          </div>
+          <%= form.submit "Update password", class: "home-action home-action-primary mt-1" %>
+        <% end %>
+      </div>
+    </div>
+  </section>
+</div>

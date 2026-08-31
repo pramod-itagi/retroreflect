@@ -1,5 +1,4 @@
 <% content_for :full_bleed, true %>
-<% content_for :embedded_flash, true %>
 <% content_for :head do %>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,13 +22,7 @@
       <div class="login-form-card">
         <%= form_with model: @user, url: registrations_path, class: "space-y-4" do |form| %>
           <% if @user.errors.any? %>
-            <div class="login-alert login-alert-alert" role="alert">
-              <ul>
-                <% @user.errors.full_messages.each do |message| %>
-                  <li><%= message %></li>
-                <% end %>
-              </ul>
-            </div>
+            <%= app_alert(kind: "error", messages: @user.errors.full_messages, autohide: false) %>
           <% end %>
 
           <div>

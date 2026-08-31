@@ -24,16 +24,14 @@
       <% if @memberships.any? %>
         <ul class="home-card mt-5 divide-y divide-[var(--line)] overflow-hidden">
           <% @memberships.each do |membership| %>
-            <li class="flex flex-col gap-2 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-              <div class="min-w-0">
-                <p class="break-words font-semibold text-ink"><%= display_name_for(membership.user) %></p>
-                <p class="mt-1.5">
-                  <span class="<%= membership.facilitator? ? 'inline-flex rounded-full bg-ink px-2.5 py-0.5 text-xs font-semibold text-white' : 'inline-flex rounded-full bg-sand px-2.5 py-0.5 text-xs font-semibold text-ink' %>">
-                    <%= membership.role.humanize %>
-                  </span>
-                </p>
+            <li class="member-row">
+              <div class="member-row-main">
+                <p class="member-row-name"><%= display_name_for(membership.user) %></p>
+                <span class="<%= membership.facilitator? ? 'inline-flex rounded-full bg-ink px-2.5 py-0.5 text-xs font-semibold text-white' : 'inline-flex rounded-full bg-sand px-2.5 py-0.5 text-xs font-semibold text-ink' %>">
+                  <%= membership.role.humanize %>
+                </span>
               </div>
-              <span class="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <span class="member-row-actions">
                 <% if membership.member? %>
                   <%= button_to "Make Facilitator",
                                 facilitator_team_membership_path(@team, membership),
