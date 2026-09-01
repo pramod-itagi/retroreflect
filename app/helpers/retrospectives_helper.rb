@@ -3,6 +3,17 @@ module RetrospectivesHelper
     params[:team_id].present? || params[:status].present? || params[:q].to_s.strip.present?
   end
 
+  def retrospective_section_visible?(variant)
+    selected = params[:status].to_s
+    selected.blank? || selected == variant.to_s
+  end
+
+  def retrospective_listing_generic_empty?
+    return false if params[:status].present?
+
+    retrospective_listing_filters_applied? && @active.empty? && @drafts.empty? && @previous.empty?
+  end
+
   def retrospective_status_badge_classes(status)
     base = "inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold"
     case status.to_s

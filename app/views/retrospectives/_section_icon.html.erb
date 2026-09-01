@@ -1,0 +1,15 @@
+<%# locals: variant %>
+<% case variant.to_s
+   when "active" %>
+  <span class="retros-section-icon retros-section-icon-active" aria-hidden="true">
+    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="8 5 20 12 8 19"/></svg>
+  </span>
+<% when "draft" %>
+  <span class="retros-section-icon retros-section-icon-draft" aria-hidden="true">
+    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
+  </span>
+<% else %>
+  <span class="retros-section-icon retros-section-icon-previous" aria-hidden="true">
+    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16v3H4z"/><path d="M6 11v8h12v-8"/><path d="M10 15h4"/></svg>
+  </span>
+<% end %>

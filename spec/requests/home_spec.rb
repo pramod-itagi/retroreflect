@@ -109,6 +109,20 @@ RSpec.describe "Home dashboard", type: :request do
     expect(nav).not_to include("System Administration")
     expect(nav).not_to include("Previous Retros")
     expect(nav).not_to include("Action items")
+
+    footer = response.parsed_body.at_css("footer")
+    expect(footer).to be_present
+    expect(footer.text).to include("Retroreflect — built for the teams doing the work.")
+    expect(footer.text).to include("© 2026 Retroreflect")
+    expect(footer.text).to include("Contact")
+    contact = footer.at_css("a")
+    expect(contact).to be_present
+    expect(contact.text.strip).to eq("Contact")
+    expect(contact["href"]).to eq("https://github.com/pramod-itagi/retroreflect")
+    expect(footer.css("a").size).to eq(1)
+    expect(footer.text).not_to include("How it works")
+    expect(footer.text).not_to include("Our approach")
+    expect(footer.text).not_to include("Back to the beginning")
   end
 
   it "lets a member continue an in-progress retrospective without team-management actions" do

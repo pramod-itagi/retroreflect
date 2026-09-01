@@ -52,6 +52,9 @@ RSpec.describe "Retrospectives listing", type: :request do
     expect(response.body).to include("Active")
     expect(response.body).to include("Drafts")
     expect(response.body).to include("Previous")
+    expect(response.body).to include("In progress with your team.")
+    expect(response.body).to include("Captured ideas waiting for a moment to begin.")
+    expect(response.body).to include("A record of the conversations that moved the work forward.")
     expect(response.body).to include("Sprint 24 collecting")
     expect(response.body).to include("Sprint 25 draft")
     expect(response.body).to include("Sprint 23 closed")
@@ -94,8 +97,29 @@ RSpec.describe "Retrospectives listing", type: :request do
     sign_in(setup[:jordan])
     get retrospectives_path, params: { status: "draft" }
     expect(response.body).to include("Sprint 25 draft")
+    expect(response.body).to include("Captured ideas waiting for a moment to begin.")
     expect(response.body).not_to include("Sprint 24 collecting")
     expect(response.body).not_to include("Sprint 23 closed")
+    expect(response.body).not_to include("Current work")
+    expect(response.body).not_to include("In progress with your team.")
+    expect(response.body).not_to include("History")
+    expect(response.body).not_to include("A record of the conversations that moved the work forward.")
+
+    get retrospectives_path, params: { status: "active" }
+    expect(response.body).to include("Sprint 24 collecting")
+    expect(response.body).to include("Current work")
+    expect(response.body).not_to include("Sprint 25 draft")
+    expect(response.body).not_to include("Unfinished")
+    expect(response.body).not_to include("Captured ideas waiting for a moment to begin.")
+    expect(response.body).not_to include("History")
+
+    get retrospectives_path, params: { status: "previous" }
+    expect(response.body).to include("Sprint 23 closed")
+    expect(response.body).to include("History")
+    expect(response.body).not_to include("Sprint 24 collecting")
+    expect(response.body).not_to include("Sprint 25 draft")
+    expect(response.body).not_to include("Current work")
+    expect(response.body).not_to include("Unfinished")
 
     get retrospectives_path, params: { q: "Sprint 23" }
     expect(response.body).to include("Sprint 23 closed")

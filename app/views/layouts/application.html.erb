@@ -13,7 +13,7 @@
     <%= javascript_importmap_tags %>
     <%= yield :head %>
   </head>
-  <body class="min-h-screen bg-slate-50 text-slate-900 <%= yield(:body_class) %>">
+  <body class="app-body min-h-screen bg-slate-50 text-slate-900 <%= yield(:body_class) %>">
     <%= render "shared/navbar" %>
 
     <div class="app-alerts home-flash-bar" aria-live="polite">
@@ -22,13 +22,15 @@
     <%= render "shared/confirm_modal" %>
 
     <% if content_for?(:full_bleed) %>
-      <main>
+      <main class="app-main">
         <%= yield %>
       </main>
     <% else %>
-      <main class="mx-auto max-w-6xl px-4 py-8">
+      <main class="app-main mx-auto w-full max-w-6xl px-4 py-8">
         <%= yield %>
       </main>
     <% end %>
+
+    <%= render "shared/footer" %>
   </body>
 </html>
