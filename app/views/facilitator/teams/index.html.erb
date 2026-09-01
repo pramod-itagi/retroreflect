@@ -5,43 +5,44 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <% end %>
 
-<div class="workspace-page workspace-shell">
-  <div class="workspace-container">
-    <p class="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-ink">
-      <span class="inline-block h-2 w-2 rounded-full bg-coral" aria-hidden="true"></span>
-      Your workspace
-    </p>
-    <h1 class="display-face text-4xl font-bold leading-[0.98] tracking-[-0.045em] text-ink sm:text-5xl">Teams</h1>
-    <p class="mt-3 max-w-xl text-lg leading-7 text-[#39514a]">Manage the teams you facilitate and keep their retrospectives moving.</p>
+<div class="workspace-page workspace-shell listing-page">
+  <div class="listing-inner">
+    <header class="listing-intro">
+      <p class="listing-kicker">Your workspace</p>
+      <h1 class="display-face listing-heading">Teams</h1>
+      <p class="listing-lede">Manage the teams you facilitate and keep their retrospectives moving.</p>
+    </header>
 
-    <% if @teams.any? %>
-      <ul class="mt-6 grid gap-4">
-        <% @teams.each do |team| %>
-          <% retrospective = team.running_retrospective %>
-          <li>
-            <article class="home-card flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-              <div class="min-w-0">
-                <%= link_to team.name, facilitator_team_path(team), class: "display-face break-words text-2xl font-bold leading-tight text-ink hover:text-coral" %>
-                <p class="mt-2 text-sm leading-6 text-[#466057]"><%= pluralize(team.member_count, "member") %></p>
-                <p class="mt-1 text-sm leading-6 text-[#466057]">
-                  <% if retrospective.present? %>
-                    <%= retrospective.title %>
-                    · <span class="<%= home_status_badge_classes(retrospective.status) %>"><%= retrospective.status.humanize %></span>
-                  <% else %>
-                    No active retrospective
-                  <% end %>
-                </p>
-              </div>
-              <%= link_to "Open team", facilitator_team_path(team), class: "#{home_primary_button_classes} shrink-0" %>
-            </article>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <div class="home-card mt-6 px-6 py-5">
-        <p class="font-semibold text-ink">No teams yet</p>
-        <p class="mt-2 leading-6 text-[#466057]">You don't have any teams assigned to you yet.</p>
-      </div>
-    <% end %>
+    <div class="listing-stack">
+      <% if @teams.any? %>
+        <ul class="grid gap-4">
+          <% @teams.each do |team| %>
+            <% retrospective = team.running_retrospective %>
+            <li>
+              <article class="home-card flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+                <div class="min-w-0">
+                  <%= link_to team.name, facilitator_team_path(team), class: "display-face break-words text-2xl font-bold leading-tight text-ink hover:text-coral" %>
+                  <p class="mt-2 text-sm leading-6 text-[#466057]"><%= pluralize(team.member_count, "member") %></p>
+                  <p class="mt-1 text-sm leading-6 text-[#466057]">
+                    <% if retrospective.present? %>
+                      <%= retrospective.title %>
+                      · <span class="<%= home_status_badge_classes(retrospective.status) %>"><%= retrospective.status.humanize %></span>
+                    <% else %>
+                      No active retrospective
+                    <% end %>
+                  </p>
+                </div>
+                <%= link_to "Open team", facilitator_team_path(team), class: "#{home_primary_button_classes} shrink-0" %>
+              </article>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <div class="home-card px-6 py-5">
+          <p class="font-semibold text-ink">No teams yet</p>
+          <p class="mt-2 leading-6 text-[#466057]">You don't have any teams assigned to you yet.</p>
+        </div>
+      <% end %>
+    </div>
   </div>
 </div>

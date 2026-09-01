@@ -5,18 +5,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <% end %>
 
-<div class="login-page workspace-shell">
-  <section class="mx-auto grid min-h-[calc(100vh-5.5rem)] max-w-7xl grid-cols-1 lg:grid-cols-[1.04fr_0.96fr]">
-    <div class="flex flex-col justify-center px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
-      <p class="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-ink">
-        <span class="inline-block h-2 w-2 rounded-full bg-coral" aria-hidden="true"></span>
-        Retroreflect
-      </p>
-      <h1 class="display-face max-w-xl text-4xl font-bold leading-[0.98] tracking-[-0.045em] text-ink sm:text-5xl">Sign in</h1>
-      <p class="mt-4 max-w-md text-lg leading-7 text-[#39514a]">Continue to your team's reflections.</p>
+<div class="login-page auth-screen workspace-shell">
+  <section class="auth-split">
+    <div class="auth-copy">
+      <div class="auth-copy-inner">
+        <p class="auth-kicker">
+          <span class="auth-kicker-dot" aria-hidden="true"></span>
+          Retroreflect
+        </p>
+        <h1 class="display-face auth-heading">Sign in</h1>
+        <p class="auth-lede">Continue to your team's reflections.</p>
+      </div>
     </div>
 
-    <div class="home-hero-panel flex items-center justify-center px-5 py-10 sm:px-8 lg:px-10">
+    <div class="auth-panel">
       <div class="login-form-card">
         <%= form_with url: session_path, class: "space-y-5" do %>
           <div>

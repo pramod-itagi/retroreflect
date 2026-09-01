@@ -1,15 +1,15 @@
 <%# locals: retrospective, facilitated, variant %>
 <% previous = variant.to_s == "previous" %>
 <li>
-  <article class="home-card workspace-card-interactive <%= previous ? 'px-6 py-4' : 'px-6 py-5' %>">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+  <article class="retros-card workspace-card-interactive">
+    <div class="retros-card-body">
       <div class="min-w-0">
         <% if previous %>
-          <p class="break-words text-lg font-semibold leading-snug text-ink"><%= retrospective.title %></p>
+          <p class="retros-card-title-quiet"><%= retrospective.title %></p>
         <% else %>
-          <h3 class="display-face break-words text-2xl font-bold leading-tight text-ink"><%= retrospective.title %></h3>
+          <h3 class="display-face retros-card-title"><%= retrospective.title %></h3>
         <% end %>
-        <p class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-[#466057]">
+        <p class="retros-card-meta">
           <span><%= retrospective.team.name %></span>
           <% if retrospective.sprint_label.present? %>
             <span aria-hidden="true">·</span>
@@ -28,7 +28,7 @@
       </div>
       <% label, path = retrospective_cta_parts(retrospective, facilitated: facilitated) %>
       <% if path.present? %>
-        <%= link_to label, path, class: retrospective_listing_cta_classes(variant) %>
+        <%= link_to label, path, class: "#{retrospective_listing_cta_classes(variant)} retros-card-cta" %>
       <% end %>
     </div>
   </article>

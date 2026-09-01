@@ -1,38 +1,58 @@
-<p class="mb-2 text-sm text-slate-500"><%= back_link system_admin_root_path, "system administration" %></p>
-<div class="mb-6">
-  <h1 class="text-2xl font-semibold">System Admins</h1>
-</div>
-
-<ul class="mb-8 divide-y divide-slate-200 rounded border border-slate-200 bg-white">
-  <% @system_admins.each do |admin| %>
-    <li class="flex items-center justify-between px-4 py-3 text-sm">
-      <span><%= admin.display_name %> · <%= admin.email %></span>
-      <% if admin.last_system_admin? %>
-        <span class="text-slate-400">At least one System Admin must remain.</span>
-      <% else %>
-        <%= button_to "Remove",
-                      system_admin_admin_path(admin),
-                      method: :delete,
-                      class: "text-slate-500 hover:text-red-700" %>
-      <% end %>
-    </li>
-  <% end %>
-</ul>
-
-<% if @candidate_users.any? %>
-  <%= form_with url: system_admin_admins_path, class: "flex flex-wrap items-start gap-3" do %>
-    <div class="flex w-full min-w-40 flex-col gap-1 sm:w-auto">
-      <%= label_tag :user_id, "Add System Admin", class: "text-sm font-medium leading-5" %>
-      <%= select_tag :user_id,
-                     options_from_collection_for_select(@candidate_users, :id, :display_name),
-                     prompt: "Select a confirmed user",
-                     class: "h-10 w-full min-w-0 rounded border border-slate-300 py-2 pl-3 pr-10 text-sm sm:w-72" %>
-    </div>
-    <div class="flex w-full flex-col gap-1 sm:w-auto">
-      <span class="hidden text-sm font-medium leading-5 sm:block sm:invisible" aria-hidden="true">Add</span>
-      <%= submit_tag "Add", class: "h-10 w-full rounded bg-slate-900 px-3 text-sm text-white sm:w-auto" %>
-    </div>
-  <% end %>
-<% else %>
-  <p class="text-sm text-slate-500">Everyone with a confirmed account is already a System Admin.</p>
+<% content_for :full_bleed, true %>
+<% content_for :head do %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <% end %>
+
+<div class="workspace-page workspace-shell listing-page admin-page">
+  <div class="listing-inner">
+    <header class="listing-intro">
+      <p class="listing-back">
+        <%= link_to "Back to system administration", system_admin_root_path, class: home_quiet_link_classes %>
+      </p>
+      <p class="listing-kicker">Administration</p>
+      <h1 class="display-face listing-heading">System Admins</h1>
+      <p class="listing-lede">People who can create teams and manage administrators.</p>
+    </header>
+
+    <div class="listing-stack">
+      <ul class="home-section-list">
+        <% @system_admins.each do |admin| %>
+          <li>
+            <article class="home-card admin-row flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <p class="min-w-0 text-ink">
+                <span class="font-semibold"><%= admin.display_name %></span>
+                <span class="text-[#466057]"> · <%= admin.email %></span>
+              </p>
+              <% if admin.last_system_admin? %>
+                <p class="admin-constraint shrink-0">At least one System Admin must remain.</p>
+              <% else %>
+                <%= button_to "Remove",
+                              system_admin_admin_path(admin),
+                              method: :delete,
+                              class: "text-sm font-semibold text-[#466057] hover:text-coral",
+                              form_class: "shrink-0" %>
+              <% end %>
+            </article>
+          </li>
+        <% end %>
+      </ul>
+
+      <% if @candidate_users.any? %>
+        <%= form_with url: system_admin_admins_path, class: "home-card mt-8 grid gap-4 px-6 py-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end" do %>
+          <div class="flex min-w-0 flex-col gap-1.5">
+            <%= label_tag :user_id, "Add System Admin", class: "text-xs font-semibold uppercase tracking-[0.12em] text-[#466057]" %>
+            <%= select_tag :user_id,
+                           options_from_collection_for_select(@candidate_users, :id, :display_name),
+                           prompt: "Select a confirmed user",
+                           class: "workspace-filter-field pr-10" %>
+          </div>
+          <%= submit_tag "Add", class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto" %>
+        <% end %>
+      <% else %>
+        <p class="mt-8 text-sm leading-6 text-[#466057]">Everyone with a confirmed account is already a System Admin.</p>
+      <% end %>
+    </div>
+  </div>
+</div>

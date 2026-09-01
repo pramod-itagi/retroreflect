@@ -1,36 +1,58 @@
-<div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-  <div>
-    <p class="text-sm text-slate-500"><%= back_link system_admin_root_path, "system administration" %></p>
-    <h1 class="text-2xl font-semibold">Teams</h1>
+<% content_for :full_bleed, true %>
+<% content_for :head do %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<% end %>
+
+<div class="workspace-page workspace-shell listing-page admin-page">
+  <div class="listing-inner">
+    <header class="listing-intro">
+      <p class="listing-back">
+        <%= link_to "Back to system administration", system_admin_root_path, class: home_quiet_link_classes %>
+      </p>
+      <p class="listing-kicker">Administration</p>
+      <div class="admin-heading-row">
+        <h1 class="display-face listing-heading">Teams</h1>
+        <%= link_to "Create Team", new_system_admin_team_path, class: "#{home_primary_button_classes} shrink-0" %>
+      </div>
+    </header>
+
+    <div class="listing-stack">
+      <section>
+        <h2 class="display-face home-section-title">Active teams</h2>
+        <% if @active_teams.any? %>
+          <ul class="home-section-list">
+            <% @active_teams.each do |team| %>
+              <li>
+                <article class="home-card admin-row flex items-baseline justify-between gap-4 px-6 py-4">
+                  <%= link_to team.name, system_admin_team_path(team), class: "min-w-0 truncate font-semibold text-ink hover:text-coral" %>
+                  <span class="shrink-0 text-sm text-[#466057]"><%= pluralize(team.member_count, "member") %></span>
+                </article>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="mt-5 text-sm leading-6 text-[#466057]">No active teams.</p>
+        <% end %>
+      </section>
+
+      <section class="mt-12 lg:mt-14">
+        <h2 class="display-face home-section-title">Archived teams</h2>
+        <% if @archived_teams.any? %>
+          <ul class="home-section-list">
+            <% @archived_teams.each do |team| %>
+              <li>
+                <article class="home-card px-6 py-4">
+                  <p class="font-semibold text-ink"><%= team.name_for_select %></p>
+                </article>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="mt-5 text-sm leading-6 text-[#466057]">No archived teams.</p>
+        <% end %>
+      </section>
+    </div>
   </div>
-  <%= link_to "Create Team", new_system_admin_team_path, class: "rounded bg-teal-700 px-3 py-1.5 text-sm text-white hover:bg-teal-800" %>
 </div>
-
-<section class="mb-10">
-  <h2 class="mb-3 text-lg font-medium">Active teams</h2>
-  <% if @active_teams.any? %>
-    <ul class="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
-      <% @active_teams.each do |team| %>
-        <li class="flex items-center justify-between px-4 py-3 text-sm">
-          <%= link_to team.name, system_admin_team_path(team), class: "font-medium text-teal-800" %>
-          <span class="text-slate-500"><%= pluralize(team.member_count, "member") %></span>
-        </li>
-      <% end %>
-    </ul>
-  <% else %>
-    <p class="text-sm text-slate-500">No active teams.</p>
-  <% end %>
-</section>
-
-<section>
-  <h2 class="mb-3 text-lg font-medium">Archived teams</h2>
-  <% if @archived_teams.any? %>
-    <ul class="divide-y divide-slate-200 rounded border border-slate-200 bg-white">
-      <% @archived_teams.each do |team| %>
-        <li class="px-4 py-3 text-sm text-slate-700"><%= team.name_for_select %></li>
-      <% end %>
-    </ul>
-  <% else %>
-    <p class="text-sm text-slate-500">No archived teams.</p>
-  <% end %>
-</section>

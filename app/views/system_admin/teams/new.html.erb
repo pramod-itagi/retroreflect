@@ -1,27 +1,43 @@
-<p class="mb-2 text-sm text-slate-500"><%= back_link system_admin_teams_path, "teams" %></p>
-<h1 class="mb-6 text-2xl font-semibold">Create Team</h1>
-
-<%= form_with model: @team, url: system_admin_teams_path, class: "max-w-md space-y-4" do |form| %>
-  <% if @team.errors.any? %>
-    <ul class="list-disc rounded border border-red-200 bg-red-50 px-5 py-3 text-sm text-red-800">
-      <% @team.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
-      <% end %>
-    </ul>
-  <% end %>
-  <div>
-    <%= form.label :name, "Team name", class: "mb-1 block text-sm font-medium" %>
-    <%= form.text_field :name, required: true, class: "w-full rounded border border-slate-300 px-3 py-2" %>
-  </div>
-  <div>
-    <%= label_tag :facilitator_id, "Initial Facilitator", class: "mb-1 block text-sm font-medium" %>
-    <%= select_tag :facilitator_id,
-                   options_from_collection_for_select(@candidate_users, :id, :display_name, params[:facilitator_id]),
-                   prompt: "Select a confirmed user",
-                   class: "h-10 w-full rounded border border-slate-300 py-2 pl-3 pr-10 text-sm" %>
-  </div>
-  <div class="flex flex-wrap gap-3">
-    <%= link_to "Cancel", system_admin_teams_path, class: "rounded border border-slate-300 bg-white px-3 py-2 text-sm" %>
-    <%= form.submit "Create Team", class: "rounded bg-teal-700 px-4 py-2 text-sm text-white hover:bg-teal-800" %>
-  </div>
+<% content_for :full_bleed, true %>
+<% content_for :head do %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <% end %>
+
+<div class="workspace-page workspace-shell listing-page admin-page">
+  <div class="listing-inner">
+    <header class="listing-intro">
+      <p class="listing-back">
+        <%= link_to "Back to teams", system_admin_teams_path, class: home_quiet_link_classes %>
+      </p>
+      <p class="listing-kicker">Administration</p>
+      <h1 class="display-face listing-heading">Create Team</h1>
+      <p class="listing-lede">Name the team and choose who will facilitate it.</p>
+    </header>
+
+    <div class="listing-stack">
+      <%= form_with model: @team, url: system_admin_teams_path, class: "admin-form space-y-5" do |form| %>
+        <% if @team.errors.any? %>
+          <%= app_alert(kind: "error", messages: @team.errors.full_messages, autohide: false) %>
+        <% end %>
+
+        <div>
+          <%= form.label :name, "Team name", class: "mb-2 block text-sm font-semibold text-ink" %>
+          <%= form.text_field :name, required: true, class: "workspace-field" %>
+        </div>
+        <div>
+          <%= label_tag :facilitator_id, "Initial Facilitator", class: "mb-2 block text-sm font-semibold text-ink" %>
+          <%= select_tag :facilitator_id,
+                         options_from_collection_for_select(@candidate_users, :id, :display_name, params[:facilitator_id]),
+                         prompt: "Select a confirmed user",
+                         class: "workspace-field" %>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+          <%= link_to "Cancel", system_admin_teams_path, class: "home-action home-action-secondary" %>
+          <%= form.submit "Create Team", class: "#{home_primary_button_classes} cursor-pointer" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

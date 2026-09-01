@@ -7,52 +7,55 @@
 <% end %>
 
 <div class="home-page">
-  <section class="home-content grid grid-cols-1 lg:grid-cols-[1.04fr_0.96fr]">
-    <div class="flex flex-col justify-center px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-      <p class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-ink">
-        <span class="inline-block h-2 w-2 rounded-full bg-coral" aria-hidden="true"></span>
-        The space between sprints
-      </p>
-      <h1 class="display-face max-w-3xl text-4xl font-bold leading-[0.98] tracking-[-0.045em] text-ink sm:text-5xl lg:text-6xl">Make room for what your team is learning.</h1>
-      <p class="mt-4 max-w-xl text-lg leading-7 text-[#39514a]">
-        Retroreflect helps teams pause, notice what went well and what to improve, decide what to continue, and turn that reflection into follow-through.
-      </p>
-      <div class="mt-6 flex items-start gap-4 border-t border-[var(--line)] pt-4">
-        <div class="mt-1 rounded-full bg-[#dce9df] p-2 text-moss" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.3L18 9l-4.4 1.7L12 15l-1.6-4.3L6 9l4.4-1.7L12 3z"/><path d="M19 14l.8 2.1L22 17l-2.2.9L19 20l-.8-2.1L16 17l2.2-.9L19 14z"/></svg>
+  <section class="home-hero">
+    <div class="home-hero-frame">
+      <div class="home-hero-copy">
+        <div class="home-hero-copy-inner">
+          <p class="home-hero-kicker">
+            <span class="inline-block h-2 w-2 rounded-full bg-coral" aria-hidden="true"></span>
+            The space between sprints
+          </p>
+          <h1 class="display-face home-hero-heading">Make room for what your team is learning.</h1>
+          <p class="home-hero-lede">
+            Retroreflect helps teams pause, notice what went well and what to improve, decide what to continue, and turn that reflection into follow-through.
+          </p>
+          <div class="home-hero-note">
+            <div class="home-hero-note-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.3L18 9l-4.4 1.7L12 15l-1.6-4.3L6 9l4.4-1.7L12 3z"/><path d="M19 14l.8 2.1L22 17l-2.2.9L19 20l-.8-2.1L16 17l2.2-.9L19 14z"/></svg>
+            </div>
+            <p>Designed for the honest conversations that make teams stronger—not just another status meeting.</p>
+          </div>
         </div>
-        <p class="max-w-md text-sm leading-6 text-[#496057]">Designed for the honest conversations that make teams stronger—not just another status meeting.</p>
       </div>
-    </div>
-    <div class="home-hero-panel flex items-end px-5 py-7 sm:px-8 lg:px-10 lg:py-8">
-      <aside class="home-reflection-card rounded-sm bg-paper p-5 text-ink" aria-label="Retrospective prompts">
-        <p class="text-xs font-bold uppercase tracking-[0.16em] text-coral">The prompt</p>
-        <p class="display-face mt-3 text-2xl font-bold leading-tight">How should we move forward?</p>
-        <div class="mt-4 flex items-start gap-2 border-t border-[#8a6b49]/30 pt-3 text-sm font-semibold">
-          <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-coral text-white" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
-          </span>
-          <span>What went well. What didn't. What to continue. What to improve.</span>
-        </div>
-      </aside>
+      <div class="home-hero-panel">
+        <%= image_tag "home/team-hands.jpg",
+                      alt: "Team members placing their hands together around a table",
+                      class: "home-hero-image" %>
+        <aside class="home-reflection-card" aria-label="Retrospective prompts">
+          <p class="home-reflection-kicker">The prompt</p>
+          <p class="display-face home-reflection-heading">How should we move forward?</p>
+          <div class="home-reflection-footer">
+            <span class="home-reflection-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
+            </span>
+            <p>What went well. What didn't. What to continue. What to improve.</p>
+          </div>
+        </aside>
+      </div>
     </div>
   </section>
 
-  <section class="w-full border-y border-[var(--line)] bg-[#eee5d7] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-    <div class="home-content">
-      <div class="flex flex-col justify-between gap-3 md:flex-row md:items-end">
-        <div>
-          <p class="text-sm font-bold uppercase tracking-[0.16em] text-coral">Right now</p>
-          <h2 class="display-face mt-2 text-3xl font-bold leading-tight tracking-[-0.035em] text-ink sm:text-4xl">Current retrospective</h2>
-        </div>
-        <p class="max-w-sm text-base leading-6 text-[#466057]">What you can work on now.</p>
-      </div>
+  <% running_work = home_running_work %>
+  <% idle_facilitated_teams = home_idle_facilitated_teams %>
 
-      <% running_work = home_running_work %>
-      <% idle_facilitated_teams = home_idle_facilitated_teams %>
+  <div class="listing-inner home-body">
+    <section class="home-section">
+      <p class="home-section-kicker">Right now</p>
+      <h2 class="display-face home-section-title">Current retrospective</h2>
+      <p class="home-section-lede">What you can work on now.</p>
 
       <% if running_work.any? %>
-        <ul class="mt-6 grid gap-4">
+        <ul class="home-section-list">
           <% running_work.each do |item| %>
             <li>
               <%= render "home/current_retrospective",
@@ -63,78 +66,76 @@
           <% end %>
         </ul>
         <% if idle_facilitated_teams.any? %>
-          <ul class="mt-4 grid gap-4">
+          <ul class="home-section-list">
             <% idle_facilitated_teams.each do |team| %>
               <%= render "home/idle_facilitated_team", team: team %>
             <% end %>
           </ul>
         <% end %>
       <% elsif idle_facilitated_teams.any? %>
-        <ul class="mt-6 grid gap-4">
+        <ul class="home-section-list">
           <% idle_facilitated_teams.each do |team| %>
             <%= render "home/idle_facilitated_team", team: team %>
           <% end %>
         </ul>
       <% else %>
-        <div class="home-card mt-6 px-6 py-5">
+        <div class="home-card home-section-card px-6 py-5">
           <p class="font-semibold text-ink">No active retrospective right now.</p>
           <p class="mt-2 leading-6 text-[#466057]">When a team starts collecting or discussing, it will appear here.</p>
         </div>
       <% end %>
-    </div>
-  </section>
+    </section>
 
-  <section class="px-5 pb-12 pt-8 sm:px-8 lg:px-10 lg:pb-14">
-    <div class="home-content space-y-10">
-      <div>
-        <h2 class="display-face text-3xl font-bold tracking-[-0.035em] text-ink">Your teams</h2>
-        <p class="mt-2 max-w-sm text-base leading-6 text-[#466057]">A concise view of the teams you belong to.</p>
-        <% if @teams.any? %>
-          <ul class="home-card mt-5 divide-y divide-[var(--line)] overflow-hidden">
-            <% @teams.each do |team| %>
-              <li class="flex items-baseline justify-between gap-4 px-6 py-3.5">
-                <div class="min-w-0">
-                  <% if home_facilitator_of?(team) %>
-                    <%= link_to team.name, facilitator_team_path(team), class: "truncate font-semibold text-ink hover:text-coral" %>
-                  <% else %>
-                    <p class="truncate font-semibold text-ink"><%= team.name %></p>
-                  <% end %>
-                </div>
-                <p class="shrink-0 text-sm text-[#466057]"><%= pluralize(team.member_count, "member") %></p>
-              </li>
-            <% end %>
-          </ul>
-        <% else %>
-          <p class="mt-5 text-sm leading-6 text-[#496057]">You are not on any teams yet.</p>
-        <% end %>
-      </div>
-
-      <div>
-        <div class="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 class="display-face text-3xl font-bold tracking-[-0.035em] text-ink">Action items needing attention</h2>
-            <p class="mt-2 max-w-sm text-base leading-6 text-[#466057]">Open action items assigned to you.</p>
-          </div>
-          <%= link_to "View all", participant_action_items_path, class: home_quiet_link_classes %>
+    <section class="home-section">
+      <h2 class="display-face home-section-title">Your teams</h2>
+      <p class="home-section-lede">A concise view of the teams you belong to.</p>
+      <% if @teams.any? %>
+        <ul class="home-card home-section-card divide-y divide-[var(--line)] overflow-hidden">
+          <% @teams.each do |team| %>
+            <li class="flex items-baseline justify-between gap-4 px-6 py-4">
+              <div class="min-w-0">
+                <% if home_facilitator_of?(team) %>
+                  <%= link_to team.name, facilitator_team_path(team), class: "truncate font-semibold text-ink hover:text-coral" %>
+                <% else %>
+                  <p class="truncate font-semibold text-ink"><%= team.name %></p>
+                <% end %>
+              </div>
+              <p class="shrink-0 text-sm text-[#466057]"><%= pluralize(team.member_count, "member") %></p>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <div class="home-card home-section-card px-6 py-5">
+          <p class="font-semibold text-ink">You are not on any teams yet.</p>
         </div>
-        <% if @attention_action_items.any? %>
-          <ul class="home-card mt-5 divide-y divide-[var(--line)] overflow-hidden">
-            <% @attention_action_items.each do |item| %>
-              <li class="px-6 py-3.5">
-                <p class="break-words font-semibold text-ink"><%= item.title %></p>
-                <p class="mt-2 text-sm leading-6 text-[#466057]">
-                  <%= item.team.name %>
-                  · <%= action_status_label(item.status) %>
-                  · due <%= item.due_on %>
-                  <% if item.due_on < Date.current %> · overdue<% end %>
-                </p>
-              </li>
-            <% end %>
-          </ul>
-        <% else %>
-          <p class="mt-5 text-sm leading-6 text-[#496057]">No action items need attention.</p>
-        <% end %>
+      <% end %>
+    </section>
+
+    <section class="home-section">
+      <div class="home-section-heading-row">
+        <h2 class="display-face home-section-title">Action items needing attention</h2>
+        <%= link_to "View all", participant_action_items_path, class: home_quiet_link_classes %>
       </div>
-    </div>
-  </section>
+      <p class="home-section-lede">Open action items assigned to you.</p>
+      <% if @attention_action_items.any? %>
+        <ul class="home-card home-section-card divide-y divide-[var(--line)] overflow-hidden">
+          <% @attention_action_items.each do |item| %>
+            <li class="px-6 py-4">
+              <p class="break-words font-semibold text-ink"><%= item.title %></p>
+              <p class="mt-2 text-sm leading-6 text-[#466057]">
+                <%= item.team.name %>
+                · <%= action_status_label(item.status) %>
+                · due <%= item.due_on %>
+                <% if item.due_on < Date.current %> · overdue<% end %>
+              </p>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <div class="home-card home-section-card px-6 py-5">
+          <p class="font-semibold text-ink">No action items need attention.</p>
+        </div>
+      <% end %>
+    </section>
+  </div>
 </div>
