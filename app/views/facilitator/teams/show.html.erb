@@ -8,7 +8,7 @@
 <div class="workspace-page workspace-shell">
   <div class="workspace-container">
     <p class="mb-5">
-      <%= link_to "Back to teams", facilitator_teams_path, class: home_quiet_link_classes %>
+      <%= back_nav_link facilitator_teams_path, "teams" %>
     </p>
 
     <p class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-ink">
@@ -19,14 +19,14 @@
 
     <section class="mt-8">
       <p class="text-sm font-bold uppercase tracking-[0.16em] text-[#466057]">Members</p>
-      <h2 class="display-face mt-2 text-2xl font-bold leading-tight tracking-[-0.035em] text-ink sm:text-3xl">People</h2>
 
       <% if @memberships.any? %>
         <ul class="home-card mt-5 divide-y divide-[var(--line)] overflow-hidden">
           <% @memberships.each do |membership| %>
+            <% member_name = display_name_for(membership.user) %>
             <li class="member-row">
               <div class="member-row-main">
-                <p class="member-row-name"><%= display_name_for(membership.user) %></p>
+                <p class="member-row-name"><%= member_name %></p>
                 <span class="<%= membership.facilitator? ? 'inline-flex rounded-full bg-ink px-2.5 py-0.5 text-xs font-semibold text-white' : 'inline-flex rounded-full bg-sand px-2.5 py-0.5 text-xs font-semibold text-ink' %>">
                   <%= membership.role.humanize %>
                 </span>
@@ -46,9 +46,19 @@
                                 class: "text-sm font-semibold text-[#466057] hover:text-coral" %>
                 <% end %>
                 <% unless membership.last_current_facilitator? %>
-                  <%= link_to "Remove",
-                              confirm_facilitator_team_membership_path(@team, membership),
-                              class: "text-sm font-semibold text-[#466057] hover:text-coral" %>
+                  <%= button_to "Remove",
+                                facilitator_team_membership_path(@team, membership),
+                                method: :delete,
+                                class: "text-sm font-semibold text-[#466057] hover:text-coral",
+                                form_class: "inline",
+                                form: {
+                                  data: {
+                                    turbo_confirm: "Remove #{member_name} from #{@team.name}?",
+                                    confirm_description: "#{member_name} will no longer be a member of this team.",
+                                    confirm_accept: "Remove",
+                                    confirm_variant: "danger"
+                                  }
+                                } %>
                 <% end %>
               </span>
             </li>
@@ -158,9 +168,11 @@
         </div>
       <% end %>
 
-      <p class="mt-5">
-        <%= link_to "View all action items", participant_action_items_path, class: home_quiet_link_classes %>
-      </p>
+      <% if @action_items.any? %>
+        <p class="mt-5">
+          <%= link_to "View all action items", participant_action_items_path, class: home_quiet_link_classes %>
+        </p>
+      <% end %>
     </section>
 
     <section class="mt-10 border-t border-[var(--line)] pt-8">
@@ -169,7 +181,7 @@
         Archiving removes all current members from this team and prevents new retrospectives. Historical retrospectives and action items are retained.
       </p>
       <div class="mt-5">
-        <%= link_to "Archive Team", new_facilitator_team_archive_path(@team), class: "home-action home-action-danger inline-flex" %>
+        <%= link_to "Archive Team", new_facilitator_team_archive_path(@team), class: "home-action home-action-danger-solid inline-flex" %>
       </div>
     </section>
   </div>

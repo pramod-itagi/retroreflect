@@ -62,7 +62,8 @@ export default class extends Controller {
       const danger = submitter?.dataset?.confirmVariant === "danger"
         || form?.dataset?.confirmVariant === "danger"
         || DANGER_MESSAGES.has(message)
-      this.acceptTarget.classList.toggle("home-action-danger", danger)
+      this.acceptTarget.classList.toggle("home-action-danger", false)
+      this.acceptTarget.classList.toggle("home-action-danger-solid", danger)
       this.acceptTarget.classList.toggle("home-action-primary", !danger)
 
       this.element.classList.add("is-open")

@@ -7,9 +7,9 @@ export default class extends Controller {
     if (event.target.closest("button")) return
 
     this.cardTargets.forEach((card) => {
-      card.classList.remove("ring-2", "ring-ink", "ring-teal-700", "bg-white")
+      card.classList.remove("is-focused", "ring-2", "ring-ink", "ring-teal-700", "bg-white")
       if (card === event.currentTarget && card.dataset.discussed !== "true") {
-        card.classList.add("ring-2", "ring-ink", "bg-white")
+        card.classList.add("is-focused")
       }
     })
   }
@@ -24,9 +24,7 @@ export default class extends Controller {
     const discussed = card.dataset.discussed === "true"
     card.dataset.discussed = discussed ? "false" : "true"
     card.classList.toggle("opacity-50", !discussed)
-    card.classList.toggle("ring-2", false)
-    card.classList.toggle("ring-ink", false)
-    card.classList.toggle("ring-teal-700", false)
+    card.classList.remove("is-focused", "ring-2", "ring-ink", "ring-teal-700")
     event.currentTarget.textContent = discussed ? "Mark discussed" : "Discussed"
   }
 }

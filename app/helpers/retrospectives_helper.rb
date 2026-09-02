@@ -31,7 +31,7 @@ module RetrospectivesHelper
   end
 
   def retrospective_listing_cta_classes(variant)
-    variant.to_s == "previous" ? "home-action home-action-secondary shrink-0" : "#{home_primary_button_classes} shrink-0"
+    "#{home_primary_button_classes} shrink-0"
   end
 
   def participation_status_badge_classes(label)

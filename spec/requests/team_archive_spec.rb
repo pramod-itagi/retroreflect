@@ -247,6 +247,9 @@ RSpec.describe "Team archiving", type: :request do
     sign_in(setup[:jordan])
     get new_facilitator_team_archive_path(setup[:platform])
     expect(response).to have_http_status(:ok)
+    expect(response.parsed_body.at("h1").text).to eq("Archive Platform?")
+    expect(response.body).to include("Platform")
+    expect(response.body).not_to include("Archive this team?")
     expect(response.body).to include("This action cannot be undone.")
 
     get facilitator_team_path(setup[:platform])

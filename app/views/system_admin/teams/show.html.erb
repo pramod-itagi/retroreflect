@@ -9,7 +9,7 @@
   <div class="listing-inner">
     <header class="listing-intro">
       <p class="listing-back">
-        <%= link_to "Back to teams", system_admin_teams_path, class: home_quiet_link_classes %>
+        <%= back_nav_link system_admin_teams_path, "teams" %>
       </p>
       <p class="listing-kicker">Administration</p>
       <h1 class="display-face listing-heading break-words"><%= @team.name %></h1>
@@ -43,7 +43,7 @@
             Archiving removes all current members from this team and prevents new retrospectives. Historical retrospectives and action items are retained.
           </p>
           <div class="mt-5">
-            <%= link_to "Archive Team", new_system_admin_team_archive_path(@team), class: "home-action home-action-danger" %>
+            <%= link_to "Archive Team", new_system_admin_team_archive_path(@team), class: "home-action home-action-danger-solid" %>
           </div>
         </section>
       <% end %>

@@ -41,6 +41,8 @@ RSpec.describe "Home dashboard", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Your teams")
     expect(response.body).to include("Platform")
+    expect(response.body).to include(facilitator_team_path(context[:platform]))
+    expect(response.body).to include("home-team-link")
     expect(response.body).to include("Sprint 24 collecting")
     expect(response.body).to include("Collecting")
     expect(response.body).to include("0 / 1 submitted")
@@ -52,6 +54,7 @@ RSpec.describe "Home dashboard", type: :request do
     expect(response.body).not_to include("Previous Retrospectives")
     expect(response.body).not_to include("Previous Retros")
     expect(response.body).not_to include("Draft retrospectives")
+    expect(response.body).not_to include("View all")
   end
 
   it "lets a facilitator start a retrospective when the team has none running" do
@@ -91,6 +94,7 @@ RSpec.describe "Home dashboard", type: :request do
 
     expect(response.body).to include("Action items needing attention")
     expect(response.body).to include(open_item.title)
+    expect(response.body).to include("View all")
     expect(response.body).not_to include("Old completed work")
   end
 
