@@ -13,7 +13,7 @@
   <div class="workspace-container">
     <div class="max-w-2xl">
       <p class="mb-5">
-        <%= link_to "Back to #{@team.name}", facilitator_team_path(@team), class: home_quiet_link_classes %>
+        <%= back_nav_link facilitator_team_path(@team), @team.name %>
       </p>
 
       <p class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-ink">

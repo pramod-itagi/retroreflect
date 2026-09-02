@@ -237,4 +237,16 @@ RSpec.describe "Action items", type: :request do
     expect(response.body).to include("No action items")
     expect(response.body).not_to include("Fix flaky test")
   end
+
+  it "hides the team View all link when there are no current action items" do
+    facilitator = create_user(name: "Facilitator")
+    team = create_team_with_roles(facilitator: facilitator)
+
+    sign_in(facilitator)
+    get facilitator_team_path(team)
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("No current action items.")
+    expect(response.body).not_to include("View all action items")
+  end
 end

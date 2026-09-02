@@ -95,7 +95,7 @@
             <li class="flex items-baseline justify-between gap-4 px-6 py-4">
               <div class="min-w-0">
                 <% if home_facilitator_of?(team) %>
-                  <%= link_to team.name, facilitator_team_path(team), class: "truncate font-semibold text-ink hover:text-coral" %>
+                  <%= link_to team.name, facilitator_team_path(team), class: "home-team-link truncate" %>
                 <% else %>
                   <p class="truncate font-semibold text-ink"><%= team.name %></p>
                 <% end %>
@@ -114,7 +114,9 @@
     <section class="home-section">
       <div class="home-section-heading-row">
         <h2 class="display-face home-section-title">Action items needing attention</h2>
-        <%= link_to "View all", participant_action_items_path, class: home_quiet_link_classes %>
+        <% if @attention_action_items.any? %>
+          <%= link_to "View all", participant_action_items_path, class: home_quiet_link_classes %>
+        <% end %>
       </div>
       <p class="home-section-lede">Open action items assigned to you.</p>
       <% if @attention_action_items.any? %>

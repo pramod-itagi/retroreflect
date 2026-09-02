@@ -7,9 +7,9 @@
 
 <div class="workspace-page workspace-shell">
   <div class="workspace-container">
-    <p class="mb-5">
-      <%= link_to "Back to #{@team.name}", facilitator_team_path(@team), class: home_quiet_link_classes %>
-    </p>
+      <p class="mb-5">
+        <%= back_nav_link facilitator_team_path(@team), @team.name %>
+      </p>
 
     <p class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-ink">
       <span class="inline-block h-2 w-2 rounded-full bg-coral" aria-hidden="true"></span>
@@ -122,7 +122,7 @@
             <%= label_tag :user_id, "Add team member", class: "text-xs font-semibold uppercase tracking-[0.12em] text-[#466057]" %>
             <%= select_tag :user_id, options_from_collection_for_select(@available_members, :id, :display_name), prompt: "Select member", class: "workspace-filter-field" %>
           </div>
-          <%= submit_tag "Add to roster", class: "home-action home-action-secondary w-full cursor-pointer sm:w-auto" %>
+          <%= submit_tag "Add to roster", class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto" %>
         <% end %>
       <% else %>
         <p class="mt-5 text-sm leading-6 text-[#466057]">Roster is frozen.</p>
@@ -134,8 +134,8 @@
         <p class="text-sm font-bold uppercase tracking-[0.16em] text-coral">Follow-through</p>
         <h2 class="display-face mt-2 text-2xl font-bold leading-tight tracking-[-0.035em] text-ink sm:text-3xl">Action items</h2>
         <div class="mt-5">
-          <%= render "facilitator/action_items/form", team: @team, retrospective: @retrospective, owners: @team.users.active.order(:name) %>
-          <%= render "facilitator/action_items/list", action_items: @retrospective.action_items.includes(:owner) %>
+          <%= render "facilitator/action_items/form", team: @team, retrospective: @retrospective, owners: @team.users.active.order(:name), branded: true %>
+          <%= render "facilitator/action_items/list", action_items: @retrospective.action_items.includes(:owner), branded: true %>
         </div>
       </section>
     <% end %>

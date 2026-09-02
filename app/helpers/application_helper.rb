@@ -1,6 +1,14 @@
 module ApplicationHelper
+  def back_nav_link(path, destination, extra_classes: nil)
+    arrow = %(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="home-back-link-icon"><path d="M10 3.2 4.7 8 10 12.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>).html_safe
+
+    link_to path, class: ["home-back-link", extra_classes].compact.join(" ") do
+      safe_join([arrow, tag.span("Back to #{destination}")], "")
+    end
+  end
+
   def back_link(path, destination)
-    link_to "Back to #{destination}", path, class: "underline"
+    back_nav_link(path, destination)
   end
 
   def can_create_team?
@@ -49,7 +57,7 @@ module ApplicationHelper
     label, path = retrospective_cta_parts(retrospective, facilitated: facilitated)
     return if path.blank?
 
-    link_to label, path, class: "text-sm text-teal-800 underline"
+    link_to label, path, class: "home-quiet-link"
   end
 
   def retrospective_cta_parts(retrospective, facilitated:)

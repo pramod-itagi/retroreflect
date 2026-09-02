@@ -51,13 +51,14 @@ RSpec.describe "Facilitator retrospective setup", type: :request do
 
     sign_in(facilitator)
     get facilitator_team_path(team)
-    expect(response.body).to include(confirm_facilitator_team_membership_path(team, membership))
-    expect(response.body).not_to include("Remove this person?")
-
-    get confirm_facilitator_team_membership_path(team, membership)
-    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Members")
+    expect(response.parsed_body.css("h2").map { |heading| heading.text.strip }).not_to include("People")
     expect(response.body).to include("Remove Alice from #{team.name}?")
     expect(response.body).to include("Alice will no longer be a member of this team.")
+    expect(response.body).to include("data-turbo-confirm")
+    expect(response.body).not_to include(confirm_facilitator_team_membership_path(team, membership))
+    expect(response.body).not_to include("Remove this person?")
+    expect(response.body).to include(facilitator_team_membership_path(team, membership))
 
     get facilitator_team_path(team)
     expect(team.memberships.find_by(user: alice)).to be_present

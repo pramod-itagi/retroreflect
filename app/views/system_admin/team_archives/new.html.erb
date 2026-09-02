@@ -9,10 +9,13 @@
   <div class="listing-inner">
     <header class="listing-intro">
       <p class="listing-back">
-        <%= link_to "Back to #{@team.name}", system_admin_team_path(@team), class: home_quiet_link_classes %>
+        <%= back_nav_link system_admin_team_path(@team), @team.name %>
       </p>
-      <p class="listing-kicker">Administration</p>
-      <h1 class="display-face listing-heading">Archive this team?</h1>
+      <p class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-ink">
+        <span class="inline-block h-2 w-2 rounded-full bg-coral" aria-hidden="true"></span>
+        <%= @team.name %>
+      </p>
+      <h1 class="display-face listing-heading">Archive <%= @team.name %>?</h1>
       <p class="listing-lede">
         Archiving this team will remove all current members from the team. Their user accounts will not be deleted.
         Existing retrospective history and completed action items will be retained. The team will no longer be available
