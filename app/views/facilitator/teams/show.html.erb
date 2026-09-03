@@ -18,49 +18,86 @@
     <h1 class="display-face break-words text-4xl font-bold leading-[0.98] tracking-[-0.045em] text-ink sm:text-5xl"><%= @team.name %></h1>
 
     <section class="mt-8">
-      <p class="text-sm font-bold uppercase tracking-[0.16em] text-[#466057]">Members</p>
+      <h2 class="display-face text-2xl font-bold leading-tight tracking-[-0.035em] text-ink sm:text-3xl">Members</h2>
+      <p class="mt-2 max-w-2xl leading-6 text-[#466057]">Manage who’s part of your team and their roles.</p>
 
       <% if @memberships.any? %>
-        <ul class="home-card mt-5 divide-y divide-[var(--line)] overflow-hidden">
+        <ul class="home-section-list team-member-list">
           <% @memberships.each do |membership| %>
             <% member_name = display_name_for(membership.user) %>
-            <li class="member-row">
-              <div class="member-row-main">
-                <p class="member-row-name"><%= member_name %></p>
-                <span class="<%= membership.facilitator? ? 'inline-flex rounded-full bg-ink px-2.5 py-0.5 text-xs font-semibold text-white' : 'inline-flex rounded-full bg-sand px-2.5 py-0.5 text-xs font-semibold text-ink' %>">
-                  <%= membership.role.humanize %>
-                </span>
-              </div>
-              <span class="member-row-actions">
-                <% if membership.member? %>
-                  <%= button_to "Make Facilitator",
-                                facilitator_team_membership_path(@team, membership),
-                                method: :patch,
-                                params: { role: "facilitator" },
-                                class: "text-sm font-semibold text-[#466057] hover:text-coral" %>
-                <% elsif !membership.last_current_facilitator? %>
-                  <%= button_to "Make Member",
-                                facilitator_team_membership_path(@team, membership),
-                                method: :patch,
-                                params: { role: "member" },
-                                class: "text-sm font-semibold text-[#466057] hover:text-coral" %>
+            <li>
+              <article class="home-card flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+                  <span class="member-avatar <%= membership.facilitator? ? 'member-avatar-facilitator' : '' %>" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 21a8 8 0 0 0-16 0"/>
+                      <circle cx="12" cy="8" r="3.25"/>
+                    </svg>
+                  </span>
+                  <p class="member-row-name"><%= member_name %></p>
+                  <span class="<%= membership.facilitator? ? 'inline-flex rounded-full bg-ink px-2.5 py-0.5 text-xs font-semibold text-white' : 'inline-flex rounded-full bg-sand px-2.5 py-0.5 text-xs font-semibold text-ink' %>">
+                    <%= membership.role.humanize %>
+                  </span>
+                </div>
+                <% if membership.member? || !membership.last_current_facilitator? %>
+                  <div class="member-card-actions">
+                    <% if membership.member? %>
+                      <%= button_to facilitator_team_membership_path(@team, membership),
+                                    method: :patch,
+                                    params: { role: "facilitator" },
+                                    class: "member-action-btn text-sm font-semibold text-[#466057] hover:text-coral",
+                                    form_class: "inline",
+                                    data: { turbo_submits_with: "Updating..." } do %>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="member-action-icon" aria-hidden="true">
+                          <circle cx="8" cy="6" r="3"/>
+                          <path d="M2 18c0-3.3 2.7-6 6-6"/>
+                          <path d="M15 11v6M12 14h6"/>
+                        </svg>
+                        Make Facilitator
+                      <% end %>
+                    <% elsif !membership.last_current_facilitator? %>
+                      <%= button_to facilitator_team_membership_path(@team, membership),
+                                    method: :patch,
+                                    params: { role: "member" },
+                                    class: "member-action-btn text-sm font-semibold text-[#466057] hover:text-coral",
+                                    form_class: "inline",
+                                    data: { turbo_submits_with: "Updating..." } do %>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="member-action-icon" aria-hidden="true">
+                          <circle cx="8" cy="6" r="3"/>
+                          <path d="M2 18c0-3.3 2.7-6 6-6h3"/>
+                          <path d="M13 14h6"/>
+                        </svg>
+                        Make Member
+                      <% end %>
+                    <% end %>
+                    <% unless membership.last_current_facilitator? %>
+                      <span class="member-card-action-rule" aria-hidden="true"></span>
+                      <%= button_to facilitator_team_membership_path(@team, membership),
+                                    method: :delete,
+                                    class: "member-action-btn text-sm font-semibold text-coral hover:text-[#d44f3b]",
+                                    form_class: "inline",
+                                    data: { turbo_submits_with: "Removing..." },
+                                    form: {
+                                      data: {
+                                        turbo_confirm: "Remove #{member_name} from #{@team.name}?",
+                                        confirm_description: "#{member_name} will no longer be a member of this team.",
+                                        confirm_accept: "Remove",
+                                        confirm_busy: "Removing...",
+                                        confirm_variant: "danger"
+                                      }
+                                    } do %>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="member-action-icon" aria-hidden="true">
+                          <polyline points="3 6 5 6 17 6"/>
+                          <path d="M8 6V4h4v2"/>
+                          <path d="M16 6l-1 11H5L4 6"/>
+                          <line x1="10" y1="11" x2="10" y2="15"/>
+                        </svg>
+                        Remove
+                      <% end %>
+                    <% end %>
+                  </div>
                 <% end %>
-                <% unless membership.last_current_facilitator? %>
-                  <%= button_to "Remove",
-                                facilitator_team_membership_path(@team, membership),
-                                method: :delete,
-                                class: "text-sm font-semibold text-[#466057] hover:text-coral",
-                                form_class: "inline",
-                                form: {
-                                  data: {
-                                    turbo_confirm: "Remove #{member_name} from #{@team.name}?",
-                                    confirm_description: "#{member_name} will no longer be a member of this team.",
-                                    confirm_accept: "Remove",
-                                    confirm_variant: "danger"
-                                  }
-                                } %>
-                <% end %>
-              </span>
+              </article>
             </li>
           <% end %>
         </ul>
@@ -72,22 +109,26 @@
       <% end %>
 
       <% if @candidate_users.any? %>
-        <%= form_with url: facilitator_team_memberships_path(@team), class: "home-card mt-4 grid gap-4 px-6 py-5 sm:grid-cols-[minmax(0,1fr)_10rem_auto] sm:items-end" do %>
-          <div class="flex min-w-0 flex-col gap-1.5">
-            <%= label_tag :user_id, "Add person", class: "text-xs font-semibold uppercase tracking-[0.12em] text-[#466057]" %>
-            <%= select_tag :user_id,
-                           options_from_collection_for_select(@candidate_users, :id, :display_name),
-                           prompt: "Select a confirmed user",
-                           class: "workspace-filter-field pr-10" %>
-          </div>
-          <div class="flex min-w-0 flex-col gap-1.5">
-            <%= label_tag :role, "Role", class: "text-xs font-semibold uppercase tracking-[0.12em] text-[#466057]" %>
-            <%= select_tag :role, options_for_select([["Member", "member"], ["Facilitator", "facilitator"]], "member"), class: "workspace-filter-field" %>
-          </div>
-          <%= submit_tag "Add", class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto" %>
-        <% end %>
+        <div class="home-card mt-8 px-6 py-5">
+          <p class="text-lg font-bold text-ink">Add person</p>
+          <p class="mt-1 leading-6 text-[#466057]">Invite a confirmed user to join your team.</p>
+          <%= form_with url: facilitator_team_memberships_path(@team), class: "mt-5 grid gap-4 sm:grid-cols-[minmax(0,1fr)_10rem_auto] sm:items-end" do %>
+            <div class="flex min-w-0 flex-col gap-1.5">
+              <%= label_tag :user_id, "Select a confirmed user", class: "text-xs font-semibold uppercase tracking-[0.12em] text-[#466057]" %>
+              <%= select_tag :user_id,
+                             options_from_collection_for_select(@candidate_users, :id, :display_name),
+                             prompt: "Select a confirmed user",
+                             class: "workspace-filter-field pr-10" %>
+            </div>
+            <div class="flex min-w-0 flex-col gap-1.5">
+              <%= label_tag :role, "Role", class: "text-xs font-semibold uppercase tracking-[0.12em] text-[#466057]" %>
+              <%= select_tag :role, options_for_select([["Member", "member"], ["Facilitator", "facilitator"]], "member"), class: "workspace-filter-field" %>
+            </div>
+            <%= submit_tag "Add", class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto", data: { turbo_submits_with: "Adding..." } %>
+          <% end %>
+        </div>
       <% else %>
-        <p class="mt-5 text-sm leading-6 text-[#466057]">Everyone with a confirmed account is already on this team.</p>
+        <p class="mt-8 text-sm leading-6 text-[#466057]">Everyone with a confirmed account is already on this team.</p>
       <% end %>
     </section>
 
@@ -149,15 +190,17 @@
       <h2 class="display-face mt-2 text-2xl font-bold leading-tight tracking-[-0.035em] text-ink sm:text-3xl">Current Action Items</h2>
 
       <% if @action_items.any? %>
-        <ul class="home-card mt-5 divide-y divide-[var(--line)] overflow-hidden">
+        <ul class="home-section-list mt-5">
           <% @action_items.each do |item| %>
-            <li class="px-6 py-4">
-              <p class="break-words font-semibold text-ink"><%= item.title %></p>
-              <p class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-[#466057]">
-                <%= display_name_for(item.owner) %> ·
-                <span class="<%= action_item_badge_classes(item.status) %>"><%= action_status_label(item.status) %></span>
-                · Due <%= item.due_on.strftime("%b #{item.due_on.day}") %>
-              </p>
+            <li>
+              <article class="home-card px-6 py-4">
+                <p class="break-words font-semibold text-ink"><%= item.title %></p>
+                <p class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-[#466057]">
+                  <%= display_name_for(item.owner) %> ·
+                  <span class="<%= action_item_badge_classes(item.status) %>"><%= action_status_label(item.status) %></span>
+                  · Due <%= item.due_on.strftime("%b #{item.due_on.day}") %>
+                </p>
+              </article>
             </li>
           <% end %>
         </ul>

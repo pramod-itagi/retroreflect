@@ -1,0 +1,24 @@
+<%# locals: item, branded: false %>
+<% branded = local_assigns.fetch(:branded, false) %>
+<section class="<%= branded ? 'action-item-activity mt-4' : 'action-item-activity mt-3' %>" aria-label="Activity">
+  <h3 class="<%= branded ? 'text-xs font-semibold uppercase tracking-[0.12em] text-[#466057]' : 'text-sm font-medium text-slate-600' %>">Activity</h3>
+  <% if item.status_events.any? %>
+    <ol class="action-item-activity-list">
+      <% item.status_events.each do |event| %>
+        <li class="action-item-activity-entry">
+          <p class="action-item-activity-date"><%= event.created_at.in_time_zone.to_date.strftime("%B %-d, %Y") %></p>
+          <p class="action-item-activity-transition">
+            <%= action_status_label(event.previous_status) %>
+            <span aria-hidden="true"> → </span>
+            <span class="sr-only">to</span>
+            <%= action_status_label(event.new_status) %>
+          </p>
+          <p class="action-item-activity-comment">“<%= event.comment %>”</p>
+          <p class="action-item-activity-actor"><%= display_name_for(event.actor) %></p>
+        </li>
+      <% end %>
+    </ol>
+  <% else %>
+    <p class="<%= branded ? 'mt-2 text-sm leading-6 text-[#466057]' : 'mt-1 text-sm text-slate-500' %>">No status updates yet.</p>
+  <% end %>
+</section>

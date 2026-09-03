@@ -20,6 +20,7 @@ module SystemAdmin
     def create
       @team = Team.new(name: team_params[:name], created_by: current_user)
       authorize!(@team, :create?)
+      @operation_error_message = "We couldn't create the team. Please try again."
 
       facilitator = find_initial_facilitator
       @team = Teams::Create.new(created_by: current_user, name: team_params[:name], facilitator: facilitator).call

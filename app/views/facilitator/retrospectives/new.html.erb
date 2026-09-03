@@ -5,8 +5,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <% end %>
 
-<% title_error = @retrospective.errors[:title].any? ? "Title can't be blank." : "" %>
-<% sprint_error = @retrospective.errors[:sprint_label].any? ? "Please select a sprint number." : "" %>
 <% base_errors = @retrospective.errors[:base] %>
 
 <div class="workspace-page workspace-shell">
@@ -21,47 +19,25 @@
         <%= @team.name %>
       </p>
       <h1 class="display-face break-words text-4xl font-bold leading-[0.98] tracking-[-0.045em] text-ink sm:text-5xl">New retrospective</h1>
-      <p class="mt-3 max-w-lg text-lg leading-7 text-[#39514a]">Name the session, pick the sprint, then choose who will submit notes. You can adjust the roster until collection starts.</p>
+      <p class="mt-3 max-w-lg text-lg leading-7 text-[#39514a]">The sprint number and title are assigned automatically. Choose who will submit notes. You can adjust the roster until collection starts.</p>
 
       <%= form_with model: @retrospective,
                     url: facilitator_team_retrospectives_path(@team),
                     html: { novalidate: true },
-                    class: "mt-6 space-y-6",
-                    data: { controller: "retrospective-form", action: "submit->retrospective-form#submit" } do |form| %>
+                    class: "mt-6 space-y-6" do |form| %>
         <% if base_errors.any? %>
           <%= app_alert(kind: "error", messages: base_errors, autohide: false) %>
         <% end %>
 
         <div class="space-y-5">
           <div>
-            <%= form.label :title, class: "mb-2 block text-sm font-semibold text-ink" %>
-            <%= form.text_field :title,
-                                required: true,
-                                placeholder: "Sprint 12 retro",
-                                aria: { describedby: "retrospective-title-error", invalid: title_error.present? },
-                                class: "workspace-field",
-                                data: { retrospective_form_target: "title" } %>
-            <p id="retrospective-title-error"
-               class="mt-2 min-h-5 text-sm leading-5 text-coral"
-               aria-live="polite"
-               data-retrospective-form-target="titleError"><%= title_error %></p>
+            <p class="mb-2 text-sm font-semibold text-ink">Sprint</p>
+            <p class="workspace-readonly-value"><%= @sprint_identifier %></p>
           </div>
 
           <div>
-            <%= form.label :sprint_label, "Sprint number", class: "mb-2 block text-sm font-semibold text-ink" %>
-            <%= form.select :sprint_label,
-                            Retrospective::SPRINT_LABELS.map { |label| [label, label] },
-                            { include_blank: "Select sprint number" },
-                            {
-                              required: true,
-                              class: "workspace-field",
-                              aria: { describedby: "retrospective-sprint-error", invalid: sprint_error.present? },
-                              data: { retrospective_form_target: "sprint" }
-                            } %>
-            <p id="retrospective-sprint-error"
-               class="mt-2 min-h-5 text-sm leading-5 text-coral"
-               aria-live="polite"
-               data-retrospective-form-target="sprintError"><%= sprint_error %></p>
+            <p class="mb-2 text-sm font-semibold text-ink">Retrospective title</p>
+            <p class="workspace-readonly-value"><%= @generated_title %></p>
           </div>
         </div>
 
@@ -87,7 +63,7 @@
           <% end %>
         </fieldset>
 
-        <%= form.submit "Create retrospective", class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto" %>
+        <%= form.submit "Create retrospective", class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto", data: { turbo_submits_with: "Creating..." } %>
       <% end %>
     </div>
   </div>

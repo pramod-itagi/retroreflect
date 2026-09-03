@@ -26,7 +26,7 @@ module Authentication
     return if authenticated?
 
     session[:return_to] = request.fullpath if request.get?
-    redirect_to new_session_path, alert: "Please sign in."
+    redirect_to new_session_path
   end
 
   def require_confirmed_email

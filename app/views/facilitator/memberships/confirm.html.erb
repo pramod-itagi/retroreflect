@@ -23,7 +23,8 @@
                       facilitator_team_membership_path(@team, @membership),
                       method: :delete,
                       class: "home-action home-action-danger-solid cursor-pointer",
-                      form_class: "inline" %>
+                      form_class: "inline",
+                      data: { turbo_submits_with: "Removing..." } %>
       </div>
     </div>
   </div>

@@ -76,7 +76,14 @@
                     <div>
                       <%= link_to "Remove",
                                   participant_retrospective_draft_path(@retrospective, draft),
-                                  data: { turbo_method: :delete, turbo_confirm: "Remove this point?", confirm_accept: "Remove", confirm_variant: "danger" },
+                                  data: {
+                                    turbo_method: :delete,
+                                    turbo_confirm: "Remove this point?",
+                                    turbo_submits_with: "Removing...",
+                                    confirm_accept: "Remove",
+                                    confirm_busy: "Removing...",
+                                    confirm_variant: "danger"
+                                  },
                                   class: "board-remove" %>
                     </div>
                   </li>
@@ -121,19 +128,19 @@
                       method: :post,
                       html: { id: "save-drafts-form" },
                       class: "w-full sm:w-auto" do %>
-          <%= submit_tag "Save Draft", class: "home-action home-action-secondary w-full cursor-pointer sm:w-auto" %>
+          <%= submit_tag "Save Draft", class: "home-action home-action-secondary w-full cursor-pointer sm:w-auto", data: { turbo_submits_with: "Saving..." } %>
         <% end %>
         <%= button_to "Submit Feedback",
                       participant_retrospective_submission_path(@retrospective),
                       class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto",
                       form_class: "w-full sm:w-auto",
-                      data: { disable_with: "Submitting…", turbo_submits_with: "Submitting…" },
+                      data: { disable_with: "Submitting…", turbo_submits_with: "Submitting..." },
                       form: {
                         data: {
                           turbo_confirm: "Submit your feedback?",
                           confirm_description: "Once submitted, you won't be able to edit your feedback.",
                           confirm_accept: "Submit Feedback",
-                          confirm_busy: "Submitting…"
+                          confirm_busy: "Submitting..."
                         }
                       } %>
       </div>

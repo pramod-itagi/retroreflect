@@ -30,6 +30,9 @@
     <% end %>
   </span>
   <div class="app-alert-body">
+    <% if local_assigns[:title].present? %>
+      <p class="app-alert-title"><%= title %></p>
+    <% end %>
     <% if messages.many? %>
       <ul>
         <% messages.each do |item| %>

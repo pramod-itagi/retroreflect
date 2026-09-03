@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Retroreflect</title>
+    <title><%= content_for?(:title) ? "#{yield(:title)} · Retroreflect" : "Retroreflect" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -19,7 +19,7 @@
   <body class="app-body min-h-screen <%= yield(:body_class) %>">
     <%= render "shared/navbar" %>
 
-    <div class="app-alerts home-flash-bar" aria-live="polite">
+    <div id="app-alerts" class="app-alerts home-flash-bar" aria-live="polite">
       <%= render_app_alerts %>
     </div>
     <%= render "shared/confirm_modal" %>

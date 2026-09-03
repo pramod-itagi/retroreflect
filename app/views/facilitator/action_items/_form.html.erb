@@ -14,7 +14,7 @@
   </div>
   <div>
     <%= form.label :due_on, "Due date", class: label_class %>
-    <%= form.date_field :due_on, required: true, class: field_class %>
+    <%= form.date_field :due_on, required: true, min: Time.zone.today, class: field_class %>
   </div>
   <div>
     <%= form.label :status, class: label_class %>
@@ -26,9 +26,9 @@
   </div>
   <div>
     <% if branded %>
-      <%= form.submit "Add action item", class: "#{home_primary_button_classes} cursor-pointer" %>
+      <%= form.submit "Add action item", class: "#{home_primary_button_classes} cursor-pointer", data: { turbo_submits_with: "Creating..." } %>
     <% else %>
-      <%= form.submit "Add action item", class: "rounded bg-slate-900 px-3 py-2 text-sm text-white" %>
+      <%= form.submit "Add action item", class: "rounded bg-slate-900 px-3 py-2 text-sm text-white", data: { turbo_submits_with: "Creating..." } %>
     <% end %>
   </div>
 <% end %>

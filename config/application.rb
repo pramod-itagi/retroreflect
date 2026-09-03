@@ -22,6 +22,9 @@ module Retroreflect
       generate.assets false
     end
 
+    # Render branded 404/500 pages through the app instead of public/*.html.
+    config.exceptions_app = ->(env) { Rails.application.routes.call(env) }
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

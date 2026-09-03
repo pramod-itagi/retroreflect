@@ -8,15 +8,16 @@ module SystemAdmin
 
     def create
       authorize!(@team, :archive?)
+      @operation_error_message = "We couldn't archive this team. Please try again."
       unless params[:confirmation_name].to_s == @team.name
-        redirect_to new_system_admin_team_archive_path(@team), alert: "Type the team name exactly to confirm archiving."
+        fail_operation("Type the team name exactly to confirm archiving.", fallback: new_system_admin_team_archive_path(@team))
         return
       end
 
       Teams::Archive.new(@team).call
       redirect_to system_admin_teams_path, notice: "Team archived."
     rescue Teams::Archive::Error => e
-      redirect_to system_admin_team_path(@team), alert: e.message
+      fail_operation(e.message, fallback: system_admin_team_path(@team))
     end
 
     private

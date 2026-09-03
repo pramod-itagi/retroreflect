@@ -8,15 +8,16 @@ module Facilitator
 
     def create
       authorize!(@team, :archive?)
+      @operation_error_message = "We couldn't archive this team. Please try again."
       unless params[:confirmation_name].to_s == @team.name
-        redirect_to new_facilitator_team_archive_path(@team), alert: "Type the team name exactly to confirm archiving."
+        fail_operation("Type the team name exactly to confirm archiving.", fallback: new_facilitator_team_archive_path(@team))
         return
       end
 
       Teams::Archive.new(@team).call
       redirect_to retrospectives_path(team_id: @team.id), notice: "Team archived."
     rescue Teams::Archive::Error => e
-      redirect_to facilitator_team_path(@team), alert: e.message
+      fail_operation(e.message, fallback: facilitator_team_path(@team))
     end
 
     private

@@ -6,14 +6,15 @@ module SystemAdmin
     end
 
     def create
+      @operation_error_message = "We couldn't add that system admin. Please try again."
       if params[:user_id].blank?
-        redirect_to system_admin_admins_path, alert: "Select a confirmed user."
+        fail_operation("Select a confirmed user.", fallback: system_admin_admins_path)
         return
       end
 
       user = User.active.find(params[:user_id])
       unless user.confirmed?
-        redirect_to system_admin_admins_path, alert: "Select a confirmed user."
+        fail_operation("Select a confirmed user.", fallback: system_admin_admins_path)
         return
       end
 
@@ -23,10 +24,14 @@ module SystemAdmin
 
     def destroy
       user = User.active.find(params[:id])
+      @operation_error_message = "We couldn't remove #{user.display_name} as a system admin. Please try again."
       if user.revoke_system_admin
         redirect_to system_admin_admins_path, notice: "#{user.display_name} is no longer a System Admin."
       else
-        redirect_to system_admin_admins_path, alert: user.errors.full_messages.to_sentence
+        fail_operation(
+          user.errors.full_messages.to_sentence.presence || @operation_error_message,
+          fallback: system_admin_admins_path
+        )
       end
     end
   end

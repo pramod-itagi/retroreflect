@@ -606,6 +606,7 @@
 
   .home-page a:focus-visible,
   .home-page .home-action:focus-visible,
+  .home-page .home-team-link:focus-visible,
   .login-page a:focus-visible,
   .login-page .home-action:focus-visible,
   .register-page a:focus-visible,
@@ -707,18 +708,42 @@
   }
 
   .home-team-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    max-width: 100%;
+    border-radius: 9999px;
+    padding: 0.42rem 0.8rem 0.42rem 0.9rem;
+    font-size: 0.875rem;
     font-weight: 600;
-    color: var(--ink);
-    text-decoration: underline;
-    text-decoration-color: rgba(16, 33, 29, 0.5);
-    text-underline-offset: 0.2em;
-    text-decoration-thickness: 1.5px;
+    line-height: 1.25;
+    color: var(--coral);
+    background: #fff;
+    border: 1px solid var(--coral);
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  }
+
+  .home-team-link-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .home-team-link-icon {
+    width: 0.85rem;
+    height: 0.85rem;
+    flex-shrink: 0;
   }
 
   .home-team-link:hover,
   .home-team-link:focus-visible {
+    background: #fdf0ed;
     color: var(--coral);
-    text-decoration-color: var(--coral);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 0 rgba(16, 33, 29, 0.08);
   }
 
   .board-grid {
@@ -1256,6 +1281,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .home-action,
+    .home-team-link,
     .home-quiet-link::after,
     .workspace-card-interactive,
     .meeting-note {
@@ -1263,6 +1289,7 @@
     }
 
     .home-action-primary:hover,
+    .home-team-link:hover,
     .home-action-secondary:hover,
     .home-action-danger:hover,
     .home-action-danger-solid:hover {
@@ -1360,6 +1387,16 @@
   .app-alert-body p,
   .app-alert-body ul {
     margin: 0;
+  }
+
+  .app-alert-title {
+    font-weight: 700;
+  }
+
+  .app-alert-title + p,
+  .app-alert-title + ul {
+    margin-top: 0.2rem;
+    font-weight: 500;
   }
 
   .app-alert-body ul {
@@ -1495,6 +1532,71 @@
     box-shadow: none;
   }
 
+  .workspace-readonly-value {
+    width: 100%;
+    border: 1px dashed var(--line);
+    border-radius: 2px;
+    background: var(--sand);
+    color: var(--ink);
+    padding: 0.55rem 0.85rem;
+    font-size: 0.875rem;
+    line-height: 1.35;
+  }
+
+  .action-item-activity-list {
+    margin: 0.75rem 0 0;
+    padding: 0;
+    list-style: none;
+    border-left: 1px dashed var(--line);
+  }
+
+  .action-item-activity-entry {
+    position: relative;
+    padding: 0 0 1rem 1.1rem;
+  }
+
+  .action-item-activity-entry:last-child {
+    padding-bottom: 0;
+  }
+
+  .action-item-activity-entry::before {
+    content: "";
+    position: absolute;
+    left: -0.28rem;
+    top: 0.35rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: var(--coral);
+  }
+
+  .action-item-activity-date,
+  .action-item-activity-actor {
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: #466057;
+  }
+
+  .action-item-activity-transition {
+    margin: 0.15rem 0 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .action-item-activity-comment {
+    margin: 0.25rem 0 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--ink);
+    white-space: pre-wrap;
+  }
+
+  .action-item-activity-actor {
+    margin-top: 0.2rem;
+  }
+
   select.workspace-field {
     padding-right: 2.5rem;
   }
@@ -1577,8 +1679,7 @@
   }
 
   .workspace-tooltip-host:hover .workspace-tooltip,
-  .workspace-tooltip-host:focus-visible .workspace-tooltip,
-  .workspace-tooltip-host:focus-within .workspace-tooltip {
+  .workspace-tooltip-host:focus-visible .workspace-tooltip {
     opacity: 1;
     visibility: visible;
   }
@@ -1660,6 +1761,65 @@
     gap: 0.35rem 0.85rem;
   }
 
+  .member-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    background: var(--sand);
+    color: var(--ink);
+  }
+
+  .member-avatar.member-avatar-facilitator {
+    background: var(--moss);
+    color: #fff;
+  }
+
+  .member-avatar svg {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+
+  .member-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    line-height: 1.4;
+  }
+
+  .member-action-icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+  }
+
+  .member-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.85rem;
+  }
+
+  .member-card-action-rule {
+    display: none;
+    width: 1px;
+    height: 1rem;
+    background: var(--line);
+  }
+
+  @media (min-width: 640px) {
+    .member-card-action-rule {
+      display: block;
+    }
+  }
+
   /* Shared listing layout for Retrospectives, Teams, and Actions. */
   .listing-page,
   .retros-page {
@@ -1711,6 +1871,23 @@
     font-weight: 500;
     line-height: 1.7;
     color: #39514a;
+  }
+
+  .error-page .listing-intro {
+    max-width: 36rem;
+    padding-bottom: 4rem;
+  }
+
+  .error-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+
+  .error-page .home-action-secondary {
+    cursor: pointer;
   }
 
   .listing-stack {
@@ -2110,6 +2287,27 @@
 
 .app-confirm-copy[hidden] {
   display: none;
+}
+
+.app-confirm-reason {
+  margin-top: 0.9rem;
+}
+
+.app-confirm-reason[hidden] {
+  display: none;
+}
+
+.app-confirm-reason-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #10211d;
+}
+
+.app-confirm-reason-field {
+  min-height: 5.5rem;
+  resize: vertical;
 }
 
 .app-confirm-actions {

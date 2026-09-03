@@ -1,0 +1,37 @@
+<%# locals: item, url, branded: false, for_owner: false %>
+<% branded = local_assigns.fetch(:branded, false) %>
+<% for_owner = local_assigns.fetch(:for_owner, false) %>
+<% field_class = branded ? "workspace-select" : "rounded border border-slate-300 px-2 py-1 text-sm" %>
+<% label_class = branded ? "mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-[#466057]" : "mb-1 block text-sm font-medium" %>
+
+<%= form_with model: item,
+              url: url,
+              method: :patch,
+              class: (branded ? "flex min-w-[16rem] max-w-md flex-col gap-3" : "flex max-w-md flex-col gap-2"),
+              data: {
+                controller: "action-item-status",
+                action_item_status_current_status_value: item.status
+              } do |form| %>
+  <div>
+    <%= form.label :status, class: branded ? "sr-only" : label_class %>
+    <%= form.select :status,
+                    item.selectable_statuses(for_owner: for_owner).map { |status| [action_status_label(status), status] },
+                    { selected: item.status },
+                    class: field_class,
+                    data: {
+                      action_item_status_target: "status",
+                      action: "change->action-item-status#sync"
+                    } %>
+  </div>
+  <div data-action-item-status-target="commentWrap" hidden>
+    <label class="<%= label_class %>" data-action-item-status-target="label" for="<%= "action_item_status_comment_#{item.id}" %>">What changed?</label>
+    <%= form.text_area :status_comment,
+                       id: "action_item_status_comment_#{item.id}",
+                       rows: 3,
+                       class: branded ? "workspace-field" : "w-full rounded border border-slate-300 px-3 py-2 text-sm",
+                       data: { action_item_status_target: "comment" } %>
+  </div>
+  <div>
+    <%= form.submit "Update", class: "#{home_primary_button_classes} cursor-pointer", data: { turbo_submits_with: "Updating..." } %>
+  </div>
+<% end %>

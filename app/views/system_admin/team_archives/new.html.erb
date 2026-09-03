@@ -28,11 +28,11 @@
       <%= form_with url: system_admin_team_archive_path(@team), class: "admin-form space-y-5" do %>
         <div>
           <%= label_tag :confirmation_name, "Type #{@team.name} to confirm", class: "mb-2 block text-sm font-semibold text-ink" %>
-          <%= text_field_tag :confirmation_name, nil, required: true, autocomplete: "off", class: "workspace-field" %>
+          <%= text_field_tag :confirmation_name, params[:confirmation_name], required: true, autocomplete: "off", class: "workspace-field" %>
         </div>
         <div class="flex flex-wrap items-center gap-3">
           <%= link_to "Cancel", system_admin_team_path(@team), class: "home-action home-action-secondary" %>
-          <%= submit_tag "Archive Team", class: "home-action home-action-danger-solid cursor-pointer" %>
+          <%= submit_tag "Archive Team", class: "home-action home-action-danger-solid cursor-pointer", data: { turbo_submits_with: "Archiving..." } %>
         </div>
       <% end %>
     </div>

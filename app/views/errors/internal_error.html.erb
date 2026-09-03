@@ -1,0 +1,11 @@
+<% content_for :title, "Something went wrong" %>
+<% content_for :full_bleed, true %>
+
+<%= render layout: "errors/page", locals: {
+      code: @error_code || "500",
+      heading: "Something went wrong.",
+      lede: "We couldn't complete your request. Please try again."
+    } do %>
+  <%= link_to "Try Again", error_retry_path, class: home_primary_button_classes, data: { turbo: false } %>
+  <%= link_to "Back to Home", root_path, class: "home-action home-action-secondary" %>
+<% end %>
