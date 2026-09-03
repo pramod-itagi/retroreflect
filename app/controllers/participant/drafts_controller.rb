@@ -6,16 +6,21 @@ module Participant
       @draft = @participation.feedback_drafts.new(draft_params)
       @draft.retrospective = @retrospective
       authorize!(@draft, :create?)
+      @operation_error_message = "We couldn't save your points. Please try again."
 
       if @draft.save
         redirect_to participant_retrospective_path(@retrospective), notice: "Draft saved."
       else
-        redirect_to participant_retrospective_path(@retrospective), alert: @draft.errors.full_messages.to_sentence
+        fail_operation(
+          @draft.errors.full_messages.to_sentence.presence || @operation_error_message,
+          fallback: participant_retrospective_path(@retrospective)
+        )
       end
     end
 
     def save
       authorize!(@retrospective, :write_drafts?)
+      @operation_error_message = "We couldn't save your points. Please try again."
       FeedbackDrafts::SaveBatch.new(
         participation: @participation,
         retrospective: @retrospective,
@@ -24,23 +29,31 @@ module Participant
       ).call
       redirect_to participant_retrospective_path(@retrospective), notice: "Draft saved."
     rescue ActiveRecord::RecordInvalid => e
-      redirect_to participant_retrospective_path(@retrospective), alert: e.record.errors.full_messages.to_sentence
+      fail_operation(
+        e.record.errors.full_messages.to_sentence.presence || @operation_error_message,
+        fallback: participant_retrospective_path(@retrospective)
+      )
     end
 
     def update
       @draft = @retrospective.feedback_drafts.find(params[:id])
       authorize!(@draft, :update?)
+      @operation_error_message = "We couldn't save your points. Please try again."
 
       if @draft.update(draft_params)
         redirect_to participant_retrospective_path(@retrospective), notice: "Draft updated."
       else
-        redirect_to participant_retrospective_path(@retrospective), alert: @draft.errors.full_messages.to_sentence
+        fail_operation(
+          @draft.errors.full_messages.to_sentence.presence || @operation_error_message,
+          fallback: participant_retrospective_path(@retrospective)
+        )
       end
     end
 
     def destroy
       @draft = @retrospective.feedback_drafts.find(params[:id])
       authorize!(@draft, :destroy?)
+      @operation_error_message = "We couldn't remove that point. Please try again."
       @draft.destroy!
       redirect_to participant_retrospective_path(@retrospective), notice: "Draft removed."
     end

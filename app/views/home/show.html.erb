@@ -90,17 +90,19 @@
       <h2 class="display-face home-section-title">Your teams</h2>
       <p class="home-section-lede">A concise view of the teams you belong to.</p>
       <% if @teams.any? %>
-        <ul class="home-card home-section-card divide-y divide-[var(--line)] overflow-hidden">
+        <ul class="home-section-list">
           <% @teams.each do |team| %>
-            <li class="flex items-baseline justify-between gap-4 px-6 py-4">
-              <div class="min-w-0">
-                <% if home_facilitator_of?(team) %>
-                  <%= link_to team.name, facilitator_team_path(team), class: "home-team-link truncate" %>
-                <% else %>
-                  <p class="truncate font-semibold text-ink"><%= team.name %></p>
-                <% end %>
-              </div>
-              <p class="shrink-0 text-sm text-[#466057]"><%= pluralize(team.member_count, "member") %></p>
+            <li>
+              <article class="home-card flex items-baseline justify-between gap-4 px-6 py-4">
+                <div class="min-w-0">
+                  <% if home_facilitator_of?(team) %>
+                    <%= home_team_nav_link(team) %>
+                  <% else %>
+                    <p class="truncate font-semibold text-ink"><%= team.name %></p>
+                  <% end %>
+                </div>
+                <p class="shrink-0 text-sm text-[#466057]"><%= pluralize(team.member_count, "member") %></p>
+              </article>
             </li>
           <% end %>
         </ul>
@@ -120,16 +122,18 @@
       </div>
       <p class="home-section-lede">Open action items assigned to you.</p>
       <% if @attention_action_items.any? %>
-        <ul class="home-card home-section-card divide-y divide-[var(--line)] overflow-hidden">
+        <ul class="home-section-list">
           <% @attention_action_items.each do |item| %>
-            <li class="px-6 py-4">
-              <p class="break-words font-semibold text-ink"><%= item.title %></p>
-              <p class="mt-2 text-sm leading-6 text-[#466057]">
-                <%= item.team.name %>
-                · <%= action_status_label(item.status) %>
-                · due <%= item.due_on %>
-                <% if item.due_on < Date.current %> · overdue<% end %>
-              </p>
+            <li>
+              <article class="home-card px-6 py-4">
+                <p class="break-words font-semibold text-ink"><%= item.title %></p>
+                <p class="mt-2 text-sm leading-6 text-[#466057]">
+                  <%= item.team.name %>
+                  · <%= action_status_label(item.status) %>
+                  · due <%= item.due_on %>
+                  <% if item.due_on < Date.current %> · overdue<% end %>
+                </p>
+              </article>
             </li>
           <% end %>
         </ul>

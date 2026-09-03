@@ -72,6 +72,17 @@ RSpec.describe "Authentication", type: :request do
     expect(response).to redirect_to(facilitator_teams_path)
   end
 
+  it "redirects to sign in without showing an error when visiting the home page" do
+    get root_path
+    expect(response).to redirect_to(new_session_path)
+    expect(flash[:alert]).to be_nil
+
+    follow_redirect!
+    expect(response).to have_http_status(:ok)
+    expect(response.body).not_to include("Please sign in.")
+    expect(response.body).not_to include("app-alert-error")
+  end
+
   it "does not sign in a discarded user" do
     user = create_user(name: "Ada", email: "ada@example.com")
     email = user.email

@@ -26,8 +26,9 @@
       <% if @retrospective.discussing? %>
         <%= button_to "Close retrospective",
                       close_facilitator_retrospective_path(@retrospective),
-                      class: "home-action home-action-secondary w-full sm:w-auto",
-                      form_class: "w-full shrink-0 sm:w-auto" %>
+                      class: "#{home_primary_button_classes} w-full sm:w-auto",
+                      form_class: "w-full shrink-0 sm:w-auto",
+                      data: { turbo_submits_with: "Closing..." } %>
       <% end %>
     </div>
 
@@ -80,13 +81,15 @@
       </div>
     </div>
 
-    <% if @retrospective.discussing? %>
+    <% if @retrospective.discussing? || @retrospective.closed? %>
       <section class="mt-10">
         <p class="text-sm font-bold uppercase tracking-[0.16em] text-coral">Follow-through</p>
         <h2 class="display-face mt-2 text-2xl font-bold leading-tight tracking-[-0.035em] text-ink sm:text-3xl">Action items</h2>
         <p class="mt-2 max-w-xl text-base leading-6 text-[#466057]">Capture follow-ups during the meeting. Owners can update status later; only you can cancel.</p>
         <div class="mt-5">
-          <%= render "facilitator/action_items/form", team: @team, retrospective: @retrospective, owners: @owners, branded: true %>
+          <% if @retrospective.discussing? %>
+            <%= render "facilitator/action_items/form", team: @team, retrospective: @retrospective, owners: @owners, branded: true %>
+          <% end %>
           <%= render "facilitator/action_items/list", action_items: @action_items, branded: true %>
         </div>
       </section>

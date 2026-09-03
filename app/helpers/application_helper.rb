@@ -27,8 +27,14 @@ module ApplicationHelper
     end
   end
 
-  def app_alert(kind:, message: nil, messages: nil, autohide: true)
-    render partial: "shared/app_alert", locals: { kind: kind.to_s, message: message, messages: messages, autohide: autohide }
+  def app_alert(kind:, message: nil, messages: nil, title: nil, autohide: true)
+    render partial: "shared/app_alert", locals: {
+      kind: kind.to_s,
+      title: title,
+      message: message,
+      messages: messages,
+      autohide: autohide
+    }
   end
 
   def render_app_alerts

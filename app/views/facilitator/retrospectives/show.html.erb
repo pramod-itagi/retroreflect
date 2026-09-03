@@ -28,6 +28,10 @@
       <div class="home-card mt-6 px-6 py-5">
         <p class="font-semibold text-ink">This retrospective was cancelled.</p>
         <p class="mt-2 leading-6 text-[#466057]">No further collecting or reveal is available for this session.</p>
+        <% if @retrospective.cancellation_reason.present? %>
+          <p class="mt-4 text-sm font-semibold text-ink">Reason for cancellation</p>
+          <p class="mt-1 whitespace-pre-wrap leading-6 text-[#466057]"><%= @retrospective.cancellation_reason %></p>
+        <% end %>
       </div>
     <% end %>
 
@@ -37,11 +41,8 @@
                       start_collecting_facilitator_retrospective_path(@retrospective),
                       class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto",
                       form_class: "w-full sm:w-auto",
-                      form: { data: { turbo_confirm: "Email every participant and freeze the roster?", confirm_accept: "Send invitations" } } %>
-        <%= button_to "Cancel",
-                      cancel_facilitator_retrospective_path(@retrospective),
-                      class: "home-action home-action-secondary w-full sm:w-auto",
-                      form_class: "w-full sm:w-auto" %>
+                      data: { turbo_submits_with: "Sending..." },
+                      form: { data: { turbo_confirm: "Email every participant and freeze the roster?", confirm_accept: "Send invitations", confirm_busy: "Sending..." } } %>
       <% elsif @retrospective.collecting? %>
         <% if @submitted_count.zero? %>
           <span class="workspace-tooltip-host w-full sm:w-auto"
@@ -63,18 +64,16 @@
                         reveal_facilitator_retrospective_path(@retrospective),
                         class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto",
                         form_class: "w-full sm:w-auto",
-                        form: { data: { turbo_confirm: "Reveal all notes anonymously? Drafts will be deleted.", confirm_accept: "Reveal notes" } } %>
+                        data: { turbo_submits_with: "Revealing..." },
+                        form: { data: { turbo_confirm: "Reveal all notes anonymously? Drafts will be deleted.", confirm_accept: "Reveal notes", confirm_busy: "Revealing..." } } %>
         <% end %>
-        <%= button_to "Cancel",
-                      cancel_facilitator_retrospective_path(@retrospective),
-                      class: "home-action home-action-secondary w-full sm:w-auto",
-                      form_class: "w-full sm:w-auto" %>
       <% elsif @retrospective.discussing? %>
         <%= link_to "Meeting board", facilitator_retrospective_meeting_path(@retrospective), class: "#{home_primary_button_classes} w-full sm:w-auto" %>
         <%= button_to "Close retrospective",
                       close_facilitator_retrospective_path(@retrospective),
-                      class: "home-action home-action-secondary w-full sm:w-auto",
-                      form_class: "w-full sm:w-auto" %>
+                      class: "#{home_primary_button_classes} w-full sm:w-auto",
+                      form_class: "w-full sm:w-auto",
+                      data: { turbo_submits_with: "Closing..." } %>
       <% elsif @retrospective.closed? %>
         <%= link_to "Meeting board", facilitator_retrospective_meeting_path(@retrospective), class: "home-action home-action-secondary w-full sm:w-auto" %>
       <% end %>
@@ -110,7 +109,8 @@
               <%= button_to "Remove",
                             facilitator_retrospective_participation_path(@retrospective, participation),
                             method: :delete,
-                            class: "text-sm font-semibold text-[#466057] hover:text-coral" %>
+                            class: "text-sm font-semibold text-[#466057] hover:text-coral",
+                            data: { turbo_submits_with: "Removing..." } %>
             <% end %>
           </li>
         <% end %>
@@ -122,7 +122,7 @@
             <%= label_tag :user_id, "Add team member", class: "text-xs font-semibold uppercase tracking-[0.12em] text-[#466057]" %>
             <%= select_tag :user_id, options_from_collection_for_select(@available_members, :id, :display_name), prompt: "Select member", class: "workspace-filter-field" %>
           </div>
-          <%= submit_tag "Add to roster", class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto" %>
+          <%= submit_tag "Add to roster", class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto", data: { turbo_submits_with: "Adding..." } %>
         <% end %>
       <% else %>
         <p class="mt-5 text-sm leading-6 text-[#466057]">Roster is frozen.</p>
@@ -134,8 +134,67 @@
         <p class="text-sm font-bold uppercase tracking-[0.16em] text-coral">Follow-through</p>
         <h2 class="display-face mt-2 text-2xl font-bold leading-tight tracking-[-0.035em] text-ink sm:text-3xl">Action items</h2>
         <div class="mt-5">
-          <%= render "facilitator/action_items/form", team: @team, retrospective: @retrospective, owners: @team.users.active.order(:name), branded: true %>
-          <%= render "facilitator/action_items/list", action_items: @retrospective.action_items.includes(:owner), branded: true %>
+          <% if @retrospective.discussing? %>
+            <%= render "facilitator/action_items/form", team: @team, retrospective: @retrospective, owners: @team.users.active.order(:name), branded: true %>
+          <% end %>
+          <%= render "facilitator/action_items/list", action_items: @retrospective.action_items.includes(:owner, status_events: :actor), branded: true %>
+        </div>
+      </section>
+    <% end %>
+
+    <% if RetrospectivePolicy.new(current_user, @retrospective).cancel? %>
+      <section class="mt-10 border-t border-[var(--line)] pt-8" data-controller="cancel-retrospective">
+        <h2 class="display-face text-2xl font-bold leading-tight tracking-[-0.035em] text-ink">Cancel retrospective</h2>
+        <p class="mt-3 max-w-2xl leading-6 text-[#466057]">
+          Cancelling ends this retrospective. It remains in history, and the next retrospective for this team will use the next sprint number.
+        </p>
+        <div class="mt-5">
+          <button type="button"
+                  class="home-action home-action-danger-solid inline-flex"
+                  data-action="cancel-retrospective#open">
+            Cancel retrospective
+          </button>
+        </div>
+
+        <div class="app-confirm"
+             data-cancel-retrospective-target="modal"
+             aria-hidden="true">
+          <div class="app-confirm-backdrop" data-action="click->cancel-retrospective#close"></div>
+          <div class="app-confirm-dialog"
+               role="dialog"
+               aria-modal="true"
+               aria-labelledby="cancel-retrospective-title"
+               aria-describedby="cancel-retrospective-copy"
+               data-cancel-retrospective-target="dialog">
+            <h2 id="cancel-retrospective-title" class="app-confirm-title">Cancel retrospective?</h2>
+            <p id="cancel-retrospective-copy" class="app-confirm-copy">Are you sure you want to cancel this retrospective?</p>
+            <%= form_with url: cancel_facilitator_retrospective_path(@retrospective),
+                          method: :post,
+                          data: { action: "submit->cancel-retrospective#submitting" } do %>
+              <div class="app-confirm-reason">
+                <label class="app-confirm-reason-label" for="cancellation_reason">Reason for cancellation</label>
+                <textarea id="cancellation_reason"
+                          name="cancellation_reason"
+                          class="workspace-field app-confirm-reason-field"
+                          data-cancel-retrospective-target="reason"
+                          rows="4"></textarea>
+              </div>
+              <div class="app-confirm-actions">
+                <button type="button"
+                        class="home-action home-action-secondary"
+                        data-cancel-retrospective-target="cancel"
+                        data-action="cancel-retrospective#close">
+                  Cancel
+                </button>
+                <button type="submit"
+                        class="home-action home-action-danger-solid"
+                        data-cancel-retrospective-target="accept"
+                        data-turbo-submits-with="Cancelling...">
+                  Confirm
+                </button>
+              </div>
+            <% end %>
+          </div>
         </div>
       </section>
     <% end %>

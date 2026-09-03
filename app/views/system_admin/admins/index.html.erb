@@ -32,7 +32,8 @@
                               system_admin_admin_path(admin),
                               method: :delete,
                               class: "text-sm font-semibold text-[#466057] hover:text-coral",
-                              form_class: "shrink-0" %>
+                              form_class: "shrink-0",
+                              data: { turbo_submits_with: "Removing..." } %>
               <% end %>
             </article>
           </li>
@@ -48,7 +49,7 @@
                            prompt: "Select a confirmed user",
                            class: "workspace-filter-field pr-10" %>
           </div>
-          <%= submit_tag "Add", class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto" %>
+          <%= submit_tag "Add", class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto", data: { turbo_submits_with: "Adding..." } %>
         <% end %>
       <% else %>
         <p class="mt-8 text-sm leading-6 text-[#466057]">Everyone with a confirmed account is already a System Admin.</p>

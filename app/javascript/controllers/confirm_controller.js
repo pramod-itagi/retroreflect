@@ -34,6 +34,7 @@ export default class extends Controller {
 
     return new Promise((resolve) => {
       this.resolve = resolve
+      this.pendingForm = form
       this.previouslyFocused = document.activeElement
       this.busyLabel = submitter?.dataset?.confirmBusy || form?.dataset?.confirmBusy || ""
       this.messageTarget.textContent = message
@@ -123,6 +124,8 @@ export default class extends Controller {
   finish(result) {
     if (!this.resolve) return
 
+    if (!result && this.pendingForm) delete this.pendingForm.dataset.submitLocked
+
     const resolve = this.resolve
     this.resolve = null
     this.closeChrome()
@@ -141,6 +144,7 @@ export default class extends Controller {
     this.cancelTarget.disabled = false
     if (this.previouslyFocused?.focus) this.previouslyFocused.focus()
     this.previouslyFocused = null
+    this.pendingForm = null
     this.busyLabel = ""
   }
 }

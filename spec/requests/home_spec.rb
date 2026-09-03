@@ -42,7 +42,14 @@ RSpec.describe "Home dashboard", type: :request do
     expect(response.body).to include("Your teams")
     expect(response.body).to include("Platform")
     expect(response.body).to include(facilitator_team_path(context[:platform]))
+    team_links = response.parsed_body.css("a.home-team-link")
+    platform_link = team_links.find { |link| link.text.include?("Platform") }
+    expect(platform_link).to be_present
+    expect(platform_link["href"]).to eq(facilitator_team_path(context[:platform]))
+    expect(team_links.map { |link| link["href"] }).to include(facilitator_team_path(context[:platform]))
     expect(response.body).to include("home-team-link")
+    expect(response.parsed_body.css("ul.home-section-list a.home-team-link").size).to eq(2)
+    expect(response.parsed_body.at_css("ul.home-section-list a.home-team-link").ancestors("ul.home-card")).to be_empty
     expect(response.body).to include("Sprint 24 collecting")
     expect(response.body).to include("Collecting")
     expect(response.body).to include("0 / 1 submitted")
@@ -68,6 +75,18 @@ RSpec.describe "Home dashboard", type: :request do
     expect(response.body).to include("No active retrospective")
     expect(response.body).to include("Create retrospective")
     expect(response.body).to include(new_facilitator_team_retrospective_path(team))
+    expect(response.body).to include(facilitator_team_path(team))
+
+    team_links = response.parsed_body.css("a[href='#{facilitator_team_path(team)}']")
+    idle_link = team_links.find { |link| link["class"].to_s.include?("font-semibold") }
+    expect(idle_link).to be_present
+    expect(idle_link.text).to include(team.name)
+    expect(idle_link["class"]).not_to include("home-team-link")
+
+    your_teams_link = response.parsed_body.at_css("a.home-team-link")
+    expect(your_teams_link["href"]).to eq(facilitator_team_path(team))
+    expect(your_teams_link.text).to include(team.name)
+    expect(your_teams_link["class"]).not_to include("home-action-primary")
   end
 
   it "continues to show action items that need attention, not completed history" do
@@ -83,7 +102,7 @@ RSpec.describe "Home dashboard", type: :request do
       title: "Old completed work",
       owner: context[:alice],
       created_by: context[:facilitator],
-      due_on: Date.current - 14,
+      due_on: Date.current,
       status: :completed,
       completed_at: Time.current,
       completed_by: context[:alice]
@@ -96,6 +115,10 @@ RSpec.describe "Home dashboard", type: :request do
     expect(response.body).to include(open_item.title)
     expect(response.body).to include("View all")
     expect(response.body).not_to include("Old completed work")
+    attention_list = response.parsed_body.css("ul.home-section-list").find { |list| list.text.include?(open_item.title) }
+    expect(attention_list).to be_present
+    expect(attention_list["class"]).not_to include("divide-y")
+    expect(attention_list.css("article.home-card").size).to eq(1)
   end
 
   it "includes the updated header navigation" do
@@ -122,7 +145,7 @@ RSpec.describe "Home dashboard", type: :request do
     contact = footer.at_css("a")
     expect(contact).to be_present
     expect(contact.text.strip).to eq("Contact")
-    expect(contact["href"]).to eq("https://github.com/pramod-itagi/retroreflect")
+    expect(contact["href"]).to eq("https://github.com/pramod-itagi/retroreflect/issues/new")
     expect(footer.css("a").size).to eq(1)
     expect(footer.text).not_to include("How it works")
     expect(footer.text).not_to include("Our approach")

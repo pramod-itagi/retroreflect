@@ -21,16 +21,14 @@
                 · cancelled <%= item.cancelled_at.to_date %>
               <% end %>
             </p>
+            <%= render "action_items/activity", item: item, branded: branded %>
           </div>
           <% unless item.terminal? %>
-            <%= form_with model: item, url: facilitator_action_item_path(item), method: :patch, class: (branded ? "flex flex-wrap items-center gap-2" : "flex items-center gap-2") do |form| %>
-              <%= form.select :status, item.available_statuses.map { |status| [action_status_label(status), status] }, {}, class: (branded ? "workspace-select" : "rounded border border-slate-300 px-2 py-1 text-sm") %>
-              <% if branded %>
-                <%= form.submit "Update", class: "home-action home-action-secondary" %>
-              <% else %>
-                <%= form.submit "Update", class: "home-quiet-link cursor-pointer" %>
-              <% end %>
-            <% end %>
+            <%= render "action_items/status_form",
+                       item: item,
+                       url: facilitator_action_item_path(item),
+                       branded: branded,
+                       for_owner: false %>
           <% end %>
         </div>
       </li>

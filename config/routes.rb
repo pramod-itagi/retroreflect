@@ -58,4 +58,9 @@ Rails.application.routes.draw do
     end
     resources :action_items, only: %i[index update]
   end
+
+  match "/404", to: "errors#not_found", via: :all
+  match "/422", to: "errors#unprocessable", via: :all
+  match "/500", to: "errors#internal_error", via: :all
+  match "*path", to: "errors#not_found", via: :all
 end

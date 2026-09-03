@@ -20,7 +20,8 @@
         <%= button_to "Submit Feedback",
                       participant_retrospective_submission_path(@retrospective),
                       class: "#{home_primary_button_classes} cursor-pointer",
-                      form_class: "inline" %>
+                      form_class: "inline",
+                      data: { turbo_submits_with: "Submitting..." } %>
       </div>
     </div>
   </div>

@@ -46,13 +46,14 @@
                         <span>cancelled <%= item.cancelled_at.to_date %></span>
                       <% end %>
                     </p>
+                    <%= render "action_items/activity", item: item, branded: true %>
                   </div>
                   <% if item.available_statuses(for_owner: true).any? %>
-                    <%= form_with model: item, url: participant_action_item_path(item), method: :patch, class: "flex shrink-0 flex-wrap items-center gap-2" do |form| %>
-                      <%= form.label :status, "Status", class: "sr-only" %>
-                      <%= form.select :status, item.available_statuses(for_owner: true).map { |status| [action_status_label(status), status] }, {}, class: "workspace-select" %>
-                      <%= form.submit "Update", class: "home-action home-action-secondary" %>
-                    <% end %>
+                    <%= render "action_items/status_form",
+                               item: item,
+                               url: participant_action_item_path(item),
+                               branded: true,
+                               for_owner: true %>
                   <% end %>
                 </div>
               </article>

@@ -10,7 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_27_120000) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_03_180000) do
+  create_table "action_item_status_events", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+    t.bigint "action_item_id", null: false
+    t.bigint "actor_id", null: false
+    t.string "previous_status", limit: 32, null: false
+    t.string "new_status", limit: 32, null: false
+    t.text "comment", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["action_item_id", "created_at"], name: "index_action_item_status_events_on_item_and_created_at"
+    t.index ["action_item_id"], name: "index_action_item_status_events_on_action_item_id"
+    t.index ["actor_id"], name: "index_action_item_status_events_on_actor_id"
+  end
+
   create_table "action_items", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "team_id", null: false
     t.bigint "retrospective_id"
@@ -103,8 +116,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_27_120000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.virtual "running_team_id", type: :bigint, as: "(case when (`status` in (_utf8mb4'draft',_utf8mb4'collecting',_utf8mb4'discussing')) then `team_id` else NULL end)", stored: true
+    t.integer "sprint_number"
+    t.integer "sprint_year"
+    t.text "cancellation_reason"
     t.index ["created_by_id"], name: "index_retrospectives_on_created_by_id"
     t.index ["running_team_id"], name: "index_retrospectives_one_running_per_team", unique: true
+    t.index ["team_id", "sprint_number"], name: "index_retrospectives_on_team_id_and_sprint_number", unique: true
     t.index ["team_id", "status"], name: "index_retrospectives_on_team_id_and_status"
     t.index ["team_id"], name: "index_retrospectives_on_team_id"
   end
@@ -141,6 +158,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_27_120000) do
     t.index ["system_admin"], name: "index_users_on_system_admin"
   end
 
+  add_foreign_key "action_item_status_events", "action_items", on_delete: :cascade
+  add_foreign_key "action_item_status_events", "users", column: "actor_id"
   add_foreign_key "action_items", "retrospectives", on_delete: :nullify
   add_foreign_key "action_items", "teams"
   add_foreign_key "action_items", "users", column: "cancelled_by_id"

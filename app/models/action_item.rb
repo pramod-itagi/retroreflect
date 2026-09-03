@@ -2,6 +2,7 @@ class ActionItem < ApplicationRecord
   STATUSES = %w[open in_progress ready_for_review completed cancelled].freeze
   TERMINAL_STATUSES = %w[completed cancelled].freeze
   UNRESOLVED_STATUSES = %w[open in_progress ready_for_review].freeze
+  STATUS_COMMENT_MAX = 2_000
 
   ALLOWED_TRANSITIONS = {
     "open" => %w[in_progress ready_for_review completed cancelled],
@@ -17,6 +18,12 @@ class ActionItem < ApplicationRecord
   belongs_to :owner, class_name: "User"
   belongs_to :completed_by, class_name: "User", optional: true
   belongs_to :cancelled_by, class_name: "User", optional: true
+  has_many :status_events, -> { order(:created_at, :id) },
+           class_name: "ActionItemStatusEvent",
+           inverse_of: :action_item,
+           dependent: :destroy
+
+  attr_accessor :status_comment
 
   scope :unresolved, -> { where(status: UNRESOLVED_STATUSES) }
 
@@ -33,6 +40,7 @@ class ActionItem < ApplicationRecord
   validates :due_on, presence: true
   validate :owner_must_belong_to_team
   validate :status_transition_allowed, if: :status_changed?
+  validate :due_on_cannot_be_in_the_past, on: :create
 
   before_save :stamp_terminal_status
 
@@ -46,8 +54,47 @@ class ActionItem < ApplicationRecord
     next_statuses
   end
 
+  def selectable_statuses(for_owner: false)
+    STATUSES.intersection([status, *available_statuses(for_owner: for_owner)])
+  end
+
   def owner_may_transition_to?(new_status)
-    available_statuses(for_owner: true).include?(new_status)
+    selectable_statuses(for_owner: true).include?(new_status.to_s)
+  end
+
+  def apply_status_change(new_status, comment:, actor:)
+    transaction do
+      lock!
+      requested = new_status.to_s
+      return true if requested.blank? || requested == status
+
+      note = comment.to_s.strip
+      if note.blank?
+        errors.add(:status_comment, "must explain what changed")
+        return false
+      end
+      if note.length > STATUS_COMMENT_MAX
+        errors.add(:status_comment, "is too long (maximum is #{STATUS_COMMENT_MAX} characters)")
+        return false
+      end
+
+      from_status = status
+      unless update(status: requested)
+        return false
+      end
+
+      status_events.create!(
+        previous_status: from_status,
+        new_status: status,
+        comment: note,
+        actor: actor
+      )
+      true
+    end
+  rescue ActiveRecord::RecordInvalid
+    reload if persisted?
+    errors.add(:base, "We couldn't save that status update.")
+    false
   end
 
   private
@@ -78,5 +125,12 @@ class ActionItem < ApplicationRecord
       self.cancelled_at = Time.current
       self.cancelled_by ||= Current.user
     end
+  end
+
+  def due_on_cannot_be_in_the_past
+    return if due_on.blank?
+    return unless due_on < Time.zone.today
+
+    errors.add(:due_on, "must be today or a future date")
   end
 end

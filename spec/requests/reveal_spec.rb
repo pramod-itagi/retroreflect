@@ -122,7 +122,7 @@ RSpec.describe "Retrospective reveal", type: :request do
     post cancel_facilitator_retrospective_path(setup[:retro])
 
     setup[:retro].reload
-    expect(response).to redirect_to(facilitator_team_path(setup[:team]))
+    expect(response).to redirect_to(facilitator_retrospective_path(setup[:retro]))
     expect(setup[:retro]).to be_cancelled
     expect(setup[:retro].feedback_items).to be_empty
     expect(FeedbackItem.where(retrospective: setup[:retro])).to be_empty

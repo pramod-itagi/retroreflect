@@ -5,8 +5,10 @@ export default class extends Controller {
 
   connect() {
     this.boundPlace = this.place.bind(this)
+    this.boundIgnorePointerFocus = this.ignorePointerFocus.bind(this)
     this.element.addEventListener("mouseenter", this.boundPlace)
     this.element.addEventListener("focusin", this.boundPlace)
+    this.element.addEventListener("pointerdown", this.boundIgnorePointerFocus)
     window.addEventListener("resize", this.boundPlace)
     this.place()
   }
@@ -14,7 +16,12 @@ export default class extends Controller {
   disconnect() {
     this.element.removeEventListener("mouseenter", this.boundPlace)
     this.element.removeEventListener("focusin", this.boundPlace)
+    this.element.removeEventListener("pointerdown", this.boundIgnorePointerFocus)
     window.removeEventListener("resize", this.boundPlace)
+  }
+
+  ignorePointerFocus(event) {
+    event.preventDefault()
   }
 
   place() {
