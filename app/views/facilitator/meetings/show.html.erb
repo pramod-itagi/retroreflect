@@ -1,9 +1,4 @@
 <% content_for :full_bleed, true %>
-<% content_for :head do %>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<% end %>
 
 <div class="workspace-page workspace-shell">
   <div class="workspace-container">
@@ -17,7 +12,7 @@
           <p class="text-sm font-bold uppercase tracking-[0.16em] text-coral"><%= @retrospective.sprint_label %></p>
         <% end %>
         <h1 class="display-face mt-2 text-4xl font-bold leading-[0.98] tracking-[-0.045em] text-ink sm:text-5xl">Meeting</h1>
-        <p class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-[#466057]">
+        <p class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-muted">
           <span>Notes are anonymous</span>
           <span aria-hidden="true">·</span>
           <span class="<%= retrospective_status_badge_classes(@retrospective.status) %>"><%= @retrospective.status.humanize %></span>
@@ -26,15 +21,24 @@
       <% if @retrospective.discussing? %>
         <%= button_to "Close retrospective",
                       close_facilitator_retrospective_path(@retrospective),
-                      class: "#{home_primary_button_classes} w-full sm:w-auto",
+                      class: "home-action home-action-danger w-full sm:w-auto",
                       form_class: "w-full shrink-0 sm:w-auto",
-                      data: { turbo_submits_with: "Closing..." } %>
+                      data: { turbo_submits_with: "Closing..." },
+                      form: {
+                        data: {
+                          turbo_confirm: "Close #{@retrospective.title}?",
+                          confirm_description: "Closing ends the active retrospective for #{@retrospective.team.name}. Notes and action items are kept.",
+                          confirm_accept: "Close retrospective",
+                          confirm_cancel: "Keep retrospective",
+                          confirm_busy: "Closing..."
+                        }
+                      } %>
       <% end %>
     </div>
 
     <div class="mt-8 grid items-start gap-5 xl:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)]">
       <aside data-meeting-status class="home-card px-5 py-5">
-        <h2 class="text-sm font-bold uppercase tracking-[0.16em] text-[#466057]">Submission status</h2>
+        <h2 class="text-sm font-bold uppercase tracking-[0.16em] text-muted">Submission status</h2>
         <p class="mt-2 text-lg font-semibold text-ink"><%= @submitted_count %> of <%= @participations.size %> submitted</p>
         <ul class="mt-4 space-y-2.5 text-sm">
           <% @participations.sort_by { |participation| display_name_for(participation.user) }.each do |participation| %>
@@ -46,7 +50,7 @@
             </li>
           <% end %>
         </ul>
-        <p class="mt-4 text-xs leading-relaxed text-[#466057]">Names here are attendance only. They are not attached to notes on the board.</p>
+        <p class="mt-4 text-xs leading-relaxed text-muted">Names here are attendance only. They are not attached to notes on the board.</p>
       </aside>
 
       <div data-meeting-board data-controller="meeting-board" class="board-grid">
@@ -85,12 +89,12 @@
       <section class="mt-10">
         <p class="text-sm font-bold uppercase tracking-[0.16em] text-coral">Follow-through</p>
         <h2 class="display-face mt-2 text-2xl font-bold leading-tight tracking-[-0.035em] text-ink sm:text-3xl">Action items</h2>
-        <p class="mt-2 max-w-xl text-base leading-6 text-[#466057]">Capture follow-ups during the meeting. Owners can update status later; only you can cancel.</p>
+        <p class="mt-2 max-w-xl text-base leading-6 text-muted">Capture follow-ups during the meeting. Owners can update status later; only you can cancel.</p>
         <div class="mt-5">
           <% if @retrospective.discussing? %>
-            <%= render "facilitator/action_items/form", team: @team, retrospective: @retrospective, owners: @owners, branded: true %>
+            <%= render "facilitator/action_items/form", team: @team, retrospective: @retrospective, owners: @owners %>
           <% end %>
-          <%= render "facilitator/action_items/list", action_items: @action_items, branded: true %>
+          <%= render "facilitator/action_items/list", action_items: @action_items %>
         </div>
       </section>
     <% end %>

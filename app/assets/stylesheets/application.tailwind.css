@@ -12,6 +12,7 @@
     --paper: #f7f3eb;
     --coral: #e65e48;
     --moss: #315d4f;
+    --muted: #466057;
     --sand: #e8ddcb;
     --line: rgba(16, 33, 29, 0.16);
     font-family: "Work Sans", sans-serif;
@@ -115,7 +116,7 @@
     font-size: 1.125rem;
     font-weight: 500;
     line-height: 1.7;
-    color: #39514a;
+    color: var(--muted);
   }
 
   .auth-screen .auth-panel {
@@ -207,6 +208,7 @@
     --paper: #f7f3eb;
     --coral: #e65e48;
     --moss: #315d4f;
+    --muted: #466057;
     --sand: #e8ddcb;
     --line: rgba(16, 33, 29, 0.16);
     display: flex;
@@ -342,6 +344,21 @@
     color: var(--ink);
     text-decoration: none;
     padding: 0.2rem 0;
+    white-space: nowrap;
+  }
+
+  .app-nav-admin-short {
+    display: none;
+  }
+
+  @media (max-width: 1023px) {
+    .app-nav-admin-full {
+      display: none;
+    }
+
+    .app-nav-admin-short {
+      display: inline;
+    }
   }
 
   .app-nav-link:hover {
@@ -615,6 +632,7 @@
   .workspace-page .home-action:focus-visible,
   .workspace-page .home-action-danger:focus-visible,
   .workspace-page .home-action-danger-solid:focus-visible,
+  .workspace-page .member-action-btn:focus-visible,
   .workspace-page .workspace-tooltip-host:focus-visible {
     outline: 2px solid #e65e48;
     outline-offset: 2px;
@@ -852,7 +870,7 @@
     margin: 0.85rem 0 0;
     font-size: 0.875rem;
     line-height: 1.6;
-    color: #466057;
+    color: var(--muted);
   }
 
   .board-composer {
@@ -908,7 +926,7 @@
     font-size: 0.8125rem;
     font-weight: 600;
     line-height: 1.4;
-    color: #466057;
+    color: var(--muted);
     text-decoration: none;
     cursor: pointer;
   }
@@ -1001,7 +1019,7 @@
     font-size: 1.0625rem;
     font-weight: 500;
     line-height: 1.72;
-    color: #39514a;
+    color: var(--muted);
   }
 
   .home-hero-note {
@@ -1119,7 +1137,7 @@
     font-size: 0.8125rem;
     font-weight: 400;
     line-height: 1.55;
-    color: #39514a;
+    color: var(--muted);
   }
 
   .home-body {
@@ -1166,7 +1184,7 @@
     max-width: 34rem;
     font-size: 0.9875rem;
     line-height: 1.65;
-    color: #466057;
+    color: var(--muted);
   }
 
   .home-section-list {
@@ -1480,12 +1498,14 @@
     box-shadow: none;
   }
 
+  /* Pill: filters and status selectors. Square (2px): standard data-entry fields.
+     Use background-color (not background) so the shared select chevron can show. */
   .workspace-select {
     border: 1px solid var(--line);
     border-radius: 9999px;
-    background: #fff;
+    background-color: #fff;
     color: var(--ink);
-    padding: 0.5rem 0.9rem;
+    padding: 0.5rem 2.15rem 0.5rem 0.9rem;
     font-size: 0.875rem;
     line-height: 1.25;
     box-shadow: none;
@@ -1496,12 +1516,16 @@
     height: 2.5rem;
     border: 1px solid var(--line);
     border-radius: 9999px;
-    background: #fff;
+    background-color: #fff;
     color: var(--ink);
     padding: 0 1rem;
     font-size: 0.875rem;
     line-height: 1.25;
     box-shadow: none;
+  }
+
+  select.workspace-filter-field {
+    padding-right: 2.15rem;
   }
 
   .workspace-filter-field:focus,
@@ -1524,7 +1548,7 @@
     width: 100%;
     border: 1px solid var(--line);
     border-radius: 2px;
-    background: #fff;
+    background-color: #fff;
     color: var(--ink);
     padding: 0.55rem 0.85rem;
     font-size: 0.875rem;
@@ -1575,7 +1599,7 @@
     margin: 0;
     font-size: 0.75rem;
     line-height: 1.5;
-    color: #466057;
+    color: var(--muted);
   }
 
   .action-item-activity-transition {
@@ -1598,7 +1622,110 @@
   }
 
   select.workspace-field {
-    padding-right: 2.5rem;
+    padding-right: 2.15rem;
+  }
+
+  .workspace-page form.action-item-create.home-card {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+
+  .action-item-create .workspace-field {
+    min-height: 2.85rem;
+    border-radius: 10px;
+    padding: 0.7rem 0.95rem;
+  }
+
+  .action-item-create select.workspace-field {
+    padding-right: 2.2rem;
+  }
+
+  .action-item-create textarea.workspace-field {
+    min-height: 7.25rem;
+    padding-top: 0.8rem;
+    padding-bottom: 0.8rem;
+    resize: vertical;
+  }
+
+  .action-item-control {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 2.85rem;
+    padding: 0 0.35rem 0 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background-color: #fff;
+  }
+
+  .action-item-control:focus-within {
+    border-color: #e65e48;
+    box-shadow: 0 0 0 1px #e65e48;
+  }
+
+  .action-item-control .workspace-field {
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 2.6rem;
+    border: 0;
+    border-radius: 0;
+    padding: 0.55rem 2.15rem 0.55rem 0;
+    background-color: transparent;
+    box-shadow: none;
+  }
+
+  .action-item-control--date {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .action-item-date-display {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.875rem;
+    line-height: 1.35;
+    color: var(--ink);
+    pointer-events: none;
+  }
+
+  .action-item-date-display.is-placeholder {
+    color: var(--muted);
+  }
+
+  .action-item-control--date .action-item-field-icon {
+    pointer-events: none;
+  }
+
+  .action-item-field-icon {
+    flex: none;
+    width: 1.05rem;
+    height: 1.05rem;
+    color: var(--muted);
+  }
+
+  .action-item-status-dot {
+    flex: none;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 9999px;
+    background: #3d8f5c;
+  }
+
+  [data-controller="action-item-create"][data-status="in_progress"] .action-item-status-dot {
+    background: var(--moss);
+  }
+
+  [data-controller="action-item-create"][data-status="ready_for_review"] .action-item-status-dot {
+    background: var(--ink);
+  }
+
+  [data-controller="action-item-create"][data-status="completed"] .action-item-status-dot {
+    background: #7aa384;
+  }
+
+  [data-controller="action-item-create"][data-status="cancelled"] .action-item-status-dot {
+    background: #8a8378;
   }
 
   .workspace-field:focus,
@@ -1792,6 +1919,16 @@
     padding: 0;
     cursor: pointer;
     line-height: 1.4;
+    border-radius: 0.2rem;
+  }
+
+  .member-action-danger {
+    color: var(--coral);
+  }
+
+  .member-action-danger:hover,
+  .member-action-danger:focus-visible {
+    color: #d44f3b;
   }
 
   .member-action-icon {
@@ -1870,7 +2007,7 @@
     font-size: 1.0625rem;
     font-weight: 500;
     line-height: 1.7;
-    color: #39514a;
+    color: var(--muted);
   }
 
   .error-page .listing-intro {
@@ -1929,7 +2066,7 @@
   .admin-page .admin-constraint {
     font-size: 0.875rem;
     line-height: 1.55;
-    color: #466057;
+    color: var(--muted);
   }
 
   .admin-form {
@@ -1963,7 +2100,7 @@
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: #466057;
+    color: var(--muted);
   }
 
   .retros-filter-submit .home-action {
@@ -2037,14 +2174,14 @@
     max-width: 34rem;
     font-size: 0.9875rem;
     line-height: 1.65;
-    color: #466057;
+    color: var(--muted);
   }
 
   .retros-section-count {
     margin: 0.55rem 0 0;
     font-size: 0.9375rem;
     line-height: 1.6;
-    color: #466057;
+    color: var(--muted);
   }
 
   .retros-section-list {
@@ -2080,7 +2217,7 @@
   .retros-empty-text {
     margin: 0.45rem 0 0;
     line-height: 1.65;
-    color: #466057;
+    color: var(--muted);
   }
 
   .retros-card-body {
@@ -2115,7 +2252,7 @@
     margin: 0.45rem 0 0;
     font-size: 0.875rem;
     line-height: 1.55;
-    color: #466057;
+    color: var(--muted);
   }
 
   .retros-card-cta {
@@ -2259,7 +2396,7 @@
 .app-confirm-dialog {
   position: relative;
   z-index: 1;
-  width: min(26rem, 100%);
+  width: min(30rem, calc(100% - 1.5rem));
   max-height: calc(100vh - 2.5rem);
   overflow: auto;
   padding: 1.35rem 1.4rem 1.2rem;
@@ -2281,7 +2418,7 @@
   margin: 0.45rem 0 0;
   font-size: 0.875rem;
   line-height: 1.5;
-  color: #466057;
+  color: var(--muted);
   font-weight: 400;
 }
 
@@ -2312,14 +2449,16 @@
 
 .app-confirm-actions {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  flex-wrap: nowrap;
+  align-items: stretch;
   gap: 0.65rem;
   margin-top: 1.15rem;
 }
 
 .app-confirm .home-action {
-  min-width: 7.5rem;
+  min-width: 0;
+  flex: 1 1 0;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -2338,15 +2477,38 @@
   to { opacity: 0; transform: translateY(-8px); }
 }
 
-/* Single coral focus for form controls. Unlayered so it overrides @tailwindcss/forms rings. */
-input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]),
-textarea,
+/* Shared dropdown chevron: same path as the account-menu icon, ink-colored for form controls. */
+:root {
+  --dropdown-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.4 4.4 6 8l3.6-3.6' stroke='%2310211d' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+/* Native selects: hide the browser/forms-plugin arrow and show the shared chevron.
+   Unlayered so it wins over @tailwindcss/forms without replacing <select> behavior. */
 select {
+  --tw-ring-color: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  background-image: var(--dropdown-chevron);
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 0.75rem 0.75rem;
+  padding-right: 2.15rem;
+  print-color-adjust: exact;
+}
+
+select:hover:not(:focus):not(:focus-visible) {
+  border-color: rgba(16, 33, 29, 0.32);
+}
+
+/* Single coral focus for form controls. Unlayered so it overrides @tailwindcss/forms rings. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]):not([type="date"]),
+textarea {
   --tw-ring-color: transparent;
 }
 
-input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]):focus,
-input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]):focus-visible,
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]):not([type="date"]):focus,
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]):not([type="date"]):focus-visible,
 textarea:focus,
 textarea:focus-visible,
 select:focus,
@@ -2361,6 +2523,37 @@ select:focus-visible {
   --tw-ring-offset-shadow: 0 0 #0000;
   --tw-ring-shadow: 0 0 #0000;
   box-shadow: 0 0 0 1px #e65e48;
+}
+
+.action-item-control .workspace-field,
+.action-item-control .workspace-field:focus,
+.action-item-control .workspace-field:focus-visible {
+  outline: none;
+  border: 0;
+  box-shadow: none;
+}
+
+input.action-item-date-native,
+input.action-item-date-native:focus,
+input.action-item-date-native:focus-visible {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: transparent;
+  box-shadow: none;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  color-scheme: light;
 }
 
 input[type="checkbox"]:focus,

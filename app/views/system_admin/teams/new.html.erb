@@ -1,9 +1,4 @@
 <% content_for :full_bleed, true %>
-<% content_for :head do %>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<% end %>
 
 <div class="workspace-page workspace-shell listing-page admin-page">
   <div class="listing-inner">
@@ -12,7 +7,7 @@
         <%= back_nav_link system_admin_teams_path, "teams" %>
       </p>
       <p class="listing-kicker">Administration</p>
-      <h1 class="display-face listing-heading">Create Team</h1>
+      <h1 class="display-face listing-heading">Create team</h1>
       <p class="listing-lede">Name the team and choose who will facilitate it.</p>
     </header>
 
@@ -27,7 +22,7 @@
           <%= form.text_field :name, required: true, class: "workspace-field" %>
         </div>
         <div>
-          <%= label_tag :facilitator_id, "Initial Facilitator", class: "mb-2 block text-sm font-semibold text-ink" %>
+          <%= label_tag :facilitator_id, "Initial facilitator", class: "mb-2 block text-sm font-semibold text-ink" %>
           <%= select_tag :facilitator_id,
                          options_from_collection_for_select(@candidate_users, :id, :display_name, params[:facilitator_id]),
                          prompt: "Select a confirmed user",
@@ -35,7 +30,7 @@
         </div>
         <div class="flex flex-wrap items-center gap-3">
           <%= link_to "Cancel", system_admin_teams_path, class: "home-action home-action-secondary" %>
-          <%= form.submit "Create Team", class: "#{home_primary_button_classes} cursor-pointer", data: { turbo_submits_with: "Creating..." } %>
+          <%= form.submit "Create team", class: "#{home_primary_button_classes} cursor-pointer", data: { turbo_submits_with: "Creating..." } %>
         </div>
       <% end %>
     </div>

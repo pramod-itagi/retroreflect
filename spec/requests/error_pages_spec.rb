@@ -15,8 +15,8 @@ RSpec.describe "Error pages", type: :request do
     expect(response).to have_http_status(:not_found)
     expect(page_heading).to eq("We couldn't find that page.")
     expect(page_lede).to eq("The page you're looking for doesn't exist or may have been moved.")
-    expect(response.body).to include("Back to Home")
-    expect(response.body).to include("Go Back")
+    expect(response.body).to include("Back to home")
+    expect(response.body).to include("Go back")
     expect(response.parsed_body.text).not_to include("ActionController::RoutingError")
   end
 
@@ -27,7 +27,7 @@ RSpec.describe "Error pages", type: :request do
 
     expect(response).to have_http_status(:not_found)
     expect(page_heading).to eq("We couldn't find that page.")
-    expect(response.body).to include("Back to Home")
+    expect(response.body).to include("Back to home")
     expect(response.parsed_body.text).not_to include("ActiveRecord::RecordNotFound")
     expect(response.parsed_body.text).not_to include("Couldn't find Team")
   end
@@ -56,8 +56,8 @@ RSpec.describe "Error pages", type: :request do
     expect(response).to have_http_status(:internal_server_error)
     expect(page_heading).to eq("Something went wrong.")
     expect(page_lede).to eq("We couldn't complete your request. Please try again.")
-    expect(response.body).to include("Try Again")
-    expect(response.body).to include("Back to Home")
+    expect(response.body).to include("Try again")
+    expect(response.body).to include("Back to home")
     expect(response.body).not_to include("traceback")
     expect(response.body).not_to include("action_dispatch.exception")
   end

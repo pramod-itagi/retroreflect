@@ -15,16 +15,21 @@ RSpec.describe "System administration", type: :request do
 
     sign_in(admin)
     get root_path
-    expect(response.body).to include("System Administration")
+    expect(response.body).to include("System administration")
     expect(response.body).not_to include("New team")
+    admin_nav = response.parsed_body.at_css("header nav a.app-nav-admin")
+    expect(admin_nav["aria-label"]).to eq("System administration")
+    expect(admin_nav.at_css(".app-nav-admin-full").text).to eq("System administration")
+    expect(admin_nav.at_css(".app-nav-admin-short").text).to eq("Admin")
+    expect(admin_nav.at_css(".app-nav-admin-short")["aria-hidden"]).to eq("true")
 
     get system_admin_root_path
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include("Manage Teams")
-    expect(response.body).to include("Manage System Admins")
+    expect(response.body).to include("Manage teams")
+    expect(response.body).to include("Manage system admins")
 
     get new_system_admin_team_path
-    expect(response.body).to include("Initial Facilitator")
+    expect(response.body).to include("Initial facilitator")
     expect(response.body).to include("Jordan")
     expect(response.body).not_to include("Unconfirmed")
 
@@ -100,6 +105,9 @@ RSpec.describe "System administration", type: :request do
     get system_admin_admins_path
     expect(response.body).to include("Priya")
     expect(response.body).to include("Alice")
+    add_admin = response.parsed_body.at_css("select[name='user_id']")
+    expect(add_admin["class"]).to include("workspace-field")
+    expect(add_admin["class"]).not_to include("workspace-filter-field")
 
     post system_admin_admins_path, params: { user_id: alice.id }
     expect(alice.reload).to be_system_admin
@@ -152,7 +160,7 @@ RSpec.describe "System administration", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Jordan")
     expect(response.body).not_to include("Current retrospective")
-    expect(response.body).not_to include("Current Action Items")
+    expect(response.body).not_to include("Current action items")
 
     get new_system_admin_team_archive_path(team)
     expect(response.body).to include("This action cannot be undone.")

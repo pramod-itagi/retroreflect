@@ -1,9 +1,4 @@
 <% content_for :full_bleed, true %>
-<% content_for :head do %>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<% end %>
 
 <div class="workspace-page workspace-shell listing-page admin-page">
   <div class="listing-inner">
@@ -14,7 +9,7 @@
       <p class="listing-kicker">Administration</p>
       <div class="admin-heading-row">
         <h1 class="display-face listing-heading">Teams</h1>
-        <%= link_to "Create Team", new_system_admin_team_path, class: "#{home_primary_button_classes} shrink-0" %>
+        <%= link_to "Create team", new_system_admin_team_path, class: "#{home_primary_button_classes} shrink-0" %>
       </div>
     </header>
 
@@ -27,13 +22,13 @@
               <li>
                 <article class="home-card admin-row flex items-baseline justify-between gap-4 px-6 py-4">
                   <%= link_to team.name, system_admin_team_path(team), class: "min-w-0 truncate font-semibold text-ink hover:text-coral" %>
-                  <span class="shrink-0 text-sm text-[#466057]"><%= pluralize(team.member_count, "member") %></span>
+                  <span class="shrink-0 text-sm text-muted"><%= pluralize(team.member_count, "member") %></span>
                 </article>
               </li>
             <% end %>
           </ul>
         <% else %>
-          <p class="mt-5 text-sm leading-6 text-[#466057]">No active teams.</p>
+          <p class="mt-5 text-sm leading-6 text-muted">No active teams.</p>
         <% end %>
       </section>
 
@@ -50,7 +45,7 @@
             <% end %>
           </ul>
         <% else %>
-          <p class="mt-5 text-sm leading-6 text-[#466057]">No archived teams.</p>
+          <p class="mt-5 text-sm leading-6 text-muted">No archived teams.</p>
         <% end %>
       </section>
     </div>

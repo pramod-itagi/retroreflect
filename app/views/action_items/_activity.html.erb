@@ -1,7 +1,6 @@
-<%# locals: item, branded: false %>
-<% branded = local_assigns.fetch(:branded, false) %>
-<section class="<%= branded ? 'action-item-activity mt-4' : 'action-item-activity mt-3' %>" aria-label="Activity">
-  <h3 class="<%= branded ? 'text-xs font-semibold uppercase tracking-[0.12em] text-[#466057]' : 'text-sm font-medium text-slate-600' %>">Activity</h3>
+<%# locals: item %>
+<section class="action-item-activity mt-4" aria-label="Activity">
+  <h3 class="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Activity</h3>
   <% if item.status_events.any? %>
     <ol class="action-item-activity-list">
       <% item.status_events.each do |event| %>
@@ -19,6 +18,6 @@
       <% end %>
     </ol>
   <% else %>
-    <p class="<%= branded ? 'mt-2 text-sm leading-6 text-[#466057]' : 'mt-1 text-sm text-slate-500' %>">No status updates yet.</p>
+    <p class="mt-2 text-sm leading-6 text-muted">No status updates yet.</p>
   <% end %>
 </section>

@@ -10,9 +10,15 @@
         <%= nav_link "Home", root_path %>
         <%= nav_link "Teams", facilitator_teams_path %>
         <%= nav_link "Retrospectives", retrospectives_path %>
-        <%= nav_link "Actions", participant_action_items_path %>
+        <%= nav_link "Action items", participant_action_items_path %>
         <% if current_user.system_admin? %>
-          <%= nav_link "System Administration", system_admin_root_path %>
+          <%= nav_link "System administration",
+                       system_admin_root_path,
+                       class: "app-nav-admin",
+                       aria: { label: "System administration" } do %>
+            <span class="app-nav-admin-full">System administration</span>
+            <span class="app-nav-admin-short" aria-hidden="true">Admin</span>
+          <% end %>
         <% end %>
       </nav>
 

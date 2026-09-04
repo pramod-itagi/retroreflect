@@ -32,7 +32,7 @@ RSpec.describe "Authorization", type: :request do
     sign_in(setup[:facilitator])
     get root_path
     expect(response.body).not_to include("New team")
-    expect(response.body).not_to include("System Administration")
+    expect(response.body).not_to include("System administration")
 
     get system_admin_root_path
     expect(response).to redirect_to(root_path)
@@ -54,8 +54,10 @@ RSpec.describe "Authorization", type: :request do
 
     get facilitator_teams_path
     expect(response.body).not_to include("New team")
-    expect(response.body).not_to include("System Administration")
-    expect(response.body).to include("No teams yet")
+    expect(response.body).not_to include("System administration")
+    expect(response.body).to include(setup[:team].name)
+    expect(response.parsed_body.at_css(".listing-lede").text).to eq("See the teams you're part of and follow their retrospectives.")
+    expect(response.body).not_to include("No teams yet")
 
     get system_admin_root_path
     expect(response).to redirect_to(root_path)
@@ -104,7 +106,11 @@ RSpec.describe "Authorization", type: :request do
 
     sign_in(setup[:member])
     get facilitator_team_path(setup[:team])
-    expect(response).to redirect_to(root_path)
+    expect(response).to have_http_status(:ok)
+    expect(response.body).not_to include("Make facilitator")
+    expect(response.body).not_to include("Add person")
+    expect(response.body).not_to include("Archive team")
+    expect(response.body).not_to include("New retrospective")
 
     post facilitator_team_memberships_path(setup[:team]), params: { user_id: extra.id, role: "member" }
     expect(response).to redirect_to(root_path)

@@ -1,9 +1,4 @@
 <% content_for :full_bleed, true %>
-<% content_for :head do %>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<% end %>
 
 <% submitted = @participation.submitted? %>
 <% status_label = submitted ? "Submitted" : "Draft" %>
@@ -16,7 +11,7 @@
       Session
     </p>
     <h1 class="display-face break-words text-3xl font-bold leading-[0.98] tracking-[-0.045em] text-ink sm:text-4xl"><%= @retrospective.title %></h1>
-    <p class="session-meta mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-[#466057]">
+    <p class="session-meta mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-muted">
       <span><%= @retrospective.team.name %></span>
       <% if @retrospective.sprint_label.present? %>
         <span aria-hidden="true">·</span>
@@ -25,7 +20,7 @@
       <span aria-hidden="true">·</span>
       <span class="<%= participation_status_badge_classes(status_label) %>"><%= status_label %></span>
     </p>
-    <p class="mt-2 max-w-2xl text-sm leading-6 text-[#466057]">
+    <p class="mt-2 max-w-2xl text-sm leading-6 text-muted">
       Your feedback is anonymous. The facilitator can see whether you've submitted, but not who wrote each point.
       <% if submitted %>
         Your responses are locked until the meeting starts.
@@ -128,9 +123,9 @@
                       method: :post,
                       html: { id: "save-drafts-form" },
                       class: "w-full sm:w-auto" do %>
-          <%= submit_tag "Save Draft", class: "home-action home-action-secondary w-full cursor-pointer sm:w-auto", data: { turbo_submits_with: "Saving..." } %>
+          <%= submit_tag "Save draft", class: "home-action home-action-secondary w-full cursor-pointer sm:w-auto", data: { turbo_submits_with: "Saving..." } %>
         <% end %>
-        <%= button_to "Submit Feedback",
+        <%= button_to "Submit feedback",
                       participant_retrospective_submission_path(@retrospective),
                       class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto",
                       form_class: "w-full sm:w-auto",
@@ -139,7 +134,7 @@
                         data: {
                           turbo_confirm: "Submit your feedback?",
                           confirm_description: "Once submitted, you won't be able to edit your feedback.",
-                          confirm_accept: "Submit Feedback",
+                          confirm_accept: "Submit feedback",
                           confirm_busy: "Submitting..."
                         }
                       } %>

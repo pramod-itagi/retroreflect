@@ -1,10 +1,5 @@
 <% content_for :body_class, "home-layout" %>
 <% content_for :full_bleed, true %>
-<% content_for :head do %>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<% end %>
 
 <div class="home-page">
   <section class="home-hero">
@@ -81,7 +76,7 @@
       <% else %>
         <div class="home-card home-section-card px-6 py-5">
           <p class="font-semibold text-ink">No active retrospective right now.</p>
-          <p class="mt-2 leading-6 text-[#466057]">When a team starts collecting or discussing, it will appear here.</p>
+          <p class="mt-2 leading-6 text-muted">When a team starts collecting or discussing, it will appear here.</p>
         </div>
       <% end %>
     </section>
@@ -90,19 +85,17 @@
       <h2 class="display-face home-section-title">Your teams</h2>
       <p class="home-section-lede">A concise view of the teams you belong to.</p>
       <% if @teams.any? %>
-        <ul class="home-section-list">
+        <ul class="home-card mt-6 divide-y divide-[var(--line)] overflow-hidden">
           <% @teams.each do |team| %>
-            <li>
-              <article class="home-card flex items-baseline justify-between gap-4 px-6 py-4">
-                <div class="min-w-0">
-                  <% if home_facilitator_of?(team) %>
-                    <%= home_team_nav_link(team) %>
-                  <% else %>
-                    <p class="truncate font-semibold text-ink"><%= team.name %></p>
-                  <% end %>
-                </div>
-                <p class="shrink-0 text-sm text-[#466057]"><%= pluralize(team.member_count, "member") %></p>
-              </article>
+            <li class="flex items-baseline justify-between gap-4 px-6 py-4">
+              <div class="min-w-0">
+                <% if home_facilitator_of?(team) %>
+                  <%= home_team_nav_link(team) %>
+                <% else %>
+                  <p class="truncate font-semibold text-ink"><%= team.name %></p>
+                <% end %>
+              </div>
+              <p class="shrink-0 text-sm text-muted"><%= pluralize(team.member_count, "member") %></p>
             </li>
           <% end %>
         </ul>
@@ -122,18 +115,14 @@
       </div>
       <p class="home-section-lede">Open action items assigned to you.</p>
       <% if @attention_action_items.any? %>
-        <ul class="home-section-list">
+        <ul class="home-card mt-6 divide-y divide-[var(--line)] overflow-hidden">
           <% @attention_action_items.each do |item| %>
-            <li>
-              <article class="home-card px-6 py-4">
-                <p class="break-words font-semibold text-ink"><%= item.title %></p>
-                <p class="mt-2 text-sm leading-6 text-[#466057]">
-                  <%= item.team.name %>
-                  · <%= action_status_label(item.status) %>
-                  · due <%= item.due_on %>
-                  <% if item.due_on < Date.current %> · overdue<% end %>
-                </p>
-              </article>
+            <li class="px-6 py-4">
+              <p class="break-words font-semibold text-ink"><%= item.title %></p>
+              <p class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-muted">
+                <%= item.team.name %> ·
+                <%= render "action_items/metadata", item: item %>
+              </p>
             </li>
           <% end %>
         </ul>

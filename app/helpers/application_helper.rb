@@ -76,7 +76,7 @@ module ApplicationHelper
 
   def facilitated_cta_parts(retrospective)
     if retrospective.draft?
-      ["Continue Setup", facilitator_retrospective_path(retrospective)]
+      ["Continue setup", facilitator_retrospective_path(retrospective)]
     elsif retrospective.collecting?
       ["Continue", facilitator_retrospective_path(retrospective)]
     elsif retrospective.revealed?
@@ -90,11 +90,19 @@ module ApplicationHelper
     retrospective.collecting? && retrospective.participations.any? { |participation| participation.user_id == current_user.id }
   end
 
-  def nav_link(name, path)
+  def nav_link(name, path, html_options = {}, &block)
     active = nav_link_active?(path)
-    html_options = { class: ["app-nav-link", ("is-active" if active)].compact.join(" ") }
-    html_options[:aria] = { current: "page" } if active
-    link_to name, path, html_options
+    css_class = ["app-nav-link", ("is-active" if active), html_options[:class]].compact.join(" ")
+    html_options = html_options.merge(class: css_class)
+    aria = (html_options[:aria] || {}).dup
+    aria[:current] = "page" if active
+    html_options[:aria] = aria if aria.present?
+
+    if block
+      link_to(path, html_options, &block)
+    else
+      link_to(name, path, html_options)
+    end
   end
 
   def nav_link_active?(path)
@@ -105,6 +113,19 @@ module ApplicationHelper
 
   def action_item_overdue?(item)
     item.due_on < Date.current && !item.terminal?
+  end
+
+  def action_item_calendar_date(value)
+    date = value.to_date
+    date.strftime("%b #{date.day}, %Y")
+  end
+
+  def action_item_due_label(item)
+    "Due #{action_item_calendar_date(item.due_on)}"
+  end
+
+  def action_item_overdue_badge_classes
+    "inline-flex rounded-full bg-coral px-2.5 py-0.5 text-xs font-semibold text-white"
   end
 
   def action_item_badge_classes(status)

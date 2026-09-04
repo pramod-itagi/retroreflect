@@ -1,33 +1,32 @@
-<%# locals: action_items, branded: false %>
-<% branded = local_assigns.fetch(:branded, false) %>
+<%# locals: action_items %>
 
 <% if action_items.any? %>
-  <ul class="<%= branded ? 'home-card divide-y divide-[var(--line)] overflow-hidden' : 'divide-y divide-slate-200 rounded border border-slate-200 bg-white' %>">
+  <ul class="home-card divide-y divide-[var(--line)] overflow-hidden">
     <% action_items.each do |item| %>
-      <li class="<%= branded ? 'px-5 py-4' : 'px-4 py-3' %>">
-        <div class="<%= branded ? 'flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-start lg:justify-between' : 'flex flex-wrap items-start justify-between gap-3' %>">
+      <li class="px-5 py-4">
+        <div class="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-start lg:justify-between">
           <div class="min-w-0 max-w-2xl">
-            <p class="<%= branded ? 'break-words font-semibold text-ink' : 'font-medium' %>"><%= item.title %></p>
+            <p class="break-words font-semibold text-ink"><%= item.title %></p>
             <% if item.description.present? %>
-              <p class="<%= branded ? 'mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-[#466057]' : 'mt-1 whitespace-pre-wrap text-sm text-slate-600' %>"><%= item.description %></p>
+              <p class="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-muted"><%= item.description %></p>
             <% end %>
-            <p class="<%= branded ? 'mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-[#466057]' : 'mt-1 text-sm text-slate-500' %>">
-              <%= display_name_for(item.owner) %>
-              · due <%= item.due_on %>
-              · <% if branded %><span class="<%= action_item_badge_classes(item.status) %>"><%= action_status_label(item.status) %></span><% else %><%= action_status_label(item.status) %><% end %>
+            <p class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-muted">
+              <%= display_name_for(item.owner) %> ·
+              <%= render "action_items/metadata", item: item %>
               <% if item.completed_at.present? %>
-                · completed <%= item.completed_at.to_date %>
+                <span aria-hidden="true">·</span>
+                <span>Completed <%= action_item_calendar_date(item.completed_at) %></span>
               <% elsif item.cancelled_at.present? %>
-                · cancelled <%= item.cancelled_at.to_date %>
+                <span aria-hidden="true">·</span>
+                <span>Cancelled <%= action_item_calendar_date(item.cancelled_at) %></span>
               <% end %>
             </p>
-            <%= render "action_items/activity", item: item, branded: branded %>
+            <%= render "action_items/activity", item: item %>
           </div>
           <% unless item.terminal? %>
             <%= render "action_items/status_form",
                        item: item,
                        url: facilitator_action_item_path(item),
-                       branded: branded,
                        for_owner: false %>
           <% end %>
         </div>
@@ -35,11 +34,7 @@
     <% end %>
   </ul>
 <% else %>
-  <% if branded %>
-    <div class="home-card px-5 py-4">
-      <p class="text-sm leading-6 text-[#466057]">No action items yet.</p>
-    </div>
-  <% else %>
-    <p class="rounded border border-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-500">No action items yet.</p>
-  <% end %>
+  <div class="home-card px-5 py-4">
+    <p class="text-sm leading-6 text-muted">No action items yet.</p>
+  </div>
 <% end %>
