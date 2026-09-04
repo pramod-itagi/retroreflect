@@ -47,6 +47,20 @@ RSpec.describe User, type: :model do
     expect(email_index.unique).to be true
   end
 
+  it "scopes workspace teams by role without duplicating memberships" do
+    priya = create_user(name: "Priya", system_admin: true)
+    jordan = create_user(name: "Jordan")
+    alice = create_user(name: "Alice")
+    casey = create_user(name: "Casey")
+    platform = create_team_with_roles(facilitator: jordan, members: [alice], name: "Platform")
+    growth = create_team_with_roles(facilitator: create_user(name: "Morgan"), members: [jordan], name: "Growth")
+
+    expect(jordan.workspace_teams).to contain_exactly(platform, growth)
+    expect(alice.workspace_teams).to contain_exactly(platform)
+    expect(casey.workspace_teams).to be_empty
+    expect(priya.workspace_teams).to contain_exactly(platform, growth)
+  end
+
   it "treats discarded users as inactive" do
     user = create_user(name: "Ada", email: "ada@example.com")
     user.discard!

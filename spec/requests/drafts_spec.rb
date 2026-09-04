@@ -38,9 +38,8 @@ RSpec.describe "Participant feedback", type: :request do
     expect(page).to include("Add another point")
     expect(page).to include("Your feedback is anonymous. The facilitator can see whether you've submitted, but not who wrote each point.")
     expect(page).not_to include("Back to home")
-    expect(page).not_to include("Save draft")
     save_buttons = response.parsed_body.css("input[type=submit], button[type=submit]").select do |element|
-      (element["value"] || element.text).strip == "Save Draft"
+      (element["value"] || element.text).strip == "Save draft"
     end
     expect(save_buttons.size).to eq(1)
     expect(response.parsed_body.at_css("header nav").text).to include("Home")
@@ -226,8 +225,8 @@ RSpec.describe "Participant feedback", type: :request do
     expect(setup[:alice_participation].response_status_label).to eq("Submitted")
 
     get participant_retrospective_path(setup[:retro])
-    expect(response.body).not_to include("Save Draft")
-    expect(response.body).not_to include("Submit Feedback")
+    expect(response.body).not_to include("Save draft")
+    expect(response.body).not_to include("Submit feedback")
     expect(response.body).to include("Submitted")
 
     post save_participant_retrospective_drafts_path(setup[:retro]), params: {
@@ -304,7 +303,7 @@ RSpec.describe "Participant feedback", type: :request do
     sign_in(setup[:alice])
     get participant_retrospective_path(setup[:retro])
     page = CGI.unescapeHTML(response.body)
-    expect(page).to include("Submit Feedback")
+    expect(page).to include("Submit feedback")
     expect(page).to include("Submit your feedback?")
     expect(page).to include("Once submitted, you won't be able to edit your feedback.")
     expect(page).to include(participant_retrospective_submission_path(setup[:retro]))

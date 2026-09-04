@@ -1,9 +1,4 @@
 <% content_for :full_bleed, true %>
-<% content_for :head do %>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<% end %>
 
 <div class="workspace-page workspace-shell">
   <div class="workspace-container">
@@ -16,7 +11,7 @@
       Session
     </p>
     <h1 class="display-face break-words text-4xl font-bold leading-[0.98] tracking-[-0.045em] text-ink sm:text-5xl"><%= @retrospective.title %></h1>
-    <p class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-[#466057]">
+    <p class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-muted">
       <span class="<%= retrospective_status_badge_classes(@retrospective.status) %>"><%= @retrospective.status.humanize %></span>
       <% if @retrospective.sprint_label.present? %>
         <span aria-hidden="true">·</span>
@@ -27,10 +22,10 @@
     <% if @retrospective.cancelled? %>
       <div class="home-card mt-6 px-6 py-5">
         <p class="font-semibold text-ink">This retrospective was cancelled.</p>
-        <p class="mt-2 leading-6 text-[#466057]">No further collecting or reveal is available for this session.</p>
+        <p class="mt-2 leading-6 text-muted">No further collecting or reveal is available for this session.</p>
         <% if @retrospective.cancellation_reason.present? %>
           <p class="mt-4 text-sm font-semibold text-ink">Reason for cancellation</p>
-          <p class="mt-1 whitespace-pre-wrap leading-6 text-[#466057]"><%= @retrospective.cancellation_reason %></p>
+          <p class="mt-1 whitespace-pre-wrap leading-6 text-muted"><%= @retrospective.cancellation_reason %></p>
         <% end %>
       </div>
     <% end %>
@@ -71,9 +66,18 @@
         <%= link_to "Meeting board", facilitator_retrospective_meeting_path(@retrospective), class: "#{home_primary_button_classes} w-full sm:w-auto" %>
         <%= button_to "Close retrospective",
                       close_facilitator_retrospective_path(@retrospective),
-                      class: "#{home_primary_button_classes} w-full sm:w-auto",
+                      class: "home-action home-action-danger w-full sm:w-auto",
                       form_class: "w-full sm:w-auto",
-                      data: { turbo_submits_with: "Closing..." } %>
+                      data: { turbo_submits_with: "Closing..." },
+                      form: {
+                        data: {
+                          turbo_confirm: "Close #{@retrospective.title}?",
+                          confirm_description: "Closing ends the active retrospective for #{@team.name}. Notes and action items are kept.",
+                          confirm_accept: "Close retrospective",
+                          confirm_cancel: "Keep retrospective",
+                          confirm_busy: "Closing..."
+                        }
+                      } %>
       <% elsif @retrospective.closed? %>
         <%= link_to "Meeting board", facilitator_retrospective_meeting_path(@retrospective), class: "home-action home-action-secondary w-full sm:w-auto" %>
       <% end %>
@@ -85,47 +89,74 @@
         <p class="mt-3 text-lg font-semibold leading-6 text-ink">
           <%= @submitted_count %> of <%= @participations.size %> participants have submitted feedback.
         </p>
-        <p class="mt-2 max-w-xl leading-6 text-[#466057]">
+        <p class="mt-2 max-w-xl leading-6 text-muted">
           You can see who has submitted, not what they wrote. Notes stay private until you reveal them.
         </p>
       </section>
     <% end %>
 
     <section class="mt-10">
-      <p class="text-sm font-bold uppercase tracking-[0.16em] text-[#466057]">Participants</p>
+      <p class="text-sm font-bold uppercase tracking-[0.16em] text-muted">Participants</p>
       <h2 class="display-face mt-2 text-2xl font-bold leading-tight tracking-[-0.035em] text-ink sm:text-3xl">Roster</h2>
 
-      <ul class="home-card mt-5 divide-y divide-[var(--line)] overflow-hidden">
-        <% @participations.each do |participation| %>
-          <li class="member-row">
-            <div class="member-row-main">
-              <p class="member-row-name"><%= display_name_for(participation.user) %></p>
-              <span class="<%= participation_status_badge_classes(participation.invitation_status_label) %>"><%= participation.invitation_status_label %></span>
-              <% if @retrospective.collecting? || @retrospective.revealed? %>
-                <span class="<%= participation_status_badge_classes(participation.response_status_label) %>"><%= participation.response_status_label %></span>
-              <% end %>
-            </div>
-            <% if @retrospective.draft? %>
-              <%= button_to "Remove",
-                            facilitator_retrospective_participation_path(@retrospective, participation),
-                            method: :delete,
-                            class: "text-sm font-semibold text-[#466057] hover:text-coral",
-                            data: { turbo_submits_with: "Removing..." } %>
-            <% end %>
-          </li>
-        <% end %>
-      </ul>
+      <% if @participations.any? %>
+        <ul class="home-card mt-5 divide-y divide-[var(--line)] overflow-hidden roster-list">
+          <% @participations.each do |participation| %>
+            <li>
+              <div class="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+                  <span class="member-avatar" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 21a8 8 0 0 0-16 0"/>
+                      <circle cx="12" cy="8" r="3.25"/>
+                    </svg>
+                  </span>
+                  <p class="member-row-name"><%= display_name_for(participation.user) %></p>
+                  <span class="<%= participation_status_badge_classes(participation.invitation_status_label) %>"><%= participation.invitation_status_label %></span>
+                  <% if @retrospective.collecting? || @retrospective.revealed? %>
+                    <span class="<%= participation_status_badge_classes(participation.response_status_label) %>"><%= participation.response_status_label %></span>
+                  <% end %>
+                </div>
+                <% if @retrospective.draft? %>
+                  <div class="member-card-actions">
+                    <%= button_to facilitator_retrospective_participation_path(@retrospective, participation),
+                                  method: :delete,
+                                  class: "member-action-btn member-action-danger text-sm font-semibold",
+                                  form_class: "inline",
+                                  data: { turbo_submits_with: "Removing..." } do %>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="member-action-icon" aria-hidden="true">
+                        <polyline points="3 6 5 6 17 6"/>
+                        <path d="M8 6V4h4v2"/>
+                        <path d="M16 6l-1 11H5L4 6"/>
+                        <line x1="10" y1="11" x2="10" y2="15"/>
+                      </svg>
+                      Remove
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
 
       <% if @retrospective.draft? %>
-        <%= form_with url: facilitator_retrospective_participations_path(@retrospective), class: "home-card mt-4 flex flex-col gap-4 px-6 py-5 sm:flex-row sm:flex-wrap sm:items-end" do %>
-          <div class="flex min-w-0 flex-1 flex-col gap-1.5">
-            <%= label_tag :user_id, "Add team member", class: "text-xs font-semibold uppercase tracking-[0.12em] text-[#466057]" %>
-            <%= select_tag :user_id, options_from_collection_for_select(@available_members, :id, :display_name), prompt: "Select member", class: "workspace-filter-field" %>
-          </div>
-          <%= submit_tag "Add to roster", class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto", data: { turbo_submits_with: "Adding..." } %>
-        <% end %>
+        <div class="home-card mt-8 px-6 py-5">
+          <p class="text-lg font-bold text-ink">Add team member</p>
+          <p class="mt-1 leading-6 text-muted">Choose a team member who will submit notes.</p>
+          <%= form_with url: facilitator_retrospective_participations_path(@retrospective), class: "mt-5 grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end" do %>
+            <div class="flex min-w-0 flex-col gap-1.5">
+              <%= label_tag :user_id, "Select member", class: "text-xs font-semibold uppercase tracking-[0.12em] text-muted" %>
+              <%= select_tag :user_id,
+                             options_from_collection_for_select(@available_members, :id, :display_name),
+                             prompt: "Select member",
+                             class: "workspace-field" %>
+            </div>
+            <%= submit_tag "Add to roster", class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto", data: { turbo_submits_with: "Adding..." } %>
+          <% end %>
+        </div>
       <% else %>
-        <p class="mt-5 text-sm leading-6 text-[#466057]">Roster is frozen.</p>
+        <p class="mt-8 text-sm leading-6 text-muted">Roster is frozen.</p>
       <% end %>
     </section>
 
@@ -135,66 +166,37 @@
         <h2 class="display-face mt-2 text-2xl font-bold leading-tight tracking-[-0.035em] text-ink sm:text-3xl">Action items</h2>
         <div class="mt-5">
           <% if @retrospective.discussing? %>
-            <%= render "facilitator/action_items/form", team: @team, retrospective: @retrospective, owners: @team.users.active.order(:name), branded: true %>
+            <%= render "facilitator/action_items/form", team: @team, retrospective: @retrospective, owners: @team.users.active.order(:name) %>
           <% end %>
-          <%= render "facilitator/action_items/list", action_items: @retrospective.action_items.includes(:owner, status_events: :actor), branded: true %>
+          <%= render "facilitator/action_items/list", action_items: @retrospective.action_items.includes(:owner, status_events: :actor) %>
         </div>
       </section>
     <% end %>
 
     <% if RetrospectivePolicy.new(current_user, @retrospective).cancel? %>
-      <section class="mt-10 border-t border-[var(--line)] pt-8" data-controller="cancel-retrospective">
+      <section class="mt-10 border-t border-[var(--line)] pt-8">
         <h2 class="display-face text-2xl font-bold leading-tight tracking-[-0.035em] text-ink">Cancel retrospective</h2>
-        <p class="mt-3 max-w-2xl leading-6 text-[#466057]">
+        <p class="mt-3 max-w-2xl leading-6 text-muted">
           Cancelling ends this retrospective. It remains in history, and the next retrospective for this team will use the next sprint number.
         </p>
         <div class="mt-5">
-          <button type="button"
-                  class="home-action home-action-danger-solid inline-flex"
-                  data-action="cancel-retrospective#open">
-            Cancel retrospective
-          </button>
-        </div>
-
-        <div class="app-confirm"
-             data-cancel-retrospective-target="modal"
-             aria-hidden="true">
-          <div class="app-confirm-backdrop" data-action="click->cancel-retrospective#close"></div>
-          <div class="app-confirm-dialog"
-               role="dialog"
-               aria-modal="true"
-               aria-labelledby="cancel-retrospective-title"
-               aria-describedby="cancel-retrospective-copy"
-               data-cancel-retrospective-target="dialog">
-            <h2 id="cancel-retrospective-title" class="app-confirm-title">Cancel retrospective?</h2>
-            <p id="cancel-retrospective-copy" class="app-confirm-copy">Are you sure you want to cancel this retrospective?</p>
-            <%= form_with url: cancel_facilitator_retrospective_path(@retrospective),
-                          method: :post,
-                          data: { action: "submit->cancel-retrospective#submitting" } do %>
-              <div class="app-confirm-reason">
-                <label class="app-confirm-reason-label" for="cancellation_reason">Reason for cancellation</label>
-                <textarea id="cancellation_reason"
-                          name="cancellation_reason"
-                          class="workspace-field app-confirm-reason-field"
-                          data-cancel-retrospective-target="reason"
-                          rows="4"></textarea>
-              </div>
-              <div class="app-confirm-actions">
-                <button type="button"
-                        class="home-action home-action-secondary"
-                        data-cancel-retrospective-target="cancel"
-                        data-action="cancel-retrospective#close">
-                  Cancel
-                </button>
-                <button type="submit"
-                        class="home-action home-action-danger-solid"
-                        data-cancel-retrospective-target="accept"
-                        data-turbo-submits-with="Cancelling...">
-                  Confirm
-                </button>
-              </div>
-            <% end %>
-          </div>
+          <%= button_to "Cancel retrospective",
+                        cancel_facilitator_retrospective_path(@retrospective),
+                        class: "home-action home-action-danger-solid inline-flex",
+                        params: { cancellation_reason: "" },
+                        data: { turbo_submits_with: "Cancelling..." },
+                        form: {
+                          data: {
+                            turbo_confirm: "Cancel #{@retrospective.title}?",
+                            confirm_description: "#{@retrospective.title} for #{@team.name} will be cancelled. It remains in history, and the next retrospective for this team will use the next sprint number.",
+                            confirm_accept: "Confirm cancellation",
+                            confirm_cancel: "Keep retrospective",
+                            confirm_busy: "Cancelling...",
+                            confirm_variant: "danger",
+                            confirm_reason: "cancellation_reason",
+                            confirm_reason_label: "Reason for cancellation"
+                          }
+                        } %>
         </div>
       </section>
     <% end %>

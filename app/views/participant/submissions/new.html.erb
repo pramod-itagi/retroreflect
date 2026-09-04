@@ -1,9 +1,4 @@
 <% content_for :full_bleed, true %>
-<% content_for :head do %>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<% end %>
 
 <div class="workspace-page workspace-shell">
   <div class="workspace-container workspace-container-tight">
@@ -13,11 +8,11 @@
         Session
       </p>
       <h1 class="display-face text-4xl font-bold leading-[0.98] tracking-[-0.045em] text-ink">Submit your feedback?</h1>
-      <p class="mt-3 max-w-xl text-base leading-7 text-[#39514a]">Once submitted, you won't be able to edit your feedback.</p>
+      <p class="mt-3 max-w-xl text-base leading-7 text-muted">Once submitted, you won't be able to edit your feedback.</p>
 
       <div class="mt-6 flex flex-wrap items-center gap-3">
         <%= link_to "Cancel", participant_retrospective_path(@retrospective), class: "home-action home-action-secondary" %>
-        <%= button_to "Submit Feedback",
+        <%= button_to "Submit feedback",
                       participant_retrospective_submission_path(@retrospective),
                       class: "#{home_primary_button_classes} cursor-pointer",
                       form_class: "inline",

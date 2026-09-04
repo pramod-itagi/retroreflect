@@ -48,13 +48,16 @@ RSpec.describe "Home dashboard", type: :request do
     expect(platform_link["href"]).to eq(facilitator_team_path(context[:platform]))
     expect(team_links.map { |link| link["href"] }).to include(facilitator_team_path(context[:platform]))
     expect(response.body).to include("home-team-link")
-    expect(response.parsed_body.css("ul.home-section-list a.home-team-link").size).to eq(2)
-    expect(response.parsed_body.at_css("ul.home-section-list a.home-team-link").ancestors("ul.home-card")).to be_empty
+    your_teams = response.parsed_body.css("ul.home-card").find { |list| list.at_css("a.home-team-link") }
+    expect(your_teams).to be_present
+    expect(your_teams["class"]).to include("divide-y")
+    expect(your_teams.css("a.home-team-link").size).to eq(2)
+    expect(your_teams.css("li").size).to eq(2)
     expect(response.body).to include("Sprint 24 collecting")
     expect(response.body).to include("Collecting")
     expect(response.body).to include("0 / 1 submitted")
     expect(response.body).to include("Sprint 25 setup")
-    expect(response.body).to include("Continue Setup")
+    expect(response.body).to include("Continue setup")
     expect(response.body).to include("Make room for what your team is learning.")
     expect(response.body).not_to include("Ancient closed retro")
     expect(response.body).not_to include("Recent Retrospectives")
@@ -107,18 +110,33 @@ RSpec.describe "Home dashboard", type: :request do
       completed_at: Time.current,
       completed_by: context[:alice]
     )
+    overdue_item = context[:platform].action_items.create!(
+      title: "Unblock the deploy",
+      owner: context[:alice],
+      created_by: context[:facilitator],
+      due_on: Date.current,
+      status: :open
+    )
+    overdue_item.update!(due_on: Date.current - 1)
 
     sign_in(context[:alice])
     get root_path
 
     expect(response.body).to include("Action items needing attention")
     expect(response.body).to include(open_item.title)
+    expect(response.body).to include(overdue_item.title)
     expect(response.body).to include("View all")
     expect(response.body).not_to include("Old completed work")
-    attention_list = response.parsed_body.css("ul.home-section-list").find { |list| list.text.include?(open_item.title) }
+    expect(response.body).to include("Due #{open_item.due_on.strftime("%b #{open_item.due_on.day}, %Y")}")
+    expect(response.body).to include("Due #{overdue_item.due_on.strftime("%b #{overdue_item.due_on.day}, %Y")}")
+    expect(response.body).to include("Overdue")
+    expect(response.body).not_to include(open_item.due_on.iso8601)
+    expect(response.body).not_to include(overdue_item.due_on.iso8601)
+    attention_list = response.parsed_body.css("ul.home-card").find { |list| list.text.include?(open_item.title) }
     expect(attention_list).to be_present
-    expect(attention_list["class"]).not_to include("divide-y")
-    expect(attention_list.css("article.home-card").size).to eq(1)
+    expect(attention_list["class"]).to include("divide-y")
+    expect(attention_list.css("li").size).to eq(2)
+    expect(attention_list.css("article.home-card")).to be_empty
   end
 
   it "includes the updated header navigation" do
@@ -132,10 +150,10 @@ RSpec.describe "Home dashboard", type: :request do
     expect(nav).to include("Home")
     expect(nav).to include("Teams")
     expect(nav).to include("Retrospectives")
-    expect(nav).to include("Actions")
-    expect(nav).not_to include("System Administration")
+    expect(nav).to include("Action items")
+    expect(nav).not_to include("System administration")
     expect(nav).not_to include("Previous Retros")
-    expect(nav).not_to include("Action items")
+    expect(nav).not_to include("Actions")
 
     footer = response.parsed_body.at_css("footer")
     expect(footer).to be_present

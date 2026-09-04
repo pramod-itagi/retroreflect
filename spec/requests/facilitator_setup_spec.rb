@@ -43,6 +43,29 @@ RSpec.describe "Facilitator retrospective setup", type: :request do
 
     post facilitator_retrospective_participations_path(retro), params: { user_id: bob.id }
     expect(retro.reload.participations.map(&:user)).to contain_exactly(alice, bob)
+
+    get facilitator_retrospective_path(retro)
+    expect(response.parsed_body.css("h2").map { |heading| heading.text.strip }).to include("Roster")
+    expect(response.body).to include("Participants")
+    expect(response.body).not_to include("Make facilitator")
+    expect(response.body).not_to include("Make member")
+    roster = response.parsed_body.at_css("ul.roster-list")
+    expect(roster["class"]).to include("divide-y")
+    expect(roster.css("li").size).to eq(2)
+    expect(roster.css("article.home-card")).to be_empty
+    expect(roster.at_css(".member-avatar")).to be_present
+    expect(roster.text).to include("Alice")
+    expect(roster.text).to include("Not invited")
+    remove = response.parsed_body.at_css("ul.roster-list button.member-action-danger")
+    expect(remove).to be_present
+    expect(remove.text).to include("Remove")
+    add_card = response.parsed_body.css(".home-card").find { |card| card.text.include?("Add team member") }
+    expect(add_card).to be_present
+    expect(add_card.at_css("select[name='user_id']")["class"]).to include("workspace-field")
+    expect(add_card.at_css("select[name='user_id']")["class"]).not_to include("workspace-filter-field")
+    add_submit = add_card.at_css("[type='submit']")
+    expect(add_submit["value"]).to eq("Add to roster")
+    expect(add_submit["class"]).to include("home-action-primary")
   end
 
   it "asks for confirmation before removing a member" do
@@ -54,9 +77,27 @@ RSpec.describe "Facilitator retrospective setup", type: :request do
     sign_in(facilitator)
     get facilitator_team_path(team)
     expect(response.body).to include("Members")
-    expect(response.parsed_body.css("h2").map { |heading| heading.text.strip }).to include("Members")
+    page_headings = response.parsed_body.css(".workspace-page h1, .workspace-page h2").map { |heading| [heading.name, heading.text.strip] }
+    expect(page_headings).to eq([
+      ["h1", team.name],
+      ["h2", "Members"],
+      ["h2", "Current retrospective"],
+      ["h2", "Current action items"],
+      ["h2", "Archive team"]
+    ])
+    expect(response.parsed_body.at_css(".workspace-page h2").text.strip).to eq("Members")
     expect(response.parsed_body.css("h2").map { |heading| heading.text.strip }).not_to include("People")
-    expect(response.parsed_body.css("ul.team-member-list article.home-card").size).to eq(2)
+    expect(response.parsed_body.css("h2").map { |heading| heading.text.strip }).not_to include("Add person")
+    members = response.parsed_body.at_css("ul.team-member-list")
+    expect(members["class"]).to include("divide-y")
+    expect(members.css("li").size).to eq(2)
+    expect(members.css("article.home-card")).to be_empty
+    make_facilitator = response.parsed_body.css("button.member-action-btn").find { |button| button.text.include?("Make facilitator") }
+    remove = response.parsed_body.at_css("button.member-action-danger")
+    expect(make_facilitator).to be_present
+    expect(make_facilitator["class"]).not_to include("member-action-danger")
+    expect(remove).to be_present
+    expect(remove.text).to include("Remove")
     expect(response.body).to include("Remove Alice from #{team.name}?")
     expect(response.body).to include("Alice will no longer be a member of this team.")
     expect(response.body).to include("data-turbo-confirm")

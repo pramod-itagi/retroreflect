@@ -4,17 +4,21 @@ const ACCEPT_LABELS = {
   "Email every participant and freeze the roster?": "Send invitations",
   "Reveal all notes anonymously? Drafts will be deleted.": "Reveal notes",
   "Remove this point?": "Remove",
-  "Submit your feedback?": "Submit Feedback"
+  "Submit your feedback?": "Submit feedback"
 }
 
 const DANGER_MESSAGES = new Set(["Remove this point?"])
+const DEFAULT_CANCEL_LABEL = "Cancel"
 
 export default class extends Controller {
-  static targets = ["dialog", "message", "description", "accept", "cancel"]
+  static targets = ["dialog", "message", "description", "accept", "cancel", "reason", "reasonWrap", "reasonLabel"]
 
   connect() {
     this.boundAsk = this.ask.bind(this)
     this.boundKeydown = this.keydown.bind(this)
+    this.boundPatchFetch = this.patchFetchBody.bind(this)
+    this.defaultCancelLabel = this.cancelTarget.textContent.trim() || DEFAULT_CANCEL_LABEL
+    document.addEventListener("turbo:before-fetch-request", this.boundPatchFetch)
     if (window.Turbo?.config?.forms) {
       this.previousConfirm = window.Turbo.config.forms.confirm
       window.Turbo.config.forms.confirm = this.boundAsk
@@ -22,6 +26,7 @@ export default class extends Controller {
   }
 
   disconnect() {
+    document.removeEventListener("turbo:before-fetch-request", this.boundPatchFetch)
     this.finish(false)
     this.closeChrome()
     if (window.Turbo?.config?.forms && window.Turbo.config.forms.confirm === this.boundAsk) {
@@ -46,6 +51,9 @@ export default class extends Controller {
         || ACCEPT_LABELS[message]
         || "Continue"
       this.acceptTarget.textContent = acceptLabel
+      this.cancelTarget.textContent = submitter?.dataset?.confirmCancel
+        || form?.dataset?.confirmCancel
+        || this.defaultCancelLabel
 
       const description = submitter?.dataset?.confirmDescription
         || form?.dataset?.confirmDescription
@@ -60,6 +68,9 @@ export default class extends Controller {
         }
       }
 
+      this.reasonName = submitter?.dataset?.confirmReason || form?.dataset?.confirmReason || ""
+      this.setupReason(submitter, form)
+
       const danger = submitter?.dataset?.confirmVariant === "danger"
         || form?.dataset?.confirmVariant === "danger"
         || DANGER_MESSAGES.has(message)
@@ -70,7 +81,7 @@ export default class extends Controller {
       this.element.classList.add("is-open")
       this.element.setAttribute("aria-hidden", "false")
       document.addEventListener("keydown", this.boundKeydown)
-      requestAnimationFrame(() => this.cancelTarget.focus())
+      requestAnimationFrame(() => this.initialFocus().focus())
     })
   }
 
@@ -78,6 +89,8 @@ export default class extends Controller {
     event?.preventDefault()
     if (!this.resolve || this.acceptTarget.disabled) return
 
+    this.rememberReasonPatch()
+    this.copyReasonIntoForm(this.pendingForm)
     this.acceptTarget.disabled = true
     this.cancelTarget.disabled = true
     if (this.busyLabel) this.acceptTarget.textContent = this.busyLabel
@@ -109,7 +122,7 @@ export default class extends Controller {
 
     if (event.key !== "Tab") return
 
-    const focusable = [this.cancelTarget, this.acceptTarget].filter((el) => !el.disabled)
+    const focusable = this.focusableElements()
     if (focusable.length === 0) return
 
     const index = focusable.indexOf(document.activeElement)
@@ -124,7 +137,10 @@ export default class extends Controller {
   finish(result) {
     if (!this.resolve) return
 
-    if (!result && this.pendingForm) delete this.pendingForm.dataset.submitLocked
+    if (!result) {
+      this.reasonPatch = null
+      if (this.pendingForm) delete this.pendingForm.dataset.submitLocked
+    }
 
     const resolve = this.resolve
     this.resolve = null
@@ -142,9 +158,90 @@ export default class extends Controller {
     document.removeEventListener("keydown", this.boundKeydown)
     this.acceptTarget.disabled = false
     this.cancelTarget.disabled = false
+    this.cancelTarget.textContent = this.defaultCancelLabel
+    this.resetReason()
     if (this.previouslyFocused?.focus) this.previouslyFocused.focus()
     this.previouslyFocused = null
     this.pendingForm = null
     this.busyLabel = ""
+    this.reasonName = ""
+  }
+
+  setupReason(submitter, form) {
+    if (!this.hasReasonWrapTarget || !this.hasReasonTarget) return
+
+    if (!this.reasonName) {
+      this.reasonWrapTarget.hidden = true
+      this.reasonTarget.value = ""
+      return
+    }
+
+    const label = submitter?.dataset?.confirmReasonLabel
+      || form?.dataset?.confirmReasonLabel
+      || "Reason"
+    if (this.hasReasonLabelTarget) this.reasonLabelTarget.textContent = label
+    this.reasonTarget.value = ""
+    this.reasonWrapTarget.hidden = false
+  }
+
+  resetReason() {
+    if (this.hasReasonTarget) this.reasonTarget.value = ""
+    if (this.hasReasonWrapTarget) this.reasonWrapTarget.hidden = true
+  }
+
+  rememberReasonPatch() {
+    if (!this.pendingForm || !this.reasonName) {
+      this.reasonPatch = null
+      return
+    }
+
+    this.reasonPatch = {
+      form: this.pendingForm,
+      name: this.reasonName,
+      value: this.hasReasonTarget ? this.reasonTarget.value : ""
+    }
+  }
+
+  // Turbo snapshots form data before confirm() resolves. Patch the request body
+  // so extra fields collected in the modal (like a cancellation reason) are sent.
+  patchFetchBody(event) {
+    const patch = this.reasonPatch
+    if (!patch || event.target !== patch.form) return
+
+    const body = event.detail?.fetchOptions?.body
+    if (body && typeof body.set === "function") {
+      body.set(patch.name, patch.value)
+    }
+    this.reasonPatch = null
+  }
+
+  copyReasonIntoForm(form) {
+    if (!form || !this.reasonName || !this.hasReasonTarget) return
+
+    let input = form.querySelector(`[name="${this.reasonName}"]`)
+    if (!input) {
+      input = document.createElement("input")
+      input.type = "hidden"
+      input.name = this.reasonName
+      form.appendChild(input)
+    }
+    input.value = this.reasonTarget.value
+  }
+
+  initialFocus() {
+    if (this.reasonName && this.hasReasonTarget && !this.reasonWrapTarget.hidden) {
+      return this.reasonTarget
+    }
+    return this.cancelTarget
+  }
+
+  focusableElements() {
+    const elements = []
+    if (this.reasonName && this.hasReasonTarget && !this.reasonWrapTarget.hidden) {
+      elements.push(this.reasonTarget)
+    }
+    if (!this.cancelTarget.disabled) elements.push(this.cancelTarget)
+    if (!this.acceptTarget.disabled) elements.push(this.acceptTarget)
+    return elements
   }
 }

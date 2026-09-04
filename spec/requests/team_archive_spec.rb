@@ -47,13 +47,13 @@ RSpec.describe "Team archiving", type: :request do
 
     sign_in(setup[:jordan])
     get facilitator_team_path(setup[:platform])
-    expect(response.body).to include("Archive Team")
+    expect(response.body).to include("Archive team")
     expect(response.body).to include(new_facilitator_team_archive_path(setup[:platform]))
 
     sign_in(setup[:alice])
     get facilitator_team_path(setup[:platform])
-    expect(response).to redirect_to(root_path)
-    expect(response.body).not_to include("Archive Team")
+    expect(response).to have_http_status(:ok)
+    expect(response.body).not_to include("Archive team")
 
     get new_facilitator_team_archive_path(setup[:platform])
     expect(response).to redirect_to(root_path)
@@ -171,7 +171,7 @@ RSpec.describe "Team archiving", type: :request do
     expect(setup[:jordan].facilitated_teams).not_to include(setup[:platform])
 
     get facilitator_teams_path
-    listed_teams = response.parsed_body.css("ul li a").map { |anchor| anchor.text.strip }
+    listed_teams = response.parsed_body.css("ul li article .display-face").map { |heading| heading.text.strip }
     expect(listed_teams).not_to include("Platform")
     expect(listed_teams).to include("Growth")
     expect(setup[:platform].reload).to be_archived

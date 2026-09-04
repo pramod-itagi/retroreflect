@@ -1,0 +1,6 @@
+<%# locals: item %>
+<span class="<%= action_item_badge_classes(item.status) %>"><%= action_status_label(item.status) %></span>
+<% if action_item_overdue?(item) %>
+  <span class="<%= action_item_overdue_badge_classes %>">Overdue</span>
+<% end %>
+<span><%= action_item_due_label(item) %></span>

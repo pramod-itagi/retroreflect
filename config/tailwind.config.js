@@ -10,13 +10,14 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter var', ...defaultTheme.fontFamily.sans],
+        sans: ['Work Sans', ...defaultTheme.fontFamily.sans],
       },
       colors: {
         ink: '#10211d',
         paper: '#f7f3eb',
         coral: '#e65e48',
         moss: '#315d4f',
+        muted: '#466057',
         sand: '#e8ddcb',
       },
     },

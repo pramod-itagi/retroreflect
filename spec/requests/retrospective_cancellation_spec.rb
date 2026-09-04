@@ -33,16 +33,22 @@ RSpec.describe "Retrospective cancellation", type: :request do
     sign_in(data[:facilitator])
     get facilitator_retrospective_path(data[:retro])
     expect(page_text).to include("Cancel retrospective")
-    expect(page_text).to include("Cancel retrospective?")
-    expect(page_text).to include("Are you sure you want to cancel this retrospective?")
-    expect(page_text).to include("Reason for cancellation")
-    expect(response.body).to include(cancel_facilitator_retrospective_path(data[:retro]))
+    expect(page_text).not_to include("Are you sure you want to cancel this retrospective?")
     send_invitations = response.parsed_body.at_css("form[action='#{start_collecting_facilitator_retrospective_path(data[:retro])}']")
     expect(send_invitations.text).not_to include("Cancel")
     cancel_form = response.parsed_body.at_css("form[action='#{cancel_facilitator_retrospective_path(data[:retro])}']")
     expect(cancel_form).to be_present
-    expect(cancel_form.at_css("textarea[name='cancellation_reason']")).to be_present
-    expect(cancel_form.at_css("button[type='submit']").text).to include("Confirm")
+    expect(cancel_form["data-turbo-confirm"]).to eq("Cancel #{data[:retro].title}?")
+    expect(cancel_form["data-confirm-description"]).to include(data[:team].name)
+    expect(cancel_form["data-confirm-accept"]).to eq("Confirm cancellation")
+    expect(cancel_form["data-confirm-cancel"]).to eq("Keep retrospective")
+    expect(cancel_form["data-confirm-variant"]).to eq("danger")
+    expect(cancel_form["data-confirm-reason"]).to eq("cancellation_reason")
+    expect(cancel_form["data-confirm-reason-label"]).to eq("Reason for cancellation")
+    expect(cancel_form.at_css("textarea")).to be_nil
+    expect(cancel_form.at_css("input[name='cancellation_reason']")).to be_present
+    expect(cancel_form.at_css("[type='submit']").text).to include("Cancel retrospective")
+    expect(cancel_form.at_css("[type='submit']")["class"]).to include("home-action-danger-solid")
 
     post cancel_facilitator_retrospective_path(data[:retro]), params: {
       cancellation_reason: "Sprint planning was postponed."

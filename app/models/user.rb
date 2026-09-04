@@ -54,17 +54,19 @@ class User < ApplicationRecord
   end
 
   def facilitated_teams
-    Team.where(archived_at: nil)
-        .joins(:current_memberships)
-        .where(memberships: { user_id: id, role: :facilitator })
-        .distinct
+    Team.active.where(id: current_memberships.facilitator.select(:team_id))
   end
 
   def member_teams
-    Team.where(archived_at: nil)
-        .joins(:current_memberships)
-        .where(memberships: { user_id: id, role: :member })
-        .distinct
+    Team.active.where(id: current_memberships.member.select(:team_id))
+  end
+
+  def workspace_teams
+    if system_admin?
+      Team.active
+    else
+      Team.active.where(id: current_memberships.select(:team_id))
+    end
   end
 
   def accessible_retrospectives

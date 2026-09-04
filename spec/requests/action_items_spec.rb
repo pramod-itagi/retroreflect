@@ -47,6 +47,29 @@ RSpec.describe "Action items", type: :request do
     expect(item.retrospective).to eq(context[:retro])
   end
 
+  it "presents the action item creation form with the expected fields and defaults" do
+    context = setup_item
+    sign_in(context[:facilitator])
+    get facilitator_retrospective_meeting_path(context[:retro])
+
+    form = response.parsed_body.at_css("form.action-item-create")
+    expect(form).to be_present
+    expect(form["class"]).to include("home-card")
+    expect(form.at_css("input[name='action_item[title]']")["placeholder"]).to eq("e.g. Improve deployment process")
+    expect(form.at_css("select[name='action_item[owner_id]']")["class"]).to include("workspace-field")
+    expect(form.css("svg.action-item-field-icon").size).to eq(2)
+    expect(form.at_css(".action-item-status-dot")).to be_present
+    expect(form.at_css(".action-item-date-display")).to be_present
+    due_on = form.at_css("input[name='action_item[due_on]']")
+    expect(due_on["class"]).to include("action-item-date-native")
+    expect(due_on["min"]).to eq(Time.zone.today.iso8601)
+    status = form.at_css("select[name='action_item[status]']")
+    expect(status["class"]).to include("workspace-field")
+    expect(status.at("option[selected]")["value"]).to eq("open")
+    expect(form.at_css("textarea[name='action_item[description]']")["placeholder"]).to include("optional")
+    expect(form.at_css("[type='submit']")["value"]).to eq("Add action item")
+  end
+
   def status_select_on_meeting(item)
     response.parsed_body.css("form[action='#{facilitator_action_item_path(item)}'] select[name='action_item[status]']").first
   end
@@ -65,6 +88,32 @@ RSpec.describe "Action items", type: :request do
 
     patch facilitator_action_item_path(context[:item]), params: { action_item: { status: "open" } }
     expect(context[:item].reload).to be_open
+  end
+
+  it "gives each action item status select a unique accessible name" do
+    context = setup_item
+    other = context[:team].action_items.create!(
+      title: "Keep this open",
+      owner: context[:owner],
+      created_by: context[:facilitator],
+      retrospective: context[:retro],
+      due_on: Date.current + 2,
+      status: :open
+    )
+    sign_in(context[:facilitator])
+    get facilitator_retrospective_meeting_path(context[:retro])
+
+    first = status_select_on_meeting(context[:item])
+    second = status_select_on_meeting(other)
+    expect(first["id"]).to eq("action_item_#{context[:item].id}_status")
+    expect(second["id"]).to eq("action_item_#{other.id}_status")
+    expect(first["id"]).not_to eq(second["id"])
+
+    first_label = response.parsed_body.at_css("label[for='#{first['id']}']")
+    second_label = response.parsed_body.at_css("label[for='#{second['id']}']")
+    expect(first_label["class"]).to include("sr-only")
+    expect(first_label.text).to eq("Status for #{context[:item].title}")
+    expect(second_label.text).to eq("Status for #{other.title}")
   end
 
   it "lets a facilitator move through the lifecycle without toggling on no-op updates" do
@@ -198,17 +247,17 @@ RSpec.describe "Action items", type: :request do
     get facilitator_team_path(context[:team])
 
     expect(response).to have_http_status(:ok)
-    expect(response.body).to include("Current Action Items")
+    expect(response.body).to include("Current action items")
     expect(response.body).to include("Improve CI pipeline")
     expect(response.body).to include("Improve deployment")
     expect(response.body).to include("Ready for review item")
-    current_items = response.parsed_body.css("ul.home-section-list").find { |list| list.text.include?("Improve CI pipeline") }
-    expect(current_items.css("article.home-card").size).to eq(3)
-    expect(current_items["class"]).not_to include("divide-y")
+    current_items = response.parsed_body.css("ul.home-card").find { |list| list.text.include?("Improve CI pipeline") }
+    expect(current_items.css("li").size).to eq(3)
+    expect(current_items["class"]).to include("divide-y")
     expect(response.body).to include("Owner ·")
     expect(response.body).to include("In progress")
     expect(response.body).to include("Ready for review")
-    expect(response.body).to include("Due Aug 25")
+    expect(response.body).to include("Due Aug 25, 2026")
     expect(response.body).not_to include("Update documentation")
     expect(response.body).not_to include("Cancelled extra work")
     expect(response.body).not_to include("Add action item")
@@ -218,10 +267,12 @@ RSpec.describe "Action items", type: :request do
     expect(response.body).to include("Current retrospective")
     expect(response.body).to include("View retrospective history")
     expect(response.body).to include("Select a confirmed user")
-    expect(response.body).to include("pr-10")
-    expect(response.body).to include("Archive Team")
+    add_person = response.parsed_body.css(".home-card").find { |card| card.text.include?("Add person") }
+    expect(add_person.at_css("select[name='user_id']")["class"]).to include("workspace-field")
+    expect(add_person.at_css("select[name='role']")["class"]).to include("workspace-field")
+    expect(add_person.at_css("select[name='user_id']")["class"]).not_to include("workspace-filter-field")
+    expect(response.body).to include("Archive team")
     expect(response.body).to include("Archiving removes all current members from this team and prevents new retrospectives.")
-    expect(response.body).not_to include("Archive team")
 
     get facilitator_retrospective_meeting_path(context[:retro])
     expect(response).to have_http_status(:ok)
@@ -282,6 +333,7 @@ RSpec.describe "Action items", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Fix flaky test")
     expect(response.body).to include("Stabilize the login spec")
+    expect(response.body).to include("Due #{context[:item].due_on.strftime("%b #{context[:item].due_on.day}, %Y")}")
     expect(response.body).to include("Update")
 
     patch participant_action_item_path(context[:item]), params: status_change_params("in_progress", comment: "Started implementation.")
@@ -388,10 +440,25 @@ RSpec.describe "Action items", type: :request do
     context = setup_item
     context[:item].update!(due_on: Date.current - 1)
 
+    due_label = "Due #{context[:item].due_on.strftime("%b #{context[:item].due_on.day}, %Y")}"
+
     sign_in(context[:owner])
     get participant_action_items_path
     expect(response.body).to include("Overdue")
+    expect(response.body).to include(due_label)
+    expect(response.body).not_to include(context[:item].due_on.iso8601)
     expect(response.body).to include("Your action items")
+
+    sign_in(context[:facilitator])
+    get facilitator_team_path(context[:team])
+    expect(response.body).to include("Overdue")
+    expect(response.body).to include(due_label)
+    expect(response.body).not_to include(context[:item].due_on.iso8601)
+
+    get facilitator_retrospective_meeting_path(context[:retro])
+    expect(response.body).to include("Overdue")
+    expect(response.body).to include(due_label)
+    expect(response.body).not_to include(context[:item].due_on.iso8601)
 
     sign_in(context[:other])
     get participant_action_items_path

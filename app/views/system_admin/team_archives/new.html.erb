@@ -1,9 +1,4 @@
 <% content_for :full_bleed, true %>
-<% content_for :head do %>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<% end %>
 
 <div class="workspace-page workspace-shell listing-page admin-page">
   <div class="listing-inner">
@@ -32,7 +27,7 @@
         </div>
         <div class="flex flex-wrap items-center gap-3">
           <%= link_to "Cancel", system_admin_team_path(@team), class: "home-action home-action-secondary" %>
-          <%= submit_tag "Archive Team", class: "home-action home-action-danger-solid cursor-pointer", data: { turbo_submits_with: "Archiving..." } %>
+          <%= submit_tag "Archive team", class: "home-action home-action-danger-solid cursor-pointer", data: { turbo_submits_with: "Archiving..." } %>
         </div>
       <% end %>
     </div>

@@ -1,32 +1,27 @@
 <% content_for :full_bleed, true %>
-<% content_for :head do %>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<% end %>
 
 <div class="workspace-page workspace-shell listing-page admin-page">
   <div class="listing-inner">
     <header class="listing-intro">
       <p class="listing-kicker">Administration</p>
-      <h1 class="display-face listing-heading">System Administration</h1>
+      <h1 class="display-face listing-heading">System administration</h1>
       <p class="listing-lede">Create teams and manage who can administer Retroreflect.</p>
     </header>
 
     <div class="listing-stack admin-dashboard-grid">
       <article class="home-card flex flex-col px-6 py-5">
         <h2 class="display-face text-2xl font-bold leading-tight tracking-[-0.035em] text-ink">Teams</h2>
-        <p class="mt-2 leading-6 text-[#466057]">Create and manage teams.</p>
+        <p class="mt-2 leading-6 text-muted">Create and manage teams.</p>
         <div class="mt-5">
-          <%= link_to "Manage Teams", system_admin_teams_path, class: "#{home_primary_button_classes} w-full sm:w-auto" %>
+          <%= link_to "Manage teams", system_admin_teams_path, class: "#{home_primary_button_classes} w-full sm:w-auto" %>
         </div>
       </article>
 
       <article class="home-card flex flex-col px-6 py-5">
-        <h2 class="display-face text-2xl font-bold leading-tight tracking-[-0.035em] text-ink">System Admins</h2>
-        <p class="mt-2 leading-6 text-[#466057]">Manage system administrators.</p>
+        <h2 class="display-face text-2xl font-bold leading-tight tracking-[-0.035em] text-ink">System admins</h2>
+        <p class="mt-2 leading-6 text-muted">Manage system administrators.</p>
         <div class="mt-5">
-          <%= link_to "Manage System Admins", system_admin_admins_path, class: "#{home_primary_button_classes} w-full sm:w-auto" %>
+          <%= link_to "Manage system admins", system_admin_admins_path, class: "#{home_primary_button_classes} w-full sm:w-auto" %>
         </div>
       </article>
     </div>

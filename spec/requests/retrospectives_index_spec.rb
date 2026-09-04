@@ -59,7 +59,7 @@ RSpec.describe "Retrospectives listing", type: :request do
     expect(response.body).to include("Sprint 25 draft")
     expect(response.body).to include("Sprint 23 closed")
     expect(response.body).to include("Sprint 22 closed")
-    expect(response.body).to include("Continue Setup")
+    expect(response.body).to include("Continue setup")
     expect(response.body).to include("View")
     expect(response.body).not_to include("Growth only retro")
 
