@@ -300,4 +300,88 @@ RSpec.describe "Authentication", type: :request do
     end.not_to change(Team, :count)
     expect(response).to redirect_to(new_session_path)
   end
+
+  it "gives the reset browser a new session and rejects previously issued sessions" do
+    user = create_user(name: "Ada", email: "ada@example.com")
+    post session_path, params: { email: user.email, password: "password123" }
+    stolen_session = cookies["_retroreflect_session"]
+    expect(stolen_session).to be_present
+    expect(session[:session_version]).to eq(1)
+
+    delete session_path
+    raw = user.issue_password_reset_token!
+    patch password_reset_path(token: raw), params: {
+      user: { password: "newpassword", password_confirmation: "newpassword" }
+    }
+    expect(response).to redirect_to(root_path)
+    expect(user.reload.session_version).to eq(2)
+    expect(session[:session_version]).to eq(2)
+
+    get root_path
+    expect(response).to have_http_status(:ok)
+
+    cookies["_retroreflect_session"] = stolen_session
+    get root_path
+    expect(response).to redirect_to(new_session_path)
+    expect(session[:user_id]).to be_nil
+  end
+
+  it "rejects another device's session after a password change" do
+    user = create_user(name: "Ada", email: "ada@example.com")
+    post session_path, params: { email: user.email, password: "password123" }
+    other_device_cookie = cookies["_retroreflect_session"]
+    expect(other_device_cookie).to be_present
+
+    raw = user.issue_password_reset_token!
+    patch password_reset_path(token: raw), params: {
+      user: { password: "newpassword", password_confirmation: "newpassword" }
+    }
+    expect(session[:session_version]).to eq(2)
+
+    cookies["_retroreflect_session"] = other_device_cookie
+    get root_path
+    expect(response).to redirect_to(new_session_path)
+    expect(flash[:alert]).to be_nil
+  end
+
+  it "rate limits repeated sign-in attempts without blocking a later successful login" do
+    user = create_user(name: "Ada", email: "ada@example.com")
+
+    AuthThrottle::LOGIN_LIMIT.times do
+      post session_path, params: { email: user.email, password: "wrong-password" }
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("Invalid email or password")
+    end
+
+    post session_path, params: { email: user.email, password: "wrong-password" }
+    expect(response).to have_http_status(:unprocessable_content)
+    expect(response.body).to include(AuthThrottle::TOO_MANY_ATTEMPTS)
+    expect(response.body).not_to include("no account")
+
+    post session_path, params: { email: user.email, password: "password123" }
+    expect(response).to have_http_status(:unprocessable_content)
+    expect(response.body).to include(AuthThrottle::TOO_MANY_ATTEMPTS)
+
+    AuthThrottle.reset!
+    post session_path, params: { email: user.email, password: "password123" }
+    expect(response).to redirect_to(root_path)
+  end
+
+  it "keeps password-reset request responses identical when rate limited" do
+    user = create_user(name: "Ada", email: "ada@example.com")
+    notice = "If that account exists, we sent reset instructions."
+
+    AuthThrottle::RESET_LIMIT.times do
+      post password_resets_path, params: { email: user.email }
+      expect(response).to redirect_to(new_session_path)
+    end
+
+    expect do
+      post password_resets_path, params: { email: user.email }
+    end.not_to have_enqueued_mail(UserMailer, :password_reset)
+    expect(response).to redirect_to(new_session_path)
+    follow_redirect!
+    expect(response.body).to include(notice)
+    expect(response.body).not_to include("No account")
+  end
 end

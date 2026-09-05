@@ -41,6 +41,10 @@ RSpec.describe User, type: :model do
     expect(user.password_digest).to be_present
     expect(user.password_digest).not_to eq("password123")
     expect(user.authenticate("password123")).to eq(user)
+    expect(user.session_version).to eq(1)
+
+    user.update!(password: "newpassword", password_confirmation: "newpassword")
+    expect(user.session_version).to eq(2)
 
     email_index = ActiveRecord::Base.connection.indexes(:users).find { |index| index.columns == ["email"] }
     expect(email_index).to be_present
@@ -59,6 +63,23 @@ RSpec.describe User, type: :model do
     expect(alice.workspace_teams).to contain_exactly(platform)
     expect(casey.workspace_teams).to be_empty
     expect(priya.workspace_teams).to contain_exactly(platform, growth)
+  end
+
+  it "revokes a system admin only when another admin remains" do
+    alice = create_user(name: "Alice", system_admin: true)
+    bob = create_user(name: "Bob", system_admin: true)
+
+    expect(alice.revoke_system_admin).to be true
+    expect(alice.reload).not_to be_system_admin
+    expect(bob.reload).to be_system_admin
+
+    expect(bob.revoke_system_admin(as_self: true)).to be false
+    expect(bob.errors.full_messages).to include("You can't leave the System Admin role because you are the only System Admin.")
+    expect(bob.reload).to be_system_admin
+
+    expect(bob.revoke_system_admin).to be false
+    expect(bob.errors.full_messages).to include("At least one System Admin must remain.")
+    expect(bob.reload).to be_system_admin
   end
 
   it "treats discarded users as inactive" do

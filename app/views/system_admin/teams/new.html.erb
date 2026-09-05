@@ -12,23 +12,48 @@
     </header>
 
     <div class="listing-stack">
-      <%= form_with model: @team, url: system_admin_teams_path, class: "admin-form space-y-5" do |form| %>
+      <%= form_with model: @team, url: system_admin_teams_path, class: "admin-form create-team-form home-card px-6 py-6 sm:px-7 sm:py-7" do |form| %>
         <% if @team.errors.any? %>
           <%= app_alert(kind: "error", messages: @team.errors.full_messages, autohide: false) %>
         <% end %>
 
-        <div>
-          <%= form.label :name, "Team name", class: "mb-2 block text-sm font-semibold text-ink" %>
-          <%= form.text_field :name, required: true, class: "workspace-field" %>
+        <div class="space-y-5">
+          <div>
+            <%= form.label :name, "Team name", class: "mb-2 block text-sm font-semibold text-ink" %>
+            <div class="action-item-control action-item-control--text">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="action-item-field-icon" aria-hidden="true">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <%= form.text_field :name,
+                                  required: true,
+                                  class: "workspace-field",
+                                  placeholder: "e.g. Platform, Product, QA Team",
+                                  aria: { describedby: "team-name-hint" } %>
+            </div>
+            <p id="team-name-hint" class="mt-2 text-sm leading-6 text-muted">Choose a clear and recognizable name for your team.</p>
+          </div>
+
+          <div>
+            <%= label_tag :facilitator_id, "Initial facilitator", class: "mb-2 block text-sm font-semibold text-ink" %>
+            <div class="action-item-control">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="action-item-field-icon" aria-hidden="true">
+                <path d="M20 21a8 8 0 0 0-16 0"/>
+                <circle cx="12" cy="8" r="3.25"/>
+              </svg>
+              <%= select_tag :facilitator_id,
+                             options_from_collection_for_select(@candidate_users, :id, :display_name, params[:facilitator_id]),
+                             prompt: "Select a confirmed user",
+                             class: "workspace-field",
+                             aria: { describedby: "facilitator-hint" } %>
+            </div>
+            <p id="facilitator-hint" class="mt-2 text-sm leading-6 text-muted">This person will be the initial facilitator for the team.</p>
+          </div>
         </div>
-        <div>
-          <%= label_tag :facilitator_id, "Initial facilitator", class: "mb-2 block text-sm font-semibold text-ink" %>
-          <%= select_tag :facilitator_id,
-                         options_from_collection_for_select(@candidate_users, :id, :display_name, params[:facilitator_id]),
-                         prompt: "Select a confirmed user",
-                         class: "workspace-field" %>
-        </div>
-        <div class="flex flex-wrap items-center gap-3">
+
+        <div class="create-team-form-actions">
           <%= link_to "Cancel", system_admin_teams_path, class: "home-action home-action-secondary" %>
           <%= form.submit "Create team", class: "#{home_primary_button_classes} cursor-pointer", data: { turbo_submits_with: "Creating..." } %>
         </div>

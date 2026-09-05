@@ -27,13 +27,13 @@
                       alt: "Team members placing their hands together around a table",
                       class: "home-hero-image" %>
         <aside class="home-reflection-card" aria-label="Retrospective prompts">
-          <p class="home-reflection-kicker">The prompt</p>
+          <p class="home-reflection-kicker">Time to reflect</p>
           <p class="display-face home-reflection-heading">How should we move forward?</p>
           <div class="home-reflection-footer">
             <span class="home-reflection-icon" aria-hidden="true">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
             </span>
-            <p>What went well. What didn't. What to continue. What to improve.</p>
+            <p>Look back. Learn from it. Decide what comes next.</p>
           </div>
         </aside>
       </div>
@@ -85,17 +85,16 @@
       <h2 class="display-face home-section-title">Your teams</h2>
       <p class="home-section-lede">A concise view of the teams you belong to.</p>
       <% if @teams.any? %>
-        <ul class="home-card mt-6 divide-y divide-[var(--line)] overflow-hidden">
+        <ul class="mt-6 grid gap-4">
           <% @teams.each do |team| %>
-            <li class="flex items-baseline justify-between gap-4 px-6 py-4">
-              <div class="min-w-0">
-                <% if home_facilitator_of?(team) %>
+            <li>
+              <article class="home-card flex items-start justify-between gap-4 px-6 py-5">
+                <div class="min-w-0">
                   <%= home_team_nav_link(team) %>
-                <% else %>
-                  <p class="truncate font-semibold text-ink"><%= team.name %></p>
-                <% end %>
-              </div>
-              <p class="shrink-0 text-sm text-muted"><%= pluralize(team.member_count, "member") %></p>
+                  <p class="mt-1.5 text-sm leading-6 text-muted"><%= home_team_role_label(team) %></p>
+                </div>
+                <p class="shrink-0 text-sm text-muted"><%= pluralize(team.member_count, "member") %></p>
+              </article>
             </li>
           <% end %>
         </ul>
@@ -115,14 +114,19 @@
       </div>
       <p class="home-section-lede">Open action items assigned to you.</p>
       <% if @attention_action_items.any? %>
-        <ul class="home-card mt-6 divide-y divide-[var(--line)] overflow-hidden">
+        <ul class="mt-6 grid gap-4">
           <% @attention_action_items.each do |item| %>
-            <li class="px-6 py-4">
-              <p class="break-words font-semibold text-ink"><%= item.title %></p>
-              <p class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-muted">
-                <%= item.team.name %> ·
-                <%= render "action_items/metadata", item: item %>
-              </p>
+            <li>
+              <article class="home-card flex items-start justify-between gap-4 px-6 py-5">
+                <div class="min-w-0">
+                  <p class="break-words font-semibold text-ink"><%= item.title %></p>
+                  <p class="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-muted">
+                    <%= item.team.name %> ·
+                    <%= render "action_items/metadata", item: item %>
+                  </p>
+                </div>
+                <%= home_action_item_open_link(item) %>
+              </article>
             </li>
           <% end %>
         </ul>

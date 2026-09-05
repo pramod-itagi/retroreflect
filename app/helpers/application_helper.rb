@@ -11,6 +11,17 @@ module ApplicationHelper
     back_nav_link(path, destination)
   end
 
+  def team_nav_pill(name, path, aria_label: nil, extra_class: nil)
+    arrow = %(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="home-team-link-icon"><path d="M6 3.2 11.3 8 6 12.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>).html_safe
+
+    html_options = { class: ["home-team-link", extra_class].compact.join(" ") }
+    html_options[:aria] = { label: aria_label } if aria_label.present?
+
+    link_to path, html_options do
+      safe_join([tag.span(name, class: "home-team-link-name"), arrow])
+    end
+  end
+
   def can_create_team?
     TeamPolicy.new(current_user, Team.new).create?
   end
@@ -109,6 +120,17 @@ module ApplicationHelper
     return current_page?(root_path) if path == root_path
 
     current_page?(path) || request.path.start_with?("#{path}/")
+  end
+
+  def action_item_management_form(item)
+    return if item.terminal?
+
+    policy = ActionItemPolicy.new(current_user, item)
+    if policy.update?
+      render "action_items/status_form", item: item, url: facilitator_action_item_path(item), for_owner: false
+    elsif policy.update_as_owner?
+      render "action_items/status_form", item: item, url: participant_action_item_path(item), for_owner: true
+    end
   end
 
   def action_item_overdue?(item)

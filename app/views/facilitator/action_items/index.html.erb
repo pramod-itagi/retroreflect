@@ -4,11 +4,15 @@
   <div class="listing-inner">
     <header class="listing-intro">
       <p class="listing-back">
-        <%= back_nav_link root_path, "home" %>
+        <% if @can_show_team %>
+          <%= back_nav_link facilitator_team_path(@team), @team.name %>
+        <% else %>
+          <%= back_nav_link retrospectives_path(team_id: @team.id), "retrospectives" %>
+        <% end %>
       </p>
-      <p class="listing-kicker">Follow-through</p>
-      <h1 class="display-face listing-heading">Your action items</h1>
-      <p class="listing-lede">Keep track of the commitments assigned to you.</p>
+      <p class="listing-kicker"><%= @team.name_for_select %></p>
+      <h1 class="display-face listing-heading">Action items</h1>
+      <p class="listing-lede">All action items for this team, including completed and cancelled work.</p>
     </header>
 
     <div class="listing-stack">
@@ -24,7 +28,7 @@
                       <p class="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted"><%= item.description %></p>
                     <% end %>
                     <p class="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm leading-6 text-muted">
-                      <span><%= item.team.name %></span>
+                      <span><%= display_name_for(item.owner) %></span>
                       <span aria-hidden="true">·</span>
                       <%= render "action_items/metadata", item: item %>
                       <% if item.completed_at.present? %>
@@ -37,12 +41,7 @@
                     </p>
                     <%= render "action_items/activity", item: item %>
                   </div>
-                  <% if item.available_statuses(for_owner: true).any? %>
-                    <%= render "action_items/status_form",
-                               item: item,
-                               url: participant_action_item_path(item),
-                               for_owner: true %>
-                  <% end %>
+                  <%= action_item_management_form(item) %>
                 </div>
               </article>
             </li>
@@ -51,7 +50,7 @@
       <% else %>
         <div class="home-card px-6 py-5">
           <p class="font-semibold text-ink">No action items</p>
-          <p class="mt-2 leading-6 text-muted">You're all caught up. New commitments assigned to you will appear here.</p>
+          <p class="mt-2 leading-6 text-muted">Action items created during this team's retrospectives will appear here.</p>
         </div>
       <% end %>
     </div>

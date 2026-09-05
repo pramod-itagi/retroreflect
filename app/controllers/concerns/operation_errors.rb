@@ -22,7 +22,8 @@ module OperationErrors
     "participations#create" => "We couldn't add that person to the roster. Please try again.",
     "participations#destroy" => "We couldn't remove that person from the roster. Please try again.",
     "admins#create" => "We couldn't add that system admin. Please try again.",
-    "admins#destroy" => "We couldn't remove that system admin. Please try again."
+    "admins#destroy" => "We couldn't remove that system admin. Please try again.",
+    "admins#leave" => "We couldn't leave the System Admin role. Please try again."
   }.freeze
 
   included do

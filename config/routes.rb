@@ -20,7 +20,7 @@ Rails.application.routes.draw do
         get :confirm, on: :member
       end
       resources :retrospectives, only: %i[new create]
-      resources :action_items, only: :create
+      resources :action_items, only: %i[index create]
       resource :archive, only: %i[new create], controller: "team_archives"
     end
 
@@ -44,7 +44,11 @@ Rails.application.routes.draw do
     resources :teams, only: %i[index show new create] do
       resource :archive, only: %i[new create], controller: "team_archives"
     end
-    resources :admins, only: %i[index create destroy]
+    resources :admins, only: %i[index create destroy] do
+      collection do
+        delete :leave
+      end
+    end
   end
 
   namespace :participant do

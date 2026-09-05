@@ -38,10 +38,12 @@ class ActionItem < ApplicationRecord
   validates :title, presence: true, length: { maximum: 200 }
   validates :description, length: { maximum: 2000 }, allow_blank: true
   validates :due_on, presence: true
-  validate :owner_must_belong_to_team
+  validates :retrospective, presence: true, on: :create
+  validate :owner_must_belong_to_team, if: :owner_assignment_changing?
   validate :status_transition_allowed, if: :status_changed?
   validate :due_on_cannot_be_in_the_past, on: :create
 
+  before_validation :assign_open_status_on_create, on: :create
   before_save :stamp_terminal_status
 
   def terminal?
@@ -60,6 +62,40 @@ class ActionItem < ApplicationRecord
 
   def owner_may_transition_to?(new_status)
     selectable_statuses(for_owner: true).include?(new_status.to_s)
+  end
+
+  def persist_for_current_retrospective(authorized_by: nil)
+    if retrospective_id.blank?
+      errors.add(:retrospective, "must belong to a retrospective")
+      return false
+    end
+
+    persisted = false
+
+    self.class.transaction do
+      locked_team = Team.lock.find(team_id)
+      self.team = locked_team
+      if locked_team.archived?
+        errors.add(:base, "This team is archived.")
+        raise ActiveRecord::Rollback
+      end
+
+      locked = locked_team.retrospectives.lock.find(retrospective_id)
+      self.retrospective = locked
+      if authorized_by && !ActionItemPolicy.new(authorized_by, self).create?
+        errors.add(:base, "This retrospective is no longer accepting action items.")
+        raise ActiveRecord::Rollback
+      end
+      unless locked.running?
+        errors.add(:base, "This retrospective is no longer accepting action items.")
+        raise ActiveRecord::Rollback
+      end
+
+      persisted = save
+      raise ActiveRecord::Rollback unless persisted
+    end
+
+    persisted
   end
 
   def apply_status_change(new_status, comment:, actor:)
@@ -99,6 +135,10 @@ class ActionItem < ApplicationRecord
 
   private
 
+  def owner_assignment_changing?
+    new_record? || will_save_change_to_owner_id?
+  end
+
   def owner_must_belong_to_team
     return if owner.blank? || team.blank?
 
@@ -108,6 +148,10 @@ class ActionItem < ApplicationRecord
     end
 
     errors.add(:owner, "must be an active account") if owner.discarded?
+  end
+
+  def assign_open_status_on_create
+    self.status = "open"
   end
 
   def status_transition_allowed

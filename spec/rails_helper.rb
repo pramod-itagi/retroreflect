@@ -41,6 +41,7 @@ RSpec.configure do |config|
   config.include AuthenticationHelpers, type: :request
 
   config.use_transactional_fixtures = true
+  config.before { Rails.cache.clear }
 
   # You can uncomment this line to turn off ActiveRecord support entirely.
   # config.use_active_record = false

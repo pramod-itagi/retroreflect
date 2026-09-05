@@ -48,11 +48,12 @@ RSpec.describe "Home dashboard", type: :request do
     expect(platform_link["href"]).to eq(facilitator_team_path(context[:platform]))
     expect(team_links.map { |link| link["href"] }).to include(facilitator_team_path(context[:platform]))
     expect(response.body).to include("home-team-link")
-    your_teams = response.parsed_body.css("ul.home-card").find { |list| list.at_css("a.home-team-link") }
+    your_teams = response.parsed_body.css("ul").find { |list| list.at_css("a.home-team-link") }
     expect(your_teams).to be_present
-    expect(your_teams["class"]).to include("divide-y")
+    expect(your_teams["class"]).to include("gap-4")
     expect(your_teams.css("a.home-team-link").size).to eq(2)
     expect(your_teams.css("li").size).to eq(2)
+    expect(your_teams.css("article.home-card").size).to eq(2)
     expect(response.body).to include("Sprint 24 collecting")
     expect(response.body).to include("Collecting")
     expect(response.body).to include("0 / 1 submitted")
@@ -81,9 +82,10 @@ RSpec.describe "Home dashboard", type: :request do
     expect(response.body).to include(facilitator_team_path(team))
 
     team_links = response.parsed_body.css("a[href='#{facilitator_team_path(team)}']")
-    idle_link = team_links.find { |link| link["class"].to_s.include?("font-semibold") }
+    idle_link = team_links.find { |link| link["class"].to_s.include?("workspace-team-link") }
     expect(idle_link).to be_present
     expect(idle_link.text).to include(team.name)
+    expect(idle_link["class"]).to include("workspace-team-link")
     expect(idle_link["class"]).not_to include("home-team-link")
 
     your_teams_link = response.parsed_body.at_css("a.home-team-link")
@@ -94,26 +96,33 @@ RSpec.describe "Home dashboard", type: :request do
 
   it "continues to show action items that need attention, not completed history" do
     context = setup_home
+    retro = context[:platform].retrospectives.create!(
+      title: "Historical actions",
+      created_by: context[:facilitator],
+      status: :closed,
+      closed_at: 1.week.ago
+    )
     open_item = context[:platform].action_items.create!(
       title: "Fix flaky spec",
       owner: context[:alice],
       created_by: context[:facilitator],
+      retrospective: retro,
       due_on: Date.current,
       status: :open
     )
-    context[:platform].action_items.create!(
+    completed = context[:platform].action_items.create!(
       title: "Old completed work",
       owner: context[:alice],
       created_by: context[:facilitator],
-      due_on: Date.current,
-      status: :completed,
-      completed_at: Time.current,
-      completed_by: context[:alice]
+      retrospective: retro,
+      due_on: Date.current
     )
+    completed.update!(status: :completed, completed_at: Time.current, completed_by: context[:alice])
     overdue_item = context[:platform].action_items.create!(
       title: "Unblock the deploy",
       owner: context[:alice],
       created_by: context[:facilitator],
+      retrospective: retro,
       due_on: Date.current,
       status: :open
     )
@@ -132,11 +141,26 @@ RSpec.describe "Home dashboard", type: :request do
     expect(response.body).to include("Overdue")
     expect(response.body).not_to include(open_item.due_on.iso8601)
     expect(response.body).not_to include(overdue_item.due_on.iso8601)
-    attention_list = response.parsed_body.css("ul.home-card").find { |list| list.text.include?(open_item.title) }
+    attention_list = response.parsed_body.css("ul").find { |list| list.text.include?(open_item.title) }
     expect(attention_list).to be_present
-    expect(attention_list["class"]).to include("divide-y")
+    expect(attention_list["class"]).to include("gap-4")
     expect(attention_list.css("li").size).to eq(2)
-    expect(attention_list.css("article.home-card")).to be_empty
+    expect(attention_list.css("article.home-card").size).to eq(2)
+    open_link = attention_list.at_css("a[href='#{participant_action_items_path(anchor: "action-item-#{open_item.id}")}']")
+    overdue_link = attention_list.at_css("a[href='#{participant_action_items_path(anchor: "action-item-#{overdue_item.id}")}']")
+    expect(open_link).to be_present
+    expect(open_link.text).to include("Open")
+    expect(open_link["class"]).to include("home-team-link")
+    expect(open_link["aria-label"]).to eq("Open #{open_item.title}")
+    expect(overdue_link).to be_present
+    expect(overdue_link.text).to include("Open")
+    expect(overdue_link["aria-label"]).to eq("Open #{overdue_item.title}")
+    view_all = response.parsed_body.css("a").find { |link| link.text.strip == "View all" }
+    expect(view_all["href"]).to eq(participant_action_items_path)
+
+    get participant_action_items_path
+    expect(response.parsed_body.at_css("#action-item-#{open_item.id}")).to be_present
+    expect(response.body).to include("Old completed work")
   end
 
   it "includes the updated header navigation" do
@@ -151,6 +175,9 @@ RSpec.describe "Home dashboard", type: :request do
     expect(nav).to include("Teams")
     expect(nav).to include("Retrospectives")
     expect(nav).to include("Action items")
+    action_items_link = response.parsed_body.at_css("header nav a[href='#{participant_action_items_path}']")
+    expect(action_items_link).to be_present
+    expect(action_items_link.text).to include("Action items")
     expect(nav).not_to include("System administration")
     expect(nav).not_to include("Previous Retros")
     expect(nav).not_to include("Actions")
@@ -188,7 +215,15 @@ RSpec.describe "Home dashboard", type: :request do
     expect(response.body).not_to include("Create retrospective")
     expect(response.body).not_to include("Start Retrospective")
     expect(response.body).not_to include("New team")
-    expect(response.body).not_to include(facilitator_team_path(context[:platform]))
+
+    your_teams = response.parsed_body.css("ul").find { |list| list.at_css("a.home-team-link") }
+    expect(your_teams).to be_present
+    platform_link = your_teams.css("a.home-team-link").find { |link| link.text.include?("Platform") }
+    expect(platform_link).to be_present
+    expect(platform_link["href"]).to eq(facilitator_team_path(context[:platform]))
+    expect(your_teams.text).to include("Your role: Member")
+    expect(response.body).not_to include("Make facilitator")
+    expect(response.body).not_to include("Archive team")
   end
 
   it "keeps a sign-in notice in its own bar above the Home canvas" do

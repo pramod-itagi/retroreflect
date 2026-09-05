@@ -24,18 +24,28 @@ RSpec.describe "Team archiving", type: :request do
   end
 
   def create_action_item(team, owner:, created_by:, title:, status:)
-    attrs = {
+    retro = team.retrospectives.find_by(status: :closed) || team.retrospectives.create!(
+      title: "Historical #{team.id}",
+      created_by: created_by,
+      status: :closed,
+      closed_at: 1.week.ago
+    )
+    item = team.action_items.create!(
       title: title,
       owner: owner,
       created_by: created_by,
-      due_on: Date.current,
-      status: status
-    }
+      retrospective: retro,
+      due_on: Date.current
+    )
+    return item if status.to_s == "open"
+
+    attrs = { status: status }
     attrs[:completed_at] = Time.current if status.to_s == "completed"
     attrs[:completed_by] = owner if status.to_s == "completed"
     attrs[:cancelled_at] = Time.current if status.to_s == "cancelled"
     attrs[:cancelled_by] = created_by if status.to_s == "cancelled"
-    team.action_items.create!(attrs)
+    item.update!(attrs)
+    item
   end
 
   def post_archive(team, confirmation_name: team.name)
@@ -209,6 +219,13 @@ RSpec.describe "Team archiving", type: :request do
 
   it "prevents new work on an archived team" do
     setup = archive_setup
+    completed = create_action_item(
+      setup[:platform],
+      owner: setup[:alice],
+      created_by: setup[:jordan],
+      title: "Kept after archive",
+      status: :completed
+    )
     sign_in(setup[:jordan])
     post_archive(setup[:platform])
 
@@ -223,6 +240,21 @@ RSpec.describe "Team archiving", type: :request do
     extra = create_user(name: "Extra")
     post facilitator_team_memberships_path(setup[:platform]), params: { user_id: extra.id, role: "member" }
     expect(setup[:platform].current_memberships.where(user: extra)).to be_empty
+
+    get facilitator_team_action_items_path(setup[:platform])
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Kept after archive")
+    expect(completed.reload).to be_completed
+    expect(setup[:platform].action_items).to include(completed)
+
+    post facilitator_team_action_items_path(setup[:platform]), params: {
+      action_item: {
+        title: "Should not create after archive",
+        owner_id: setup[:alice].id,
+        due_on: Date.current + 1
+      }
+    }
+    expect(setup[:platform].action_items.where(title: "Should not create after archive")).to be_empty
   end
 
   it "allows a new active team to reuse an archived team's name" do
@@ -251,6 +283,10 @@ RSpec.describe "Team archiving", type: :request do
     expect(response.body).to include("Platform")
     expect(response.body).not_to include("Archive this team?")
     expect(response.body).to include("This action cannot be undone.")
+    expect(response.body).to include("Type")
+    expect(response.body).to include("to confirm")
+    expect(response.body).not_to include("Enter the team name below to confirm that you want to archive this team.")
+    expect(response.parsed_body.at_css("label[for='confirmation_name'] em.archive-confirm-name").text).to eq("Platform")
 
     get facilitator_team_path(setup[:platform])
     expect(setup[:platform].reload).not_to be_archived

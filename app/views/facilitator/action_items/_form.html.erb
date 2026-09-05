@@ -48,25 +48,6 @@
     </div>
   </div>
 
-  <div class="mt-5 w-full sm:max-w-[16.5rem]"
-       data-controller="action-item-create"
-       data-status="open">
-    <%= form.label :status, class: label_class %>
-    <div class="action-item-control">
-      <span class="action-item-status-dot" aria-hidden="true"></span>
-      <%= form.select :status,
-                      ActionItem::STATUSES.map { |status| [action_status_label(status), status] },
-                      { selected: "open" },
-                      {
-                        class: field_class,
-                        data: {
-                          action_item_create_target: "status",
-                          action: "change->action-item-create#sync"
-                        }
-                      } %>
-    </div>
-  </div>
-
   <div class="mt-5">
     <%= form.label :description, class: label_class %>
     <%= form.text_area :description,

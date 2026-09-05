@@ -76,6 +76,48 @@ RSpec.describe "Retrospective reveal", type: :request do
     expect(FeedbackItem.column_names).not_to include("user_id", "participation_id")
   end
 
+  it "reveals a submitted draft and keeps an unsubmitted draft off the board" do
+    setup = collecting_setup(participant_count: 2)
+    submitted = setup[:participations].first
+    unsubmitted = setup[:participations].last
+    submit!(submitted, body: "Ready to publish")
+    unsubmitted.feedback_drafts.create!(
+      retrospective: setup[:retro],
+      category: :improve,
+      body: "Still private"
+    )
+
+    sign_in(setup[:facilitator])
+    post reveal_facilitator_retrospective_path(setup[:retro])
+
+    setup[:retro].reload
+    expect(setup[:retro]).to be_discussing
+    expect(setup[:retro].feedback_items.pluck(:body)).to contain_exactly("Ready to publish")
+    expect(setup[:retro].feedback_items.pluck(:body)).not_to include("Still private")
+    expect(setup[:retro].feedback_drafts).to be_empty
+  end
+
+  it "reveals only submitted feedback when a retrospective has both submitted and unsubmitted drafts" do
+    setup = collecting_setup(participant_count: 3)
+    first, second, third = setup[:participations]
+    submit!(first, body: "Submitted note A")
+    submit!(second, body: "Submitted note B")
+    third.feedback_drafts.create!(
+      retrospective: setup[:retro],
+      category: :improve,
+      body: "Private unsubmitted draft"
+    )
+
+    sign_in(setup[:facilitator])
+    post reveal_facilitator_retrospective_path(setup[:retro])
+
+    setup[:retro].reload
+    expect(setup[:retro]).to be_discussing
+    expect(setup[:retro].feedback_items.pluck(:body)).to contain_exactly("Submitted note A", "Submitted note B")
+    expect(setup[:retro].feedback_items.pluck(:body)).not_to include("Private unsubmitted draft")
+    expect(FeedbackItem.column_names).not_to include("user_id", "participation_id")
+  end
+
   it "lets the facilitator reveal with partial submissions" do
     setup = collecting_setup
     setup[:participations].first(5).each_with_index do |participation, index|

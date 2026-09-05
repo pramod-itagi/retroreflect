@@ -32,6 +32,12 @@ RSpec.describe "System administration", type: :request do
     expect(response.body).to include("Initial facilitator")
     expect(response.body).to include("Jordan")
     expect(response.body).not_to include("Unconfirmed")
+    create_team = response.parsed_body.at_css("form.create-team-form")
+    expect(create_team.at_css("input[name='team[name]']")["class"]).to include("workspace-field")
+    expect(create_team.at_css("select[name='facilitator_id']")["class"]).to include("workspace-field")
+    expect(create_team.at_css("input[name='team[name]']").ancestors.find { |node| node["class"].to_s.include?("action-item-control") }).to be_present
+    expect(create_team.at_css("select[name='facilitator_id']").ancestors.find { |node| node["class"].to_s.include?("action-item-control") }).to be_present
+    expect(create_team.at_css("select[name='facilitator_id']").parent.at_css("svg.action-item-field-icon")).to be_present
 
     expect do
       post system_admin_teams_path, params: { team: { name: "Platform" }, facilitator_id: jordan.id }
@@ -47,6 +53,12 @@ RSpec.describe "System administration", type: :request do
     post system_admin_teams_path, params: { team: { name: "Mobile" }, facilitator_id: jordan.id }
     expect(Team.active.order(:name).pluck(:name)).to contain_exactly("Mobile", "Platform")
     expect(Team.find_by!(name: "Mobile").memberships.find_by(user: admin)).to be_nil
+
+    get system_admin_teams_path
+    team_links = response.parsed_body.css("a.home-team-link")
+    expect(team_links.map { |link| link.at_css(".home-team-link-name")&.text }).to include("Mobile", "Platform")
+    expect(team_links.map { |link| link["href"] }).to include(system_admin_team_path(platform))
+    expect(team_links.first.at_css("svg.home-team-link-icon")).to be_present
 
     post system_admin_teams_path, params: { team: { name: "Platform" }, facilitator_id: jordan.id }
     expect(response).to have_http_status(:unprocessable_content)
@@ -105,9 +117,12 @@ RSpec.describe "System administration", type: :request do
     get system_admin_admins_path
     expect(response.body).to include("Priya")
     expect(response.body).to include("Alice")
-    add_admin = response.parsed_body.at_css("select[name='user_id']")
+    add_form = response.parsed_body.at_css("form.add-admin-form")
+    add_admin = add_form.at_css("select[name='user_id']")
     expect(add_admin["class"]).to include("workspace-field")
     expect(add_admin["class"]).not_to include("workspace-filter-field")
+    expect(add_admin.ancestors.find { |node| node["class"].to_s.include?("action-item-control") }).to be_present
+    expect(add_admin.parent.at_css("svg.action-item-field-icon")).to be_present
 
     post system_admin_admins_path, params: { user_id: alice.id }
     expect(alice.reload).to be_system_admin
@@ -115,14 +130,74 @@ RSpec.describe "System administration", type: :request do
     expect(alice).not_to be_facilitator
 
     delete system_admin_admin_path(priya)
-    expect(priya.reload).not_to be_system_admin
+    expect(response).to redirect_to(system_admin_admins_path)
+    expect(flash[:alert]).to include("Use Leave System Admin role to give up your own privileges.")
+    expect(priya.reload).to be_system_admin
     expect(alice.reload).to be_system_admin
 
-    sign_in(alice)
     delete system_admin_admin_path(alice)
     expect(response).to redirect_to(system_admin_admins_path)
+    expect(flash[:notice]).to eq("Alice is no longer a System Admin.")
+    expect(alice.reload).not_to be_system_admin
+    expect(priya.reload).to be_system_admin
+  end
+
+  it "lets a system admin leave the role when another admin remains" do
+    alice = create_user(name: "Alice", system_admin: true)
+    bob = create_user(name: "Bob", system_admin: true)
+
+    sign_in(alice)
+    get system_admin_admins_path
+    expect(response).to have_http_status(:ok)
+    expect(response.body).not_to include("You can't leave the System Admin role because you are the only System Admin.")
+
+    alice_row = response.parsed_body.css("article.admin-row").find { |row| row.text.include?("Alice") }
+    bob_row = response.parsed_body.css("article.admin-row").find { |row| row.text.include?("Bob") }
+    leave_form = alice_row.at_css("form[action='#{leave_system_admin_admins_path}']")
+    remove_form = bob_row.at_css("form[action='#{system_admin_admin_path(bob)}']")
+
+    expect(leave_form).to be_present
+    expect(leave_form["data-turbo-confirm"]).to eq("Leave System Admin role?")
+    expect(leave_form["data-confirm-description"]).to include("You will lose access to System Administration and will no longer be a System Admin.")
+    expect(leave_form["data-confirm-description"]).to include("Another System Admin will remain responsible for system administration.")
+    expect(leave_form["data-confirm-accept"]).to eq("Leave System Admin role")
+    expect(leave_form["data-confirm-cancel"]).to eq("Cancel")
+    expect(leave_form["data-confirm-variant"]).to eq("danger")
+    expect(leave_form.at_css("[type='submit']").text).to include("Leave System Admin role")
+    expect(alice_row.text).not_to match(/\bRemove\b/)
+
+    expect(remove_form).to be_present
+    expect(remove_form.at_css("[type='submit']").text).to include("Remove")
+    expect(bob_row.at_css("form[action='#{leave_system_admin_admins_path}']")).to be_nil
+
+    delete leave_system_admin_admins_path
+    expect(response).to redirect_to(root_path)
+    expect(flash[:notice]).to eq("You have left the System Admin role.")
+    expect(flash[:alert]).to be_nil
     follow_redirect!
-    expect(response.body).to include("At least one System Admin must remain.")
+    expect(response.body).to include("You have left the System Admin role.")
+    expect(response.body).not_to include("You are not allowed to do that")
+    expect(alice.reload).not_to be_system_admin
+    expect(bob.reload).to be_system_admin
+  end
+
+  it "does not let the only system admin leave the role" do
+    alice = create_user(name: "Alice", system_admin: true)
+
+    sign_in(alice)
+    get system_admin_admins_path
+    expect(response.body).to include("You can't leave the System Admin role because you are the only System Admin.")
+    expect(response.parsed_body.at_css("form[action='#{leave_system_admin_admins_path}']")).to be_nil
+    expect(response.parsed_body.css("button").map { |button| button.text.strip }).not_to include("Leave System Admin role", "Remove")
+
+    delete leave_system_admin_admins_path
+    expect(response).to redirect_to(system_admin_admins_path)
+    expect(flash[:alert]).to eq("You can't leave the System Admin role because you are the only System Admin.")
+    expect(alice.reload).to be_system_admin
+
+    delete system_admin_admin_path(alice)
+    expect(response).to redirect_to(system_admin_admins_path)
+    expect(flash[:alert]).to include("Use Leave System Admin role to give up your own privileges.")
     expect(alice.reload).to be_system_admin
   end
 
@@ -150,6 +225,43 @@ RSpec.describe "System administration", type: :request do
     expect(FeedbackItem.reflect_on_association(:user)).to be_nil
   end
 
+  it "uses the shared empty-state cards when admin lists have nothing to show" do
+    admin = create_user(name: "Priya", system_admin: true)
+
+    sign_in(admin)
+    get system_admin_teams_path
+    expect(response).to have_http_status(:ok)
+
+    page = response.parsed_body
+    active_empty = page.css(".home-card").find { |card| card.text.include?("No active teams") }
+    archived_empty = page.css(".home-card").find { |card| card.text.include?("No archived teams") }
+    expect(active_empty).to be_present
+    expect(active_empty.at_css("p.font-semibold").text).to eq("No active teams")
+    expect(active_empty.text).to include("There are no active teams in the workspace yet.")
+    expect(archived_empty).to be_present
+    expect(archived_empty.at_css("p.font-semibold").text).to eq("No archived teams")
+    expect(archived_empty.text).to include("There are no archived teams in the workspace yet.")
+    expect(response.body).not_to include("No active teams.")
+    expect(response.body).not_to include("No archived teams.")
+  end
+
+  it "uses the shared empty-state card when an admin team has no current members" do
+    admin = create_user(name: "Priya", system_admin: true)
+    jordan = create_user(name: "Jordan")
+    team = create_team_with_roles(facilitator: jordan, name: "Platform")
+    team.memberships.find_by!(user: jordan).update!(deactivated_at: Time.current)
+
+    sign_in(admin)
+    get system_admin_team_path(team)
+    expect(response).to have_http_status(:ok)
+
+    empty = response.parsed_body.css(".home-card").find { |card| card.text.include?("No current members") }
+    expect(empty).to be_present
+    expect(empty.at_css("p.font-semibold").text).to eq("No current members")
+    expect(empty.text).to include("There are no current members to display yet.")
+    expect(response.body).not_to include("No current members.")
+  end
+
   it "lets a system admin archive a team they do not belong to" do
     admin = create_user(name: "Priya", system_admin: true)
     jordan = create_user(name: "Jordan")
@@ -159,8 +271,11 @@ RSpec.describe "System administration", type: :request do
     get system_admin_team_path(team)
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Jordan")
+    expect(response.body).to include("Members (1)")
+    expect(response.body).not_to include("Team facilitators manage membership and retrospectives for this team.")
     expect(response.body).not_to include("Current retrospective")
     expect(response.body).not_to include("Current action items")
+    expect(response.parsed_body.at_css(".member-avatar")).to be_present
 
     get new_system_admin_team_archive_path(team)
     expect(response.body).to include("This action cannot be undone.")

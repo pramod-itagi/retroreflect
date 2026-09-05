@@ -18,6 +18,8 @@ class User < ApplicationRecord
   validates :password, length: { minimum: 8 }, allow_nil: true
   validates :password_confirmation, presence: true, if: -> { password.present? }
 
+  before_save :bump_session_version_on_password_change
+
   scope :active, -> { where(discarded_at: nil) }
   scope :system_admins, -> { active.where(system_admin: true) }
 
@@ -47,6 +49,10 @@ class User < ApplicationRecord
 
   def historically_facilitated?(team)
     memberships.exists?(team: team, role: :facilitator)
+  end
+
+  def associated_with?(team)
+    memberships.exists?(team: team)
   end
 
   def member_of?(team)
@@ -123,14 +129,36 @@ class User < ApplicationRecord
     update!(system_admin: true)
   end
 
-  def revoke_system_admin
-    if last_system_admin?
-      errors.add(:base, "At least one System Admin must remain.")
-      return false
+  def revoke_system_admin(as_self: false)
+    revoked = false
+
+    transaction do
+      self.class.system_admins.lock.order(:id).to_a
+      reload
+
+      unless system_admin?
+        raise ActiveRecord::Rollback
+      end
+
+      if self.class.system_admins.where.not(id: id).none?
+        errors.add(:base, as_self ? "You can't leave the System Admin role because you are the only System Admin." : "At least one System Admin must remain.")
+        raise ActiveRecord::Rollback
+      end
+
+      update!(system_admin: false)
+      revoked = true
     end
 
-    update(system_admin: false)
+    revoked
   end
+
+  def bump_session_version_on_password_change
+    return unless will_save_change_to_password_digest?
+    return if new_record?
+
+    self.session_version = session_version.to_i + 1
+  end
+  private :bump_session_version_on_password_change
 
   def discard!
     random_password = SecureRandom.hex(20)

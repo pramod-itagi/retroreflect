@@ -1,26 +1,35 @@
 module Facilitator
   class MembershipsController < BaseController
     def create
-      team = Team.find(params[:team_id])
-      authorize!(team, :manage_members?)
-      @operation_error_message = "We couldn't add that person to the team. Please try again."
-      if params[:user_id].blank?
-        fail_operation("Select a person.", fallback: facilitator_team_path(team))
-        return
+      saved = false
+      notice = nil
+
+      Team.transaction do
+        team = Team.lock.find(params[:team_id])
+        authorize!(team, :manage_members?)
+        @operation_error_message = "We couldn't add that person to the team. Please try again."
+        if params[:user_id].blank?
+          fail_operation("Select a person.", fallback: facilitator_team_path(team))
+          raise ActiveRecord::Rollback
+        end
+
+        user = User.active.find(params[:user_id])
+        membership = team.memberships.new(user: user, role: params[:role])
+        @operation_error_message = "We couldn't add #{user.display_name} to the team. Please try again."
+
+        if membership.save
+          saved = true
+          notice = "#{user.display_name} added as #{membership.role}."
+        else
+          fail_operation(
+            membership.errors.full_messages.to_sentence.presence || @operation_error_message,
+            fallback: facilitator_team_path(team)
+          )
+          raise ActiveRecord::Rollback
+        end
       end
 
-      user = User.active.find(params[:user_id])
-      membership = team.memberships.new(user: user, role: params[:role])
-      @operation_error_message = "We couldn't add #{user.display_name} to the team. Please try again."
-
-      if membership.save
-        redirect_to facilitator_team_path(team), notice: "#{user.display_name} added as #{membership.role}."
-      else
-        fail_operation(
-          membership.errors.full_messages.to_sentence.presence || @operation_error_message,
-          fallback: facilitator_team_path(team)
-        )
-      end
+      redirect_to facilitator_team_path(params[:team_id]), notice: notice if saved
     end
 
     def update

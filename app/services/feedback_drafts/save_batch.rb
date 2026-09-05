@@ -8,6 +8,9 @@ class FeedbackDrafts::SaveBatch
 
   def call
     FeedbackDraft.transaction do
+      locked = Retrospective.lock.find(@retrospective.id)
+      @retrospective = locked
+      @participation.retrospective = locked
       update_existing
       create_new
     end

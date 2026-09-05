@@ -2,34 +2,11 @@
 
 <div class="workspace-page workspace-shell listing-page admin-page">
   <div class="listing-inner">
-    <header class="listing-intro">
-      <p class="listing-back">
-        <%= back_nav_link system_admin_team_path(@team), @team.name %>
-      </p>
-      <p class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-ink">
-        <span class="inline-block h-2 w-2 rounded-full bg-coral" aria-hidden="true"></span>
-        <%= @team.name %>
-      </p>
-      <h1 class="display-face listing-heading">Archive <%= @team.name %>?</h1>
-      <p class="listing-lede">
-        Archiving this team will remove all current members from the team. Their user accounts will not be deleted.
-        Existing retrospective history and completed action items will be retained. The team will no longer be available
-        for new retrospectives.
-      </p>
-      <p class="mt-4 text-sm font-semibold text-coral">This action cannot be undone.</p>
-    </header>
-
-    <div class="listing-stack">
-      <%= form_with url: system_admin_team_archive_path(@team), class: "admin-form space-y-5" do %>
-        <div>
-          <%= label_tag :confirmation_name, "Type #{@team.name} to confirm", class: "mb-2 block text-sm font-semibold text-ink" %>
-          <%= text_field_tag :confirmation_name, params[:confirmation_name], required: true, autocomplete: "off", class: "workspace-field" %>
-        </div>
-        <div class="flex flex-wrap items-center gap-3">
-          <%= link_to "Cancel", system_admin_team_path(@team), class: "home-action home-action-secondary" %>
-          <%= submit_tag "Archive team", class: "home-action home-action-danger-solid cursor-pointer", data: { turbo_submits_with: "Archiving..." } %>
-        </div>
-      <% end %>
+    <div class="archive-confirm-page listing-intro max-w-2xl">
+      <%= render "shared/archive_team_confirmation",
+                 team: @team,
+                 archive_url: system_admin_team_archive_path(@team),
+                 cancel_path: system_admin_team_path(@team) %>
     </div>
   </div>
 </div>
