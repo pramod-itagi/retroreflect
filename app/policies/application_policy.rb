@@ -12,6 +12,14 @@ class ApplicationPolicy
     user.present? && team.present? && user.facilitator_of?(team)
   end
 
+  def historically_facilitated?(team)
+    user.present? && team.present? && user.historically_facilitated?(team)
+  end
+
+  def historically_associated_with?(team)
+    user.present? && team.present? && user.associated_with?(team)
+  end
+
   def system_admin?
     user.present? && user.system_admin?
   end

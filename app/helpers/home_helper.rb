@@ -28,12 +28,21 @@ module HomeHelper
     "home-quiet-link"
   end
 
-  def home_team_nav_link(team)
-    arrow = %(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="home-team-link-icon"><path d="M6 3.2 11.3 8 6 12.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>).html_safe
+  def home_action_item_open_link(item)
+    team_nav_pill(
+      "Open",
+      participant_action_items_path(anchor: "action-item-#{item.id}"),
+      aria_label: "Open #{item.title}",
+      extra_class: "shrink-0"
+    )
+  end
 
-    link_to facilitator_team_path(team), class: "home-team-link" do
-      safe_join([tag.span(team.name, class: "home-team-link-name"), arrow])
-    end
+  def home_team_nav_link(team)
+    team_nav_pill(team.name, workspace_team_path(team))
+  end
+
+  def home_team_role_label(team)
+    home_facilitator_of?(team) ? "Your role: Facilitator" : "Your role: Member"
   end
 
   def home_status_badge_classes(status)

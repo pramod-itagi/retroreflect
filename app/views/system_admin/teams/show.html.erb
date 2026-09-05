@@ -15,30 +15,46 @@
 
     <div class="listing-stack">
       <section>
-        <h2 class="display-face home-section-title">Members</h2>
-        <% if @memberships.any? %>
-          <ul class="home-card mt-6 divide-y divide-[var(--line)] overflow-hidden">
-            <% @memberships.each do |membership| %>
-              <li class="px-6 py-4 text-sm leading-6">
-                <span class="font-semibold text-ink"><%= display_name_for(membership.user) %></span>
-                <span class="text-muted"> · <%= membership.role.humanize %></span>
-              </li>
-            <% end %>
-          </ul>
-        <% else %>
-          <p class="mt-5 text-sm leading-6 text-muted">No current members.</p>
-        <% end %>
-        <p class="mt-4 text-sm leading-6 text-muted">Team facilitators manage membership and retrospectives for this team.</p>
+        <div class="home-card admin-team-panel">
+          <h2 class="display-face home-section-title">Members (<%= @memberships.size %>)</h2>
+          <% if @memberships.any? %>
+            <ul class="admin-team-member-list mt-5">
+              <% @memberships.each do |membership| %>
+                <li class="admin-team-member">
+                  <div class="flex min-w-0 items-center gap-3">
+                    <span class="member-avatar <%= membership.facilitator? ? "member-avatar-facilitator" : "" %>" aria-hidden="true">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21a8 8 0 0 0-16 0"/>
+                        <circle cx="12" cy="8" r="3.25"/>
+                      </svg>
+                    </span>
+                    <div class="min-w-0">
+                      <p class="member-row-name"><%= display_name_for(membership.user) %></p>
+                      <p class="admin-team-member-role"><%= membership.role.humanize %></p>
+                    </div>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+          <% else %>
+            <div class="mt-5">
+              <p class="font-semibold text-ink">No current members</p>
+              <p class="mt-2 leading-6 text-muted">There are no current members to display yet.</p>
+            </div>
+          <% end %>
+        </div>
       </section>
 
       <% if @team.active? %>
-        <section class="mt-12 lg:mt-14">
-          <h2 class="display-face home-section-title">Archive team</h2>
-          <p class="mt-3 max-w-2xl leading-6 text-muted">
-            Archiving removes all current members from this team and prevents new retrospectives. Historical retrospectives and action items are retained.
-          </p>
-          <div class="mt-5">
-            <%= link_to "Archive team", new_system_admin_team_archive_path(@team), class: "home-action home-action-danger-solid" %>
+        <section class="mt-10 lg:mt-12">
+          <div class="home-card admin-team-panel">
+            <h2 class="display-face home-section-title">Archive team</h2>
+            <p class="mt-3 max-w-2xl leading-6 text-muted">
+              Archiving removes all current members from this team and prevents new retrospectives. Historical retrospectives and action items are retained.
+            </p>
+            <div class="mt-5">
+              <%= link_to "Archive team", new_system_admin_team_archive_path(@team), class: "home-action home-action-danger-solid" %>
+            </div>
           </div>
         </section>
       <% end %>

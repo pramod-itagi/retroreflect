@@ -7,6 +7,10 @@ class TeamPolicy < ApplicationPolicy
     facilitator_of?(record) || user.member_of?(record)
   end
 
+  def view_action_items?
+    historically_associated_with?(record)
+  end
+
   def create?
     user&.confirmed? && system_admin?
   end

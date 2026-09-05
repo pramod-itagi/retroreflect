@@ -42,20 +42,31 @@ class Participation < ApplicationRecord
   end
 
   def submit_responses
-    if submitted?
-      errors.add(:base, "already submitted")
-      return false
-    end
-    unless retrospective.collecting?
-      errors.add(:base, "this retrospective is no longer collecting")
-      return false
-    end
-    if feedback_drafts.none?
-      errors.add(:base, "add at least one note before submitting")
-      return false
+    submitted = false
+
+    Retrospective.transaction do
+      locked = Retrospective.lock.find(retrospective_id)
+      self.retrospective = locked
+      reload
+
+      if submitted?
+        errors.add(:base, "already submitted")
+        raise ActiveRecord::Rollback
+      end
+      unless locked.collecting?
+        errors.add(:base, "this retrospective is no longer collecting")
+        raise ActiveRecord::Rollback
+      end
+      if feedback_drafts.none?
+        errors.add(:base, "add at least one note before submitting")
+        raise ActiveRecord::Rollback
+      end
+
+      submitted = update(submitted_at: Time.current)
+      raise ActiveRecord::Rollback unless submitted
     end
 
-    update(submitted_at: Time.current)
+    submitted
   end
 
   private

@@ -1,0 +1,50 @@
+<%# locals: team, archive_url, cancel_path %>
+
+<p class="listing-back">
+  <%= back_nav_link cancel_path, team.name %>
+</p>
+
+<p class="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-coral">
+  <span class="inline-block h-2 w-2 rounded-full bg-coral" aria-hidden="true"></span>
+  <%= team.name %>
+</p>
+<h1 class="display-face listing-heading break-words">Archive <%= team.name %>?</h1>
+<p class="mt-4 max-w-xl text-base leading-7 text-ink">
+  This will remove all current members from the team.
+</p>
+
+<div class="archive-confirm-stack">
+  <div class="archive-consequences">
+    <p class="archive-consequences-kicker">
+      <span class="archive-consequences-mark" aria-hidden="true">!</span>
+      Important
+    </p>
+    <ul class="archive-consequences-list">
+      <li>All current members will be removed from the team.</li>
+      <li>Their user accounts will not be deleted.</li>
+      <li>Existing retrospective history and completed action items will be retained.</li>
+      <li>The team will no longer be available for new retrospectives.</li>
+    </ul>
+    <p class="archive-consequences-undo">This action cannot be undone.</p>
+  </div>
+
+  <%= form_with url: archive_url, class: "archive-confirm-form" do %>
+    <div>
+      <%= label_tag :confirmation_name, class: "mb-2 block text-sm font-semibold text-ink" do %>
+        Type <%= tag.em team.name, class: "archive-confirm-name display-face" %> to confirm
+      <% end %>
+      <div class="action-item-control action-item-control--text">
+        <%= text_field_tag :confirmation_name,
+                           params[:confirmation_name],
+                           required: true,
+                           autocomplete: "off",
+                           class: "workspace-field",
+                           placeholder: team.name %>
+      </div>
+    </div>
+    <div class="archive-confirm-actions">
+      <%= link_to "Cancel", cancel_path, class: "home-action home-action-secondary" %>
+      <%= submit_tag "Archive team", class: "home-action home-action-danger-solid cursor-pointer", data: { turbo_submits_with: "Archiving..." } %>
+    </div>
+  <% end %>
+</div>

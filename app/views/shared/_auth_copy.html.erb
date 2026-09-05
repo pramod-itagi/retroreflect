@@ -1,0 +1,20 @@
+<%# locals: heading, lede, show_back: false %>
+<div class="auth-copy-inner">
+  <% if local_assigns[:show_back] %>
+    <p class="auth-copy-back">
+      <%= back_nav_link new_session_path, "sign in" %>
+    </p>
+  <% end %>
+  <p class="auth-kicker">
+    <span class="auth-kicker-dot" aria-hidden="true"></span>
+    Retroreflect
+  </p>
+  <h1 class="display-face auth-heading"><%= heading %></h1>
+  <p class="auth-lede"><%= lede.html_safe %></p>
+  <span class="auth-accent" aria-hidden="true"></span>
+  <p class="auth-statement">
+    Better retrospectives.<br>
+    Stronger teams.<br>
+    A more thoughtful way to grow.
+  </p>
+</div>

@@ -1,27 +1,29 @@
 <% content_for :full_bleed, true %>
 
-<div class="login-page workspace-shell">
-  <section class="mx-auto grid min-h-full flex-1 max-w-7xl grid-cols-1 lg:grid-cols-[1.04fr_0.96fr]">
-    <div class="flex flex-col justify-center px-5 py-10 sm:px-8 lg:px-10 lg:py-12">
-      <p class="mb-5">
-        <%= back_nav_link new_session_path, "sign in" %>
-      </p>
-      <p class="mb-4 flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.16em] text-ink">
-        <span class="inline-block h-2 w-2 rounded-full bg-coral" aria-hidden="true"></span>
-        Retroreflect
-      </p>
-      <h1 class="display-face max-w-xl text-4xl font-bold leading-[0.98] tracking-[-0.045em] text-ink sm:text-5xl">Reset password</h1>
+<div class="login-page auth-screen workspace-shell">
+  <section class="auth-split">
+    <div class="auth-copy">
+      <%= render "shared/auth_copy",
+                 heading: "Forgot password",
+                 lede: "Enter your email and we'll send you instructions to reset your password." %>
     </div>
 
-    <div class="home-hero-panel flex items-center justify-center px-5 py-10 sm:px-8 lg:px-10">
+    <div class="auth-panel">
       <div class="login-form-card">
-        <%= form_with url: password_resets_path, class: "space-y-5" do %>
+        <%= form_with url: password_resets_path, class: "auth-form" do %>
           <div>
-            <%= label_tag :email, "Email", class: "mb-2 block text-sm font-semibold text-ink" %>
-            <%= email_field_tag :email, nil, required: true, autocomplete: "email", class: "login-field" %>
+            <%= label_tag :email, "Email", class: "auth-field-label" %>
+            <div class="action-item-control action-item-control--text">
+              <%= render "shared/auth_field_icon", name: "email" %>
+              <%= email_field_tag :email, nil, required: true, autocomplete: "email", placeholder: "you@example.com", class: "workspace-field" %>
+            </div>
           </div>
-          <%= submit_tag "Send reset instructions", class: "home-action home-action-primary mt-1" %>
+          <%= submit_tag "Send reset instructions", class: "home-action home-action-primary" %>
         <% end %>
+
+        <p class="auth-back">
+          <%= back_nav_link new_session_path, "sign in" %>
+        </p>
       </div>
     </div>
   </section>

@@ -15,8 +15,26 @@ module Authentication
   private
 
   def current_user
-    Current.user ||= User.active.find_by(id: session[:user_id]) if session[:user_id]
+    return if session[:user_id].blank?
+
+    user = Current.user
+    user = User.active.find_by(id: session[:user_id]) if user.blank? || user.id != session[:user_id]
+    unless user && session_version_for(user)
+      terminate_session
+      return
+    end
+
+    Current.user = user
   end
+
+  def session_version_for(user)
+    stored = session[:session_version]
+    expected = user.session_version
+    return true if stored.nil? && expected == 1
+
+    stored.to_i == expected
+  end
+  private :session_version_for
 
   def authenticated?
     current_user.present?
@@ -45,6 +63,7 @@ module Authentication
     return_to = session[:return_to]
     reset_session
     session[:user_id] = user.id
+    session[:session_version] = user.session_version
     session[:return_to] = return_to if return_to.present?
     Current.user = user
   end

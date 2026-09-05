@@ -20,15 +20,20 @@
           <ul class="home-section-list">
             <% @active_teams.each do |team| %>
               <li>
-                <article class="home-card admin-row flex items-baseline justify-between gap-4 px-6 py-4">
-                  <%= link_to team.name, system_admin_team_path(team), class: "min-w-0 truncate font-semibold text-ink hover:text-coral" %>
+                <article class="home-card admin-row flex items-center justify-between gap-4 px-6 py-4">
+                  <div class="min-w-0">
+                    <%= team_nav_pill(team.name, system_admin_team_path(team)) %>
+                  </div>
                   <span class="shrink-0 text-sm text-muted"><%= pluralize(team.member_count, "member") %></span>
                 </article>
               </li>
             <% end %>
           </ul>
         <% else %>
-          <p class="mt-5 text-sm leading-6 text-muted">No active teams.</p>
+          <div class="home-card mt-6 px-6 py-5">
+            <p class="font-semibold text-ink">No active teams</p>
+            <p class="mt-2 leading-6 text-muted">There are no active teams in the workspace yet.</p>
+          </div>
         <% end %>
       </section>
 
@@ -45,7 +50,10 @@
             <% end %>
           </ul>
         <% else %>
-          <p class="mt-5 text-sm leading-6 text-muted">No archived teams.</p>
+          <div class="home-card mt-6 px-6 py-5">
+            <p class="font-semibold text-ink">No archived teams</p>
+            <p class="mt-2 leading-6 text-muted">There are no archived teams in the workspace yet.</p>
+          </div>
         <% end %>
       </section>
     </div>

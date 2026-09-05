@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_09_03_180000) do
+ActiveRecord::Schema[7.1].define(version: 2026_09_05_120000) do
   create_table "action_item_status_events", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
     t.bigint "action_item_id", null: false
     t.bigint "actor_id", null: false
@@ -151,6 +151,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_03_180000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "system_admin", default: false, null: false
+    t.integer "session_version", default: 1, null: false
     t.index ["confirmation_token_digest"], name: "index_users_on_confirmation_token_digest", unique: true
     t.index ["discarded_at"], name: "index_users_on_discarded_at"
     t.index ["email"], name: "index_users_on_email", unique: true

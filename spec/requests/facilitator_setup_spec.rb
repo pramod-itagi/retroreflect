@@ -50,8 +50,8 @@ RSpec.describe "Facilitator retrospective setup", type: :request do
     expect(response.body).not_to include("Make facilitator")
     expect(response.body).not_to include("Make member")
     roster = response.parsed_body.at_css("ul.roster-list")
-    expect(roster["class"]).to include("divide-y")
-    expect(roster.css("li").size).to eq(2)
+    expect(roster["class"]).to include("admin-team-member-list")
+    expect(roster.css("li.admin-team-member").size).to eq(2)
     expect(roster.css("article.home-card")).to be_empty
     expect(roster.at_css(".member-avatar")).to be_present
     expect(roster.text).to include("Alice")
@@ -76,21 +76,21 @@ RSpec.describe "Facilitator retrospective setup", type: :request do
 
     sign_in(facilitator)
     get facilitator_team_path(team)
-    expect(response.body).to include("Members")
+    expect(response.body).to include("Members (2)")
     page_headings = response.parsed_body.css(".workspace-page h1, .workspace-page h2").map { |heading| [heading.name, heading.text.strip] }
     expect(page_headings).to eq([
       ["h1", team.name],
-      ["h2", "Members"],
+      ["h2", "Members (2)"],
       ["h2", "Current retrospective"],
       ["h2", "Current action items"],
       ["h2", "Archive team"]
     ])
-    expect(response.parsed_body.at_css(".workspace-page h2").text.strip).to eq("Members")
+    expect(response.parsed_body.at_css(".workspace-page h2").text.strip).to eq("Members (2)")
     expect(response.parsed_body.css("h2").map { |heading| heading.text.strip }).not_to include("People")
     expect(response.parsed_body.css("h2").map { |heading| heading.text.strip }).not_to include("Add person")
     members = response.parsed_body.at_css("ul.team-member-list")
-    expect(members["class"]).to include("divide-y")
-    expect(members.css("li").size).to eq(2)
+    expect(members["class"]).to include("admin-team-member-list")
+    expect(members.css("li.admin-team-member").size).to eq(2)
     expect(members.css("article.home-card")).to be_empty
     make_facilitator = response.parsed_body.css("button.member-action-btn").find { |button| button.text.include?("Make facilitator") }
     remove = response.parsed_body.at_css("button.member-action-danger")

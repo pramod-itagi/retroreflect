@@ -56,6 +56,8 @@
 
   .login-page.auth-screen,
   .register-page.auth-screen {
+    display: flex;
+    flex-direction: column;
     background: var(--paper);
   }
 
@@ -80,6 +82,10 @@
     max-width: 32rem;
   }
 
+  .auth-screen .auth-copy-back {
+    margin: 0 0 1.75rem;
+  }
+
   .auth-screen .auth-kicker {
     display: flex;
     align-items: center;
@@ -102,7 +108,7 @@
 
   .auth-screen .auth-heading {
     margin: 0;
-    max-width: 12ch;
+    max-width: 11ch;
     font-size: clamp(2.4rem, 5vw, 3.6rem);
     font-weight: 700;
     line-height: 1.02;
@@ -114,6 +120,24 @@
     margin: 1.5rem 0 0;
     max-width: 28rem;
     font-size: 1.125rem;
+    font-weight: 500;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  .auth-screen .auth-accent {
+    display: block;
+    width: 2.75rem;
+    height: 3px;
+    margin: 1.75rem 0 0;
+    border-radius: 999px;
+    background: var(--coral);
+  }
+
+  .auth-screen .auth-statement {
+    margin: 1.75rem 0 0;
+    max-width: 22rem;
+    font-size: 1rem;
     font-weight: 500;
     line-height: 1.7;
     color: var(--muted);
@@ -132,7 +156,72 @@
   .auth-screen .login-form-card {
     width: min(26rem, 100%);
     max-width: 26rem;
-    padding: 1.75rem 1.7rem;
+    padding: 1.85rem 1.7rem;
+    border-radius: 10px;
+    box-shadow: 0 12px 28px rgba(16, 33, 29, 0.12);
+  }
+
+  .auth-screen .auth-form {
+    display: grid;
+    gap: 1.15rem;
+  }
+
+  .auth-screen .auth-field-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .auth-screen .action-item-control .workspace-field {
+    font-size: 1rem;
+  }
+
+  .auth-screen .home-action {
+    width: 100%;
+    margin-top: 0.25rem;
+    cursor: pointer;
+    border: 0;
+  }
+
+  .auth-screen .auth-or {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin: 1.45rem 0 1.15rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--muted);
+  }
+
+  .auth-screen .auth-or::before,
+  .auth-screen .auth-or::after {
+    content: "";
+    flex: 1 1 auto;
+    height: 1px;
+    background: var(--line);
+  }
+
+  .auth-screen .auth-alt-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem 0.95rem;
+    margin: 0;
+    text-align: center;
+  }
+
+  .auth-screen .auth-alt-rule {
+    display: inline-block;
+    width: 1px;
+    height: 0.9rem;
+    background: var(--line);
+  }
+
+  .auth-screen .auth-back {
+    margin: 1.35rem 0 0;
   }
 
   @media (min-width: 640px) {
@@ -144,11 +233,15 @@
       min-height: 24rem;
       padding: 2.5rem 2rem;
     }
+
+    .auth-screen .login-form-card {
+      padding: 2rem 1.85rem;
+    }
   }
 
   @media (min-width: 1024px) {
     .auth-screen .auth-split {
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
     }
 
     .auth-screen .auth-copy {
@@ -624,6 +717,9 @@
   .home-page a:focus-visible,
   .home-page .home-action:focus-visible,
   .home-page .home-team-link:focus-visible,
+  .workspace-page .home-team-link:focus-visible,
+  .home-page .workspace-team-link:focus-visible,
+  .workspace-page .workspace-team-link:focus-visible,
   .login-page a:focus-visible,
   .login-page .home-action:focus-visible,
   .register-page a:focus-visible,
@@ -729,6 +825,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
+    min-width: 0;
     max-width: 100%;
     border-radius: 9999px;
     padding: 0.42rem 0.8rem 0.42rem 0.9rem;
@@ -762,6 +859,24 @@
     color: var(--coral);
     transform: translateY(-1px);
     box-shadow: 0 8px 0 rgba(16, 33, 29, 0.08);
+  }
+
+  .workspace-team-link {
+    color: var(--ink);
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+
+  .workspace-team-link:hover {
+    color: var(--coral);
+    text-decoration: underline;
+    text-underline-offset: 0.22em;
+  }
+
+  .workspace-team-link:focus-visible {
+    color: var(--coral);
   }
 
   .board-grid {
@@ -1454,7 +1569,8 @@
   }
 
   .login-page .home-action,
-  .register-page .home-action {
+  .register-page .home-action,
+  .auth-screen .home-action {
     width: 100%;
     cursor: pointer;
     border: 0;
@@ -1625,7 +1741,8 @@
     padding-right: 2.15rem;
   }
 
-  .workspace-page form.action-item-create.home-card {
+  .workspace-page form.action-item-create.home-card,
+  .workspace-page form.create-team-form.home-card {
     border: 1px solid var(--line);
     border-radius: 12px;
   }
@@ -1672,6 +1789,19 @@
     padding: 0.55rem 2.15rem 0.55rem 0;
     background-color: transparent;
     box-shadow: none;
+  }
+
+  .action-item-control--plain {
+    padding-left: 0.95rem;
+  }
+
+  .action-item-control--text .workspace-field {
+    padding-right: 0.55rem;
+    resize: none;
+  }
+
+  .action-item-control:has(.field_with_errors) {
+    border-color: #e65e48;
   }
 
   .action-item-control--date {
@@ -2069,8 +2199,164 @@
     color: var(--muted);
   }
 
+  .workspace-page .admin-team-panel,
+  .admin-page .admin-team-panel {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1.5rem 1.35rem;
+  }
+
+  .admin-team-panel .home-section-title {
+    font-size: 1.35rem;
+    letter-spacing: -0.025em;
+  }
+
+  @media (min-width: 640px) {
+    .workspace-page .admin-team-panel,
+    .admin-page .admin-team-panel {
+      padding: 1.75rem 1.75rem;
+    }
+  }
+
+  .admin-team-member-list {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .admin-team-member {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    min-width: 0;
+    padding: 0.95rem 1.1rem;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  .admin-team-member-role {
+    margin: 0.15rem 0 0;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--muted);
+  }
+
   .admin-form {
     max-width: 32rem;
+  }
+
+  .create-team-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .archive-confirm-page {
+    padding-bottom: 4rem;
+  }
+
+  .archive-confirm-stack {
+    display: grid;
+    gap: 1.75rem;
+    width: 100%;
+    max-width: 36rem;
+    margin-top: 1.5rem;
+  }
+
+  .archive-consequences {
+    width: 100%;
+    padding: 1.15rem 1.2rem;
+    border: 1px solid rgba(230, 94, 72, 0.28);
+    border-radius: 12px;
+    background: #fdf0ed;
+  }
+
+  .archive-consequences-kicker {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0 0 0.75rem;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--coral);
+  }
+
+  .archive-consequences-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 9999px;
+    background: var(--coral);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .archive-consequences-list {
+    margin: 0;
+    padding-left: 1.25rem;
+    list-style-type: disc;
+    list-style-position: outside;
+    color: var(--ink);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+
+  .archive-consequences-list li {
+    display: list-item;
+    list-style-type: disc;
+  }
+
+  .archive-consequences-list li::marker {
+    color: var(--ink);
+  }
+
+  .archive-consequences-list li + li {
+    margin-top: 0.4rem;
+  }
+
+  .archive-consequences-undo {
+    margin: 0.9rem 0 0;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(230, 94, 72, 0.22);
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--coral);
+  }
+
+  .archive-confirm-form {
+    width: 100%;
+    margin-top: 0;
+    padding: 1.5rem 1.35rem;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  .archive-confirm-name {
+    font-style: italic;
+    font-weight: 650;
+    color: var(--ink);
+  }
+
+  .archive-confirm-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.35rem;
   }
 
   .retros-filters {
@@ -2527,7 +2813,9 @@ select:focus-visible {
 
 .action-item-control .workspace-field,
 .action-item-control .workspace-field:focus,
-.action-item-control .workspace-field:focus-visible {
+.action-item-control .workspace-field:focus-visible,
+.action-item-control input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]):not([type="date"]):focus,
+.action-item-control input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]):not([type="color"]):not([type="date"]):focus-visible {
   outline: none;
   border: 0;
   box-shadow: none;
@@ -2575,4 +2863,15 @@ button:focus-visible,
   outline-offset: 2px;
   --tw-ring-offset-shadow: 0 0 #0000;
   --tw-ring-shadow: 0 0 #0000;
+}
+
+/* Restore disc bullets after Tailwind preflight's list-style: none. */
+.archive-consequences-list {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+}
+
+.archive-consequences-list li {
+  display: list-item;
+  list-style-type: disc;
 }

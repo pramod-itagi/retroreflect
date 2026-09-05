@@ -36,7 +36,7 @@ RSpec.describe "Anonymous meeting board", type: :request do
     expect(page).to include("What to improve")
     expect(page).to include("1 of 2 submitted")
     expect(page).to include("The deploy pipeline was stable")
-    expect(page).to include("Handoffs still take too long")
+    expect(page).not_to include("Handoffs still take too long")
   end
 
   it "keeps names in status and note bodies on the board, never together" do
@@ -57,7 +57,7 @@ RSpec.describe "Anonymous meeting board", type: :request do
     expect(status).not_to include("Handoffs still take too long")
 
     expect(board).to include("The deploy pipeline was stable")
-    expect(board).to include("Handoffs still take too long")
+    expect(board).not_to include("Handoffs still take too long")
     expect(board).not_to include("Alice Example")
     expect(board).not_to include("Bob Example")
     expect(board).not_to include(setup[:alice].email)

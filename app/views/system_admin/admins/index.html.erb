@@ -12,40 +12,78 @@
     </header>
 
     <div class="listing-stack">
-      <ul class="home-section-list">
-        <% @system_admins.each do |admin| %>
-          <li>
-            <article class="home-card admin-row flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-              <p class="min-w-0 text-ink">
-                <span class="font-semibold"><%= admin.display_name %></span>
-                <span class="text-muted"> · <%= admin.email %></span>
-              </p>
-              <% if admin.last_system_admin? %>
-                <p class="admin-constraint shrink-0">At least one System Admin must remain.</p>
-              <% else %>
-                <%= button_to "Remove",
-                              system_admin_admin_path(admin),
-                              method: :delete,
-                              class: "text-sm font-semibold text-muted hover:text-coral",
-                              form_class: "shrink-0",
-                              data: { turbo_submits_with: "Removing..." } %>
-              <% end %>
-            </article>
-          </li>
-        <% end %>
-      </ul>
+      <% if @system_admins.any? %>
+        <ul class="home-section-list">
+          <% @system_admins.each do |admin| %>
+            <li>
+              <article class="home-card admin-row flex items-center justify-between gap-4 px-6 py-4">
+                <p class="min-w-0 break-words text-ink">
+                  <span class="font-semibold"><%= admin.display_name %></span>
+                  <span class="text-muted"> · <%= admin.email %></span>
+                </p>
+                <% if admin == current_user %>
+                  <% if admin.last_system_admin? %>
+                    <p class="admin-constraint shrink-0">You can't leave the System Admin role because you are the only System Admin.</p>
+                  <% else %>
+                    <%= button_to "Leave System Admin role",
+                                  leave_system_admin_admins_path,
+                                  method: :delete,
+                                  class: "member-action-btn member-action-danger text-sm font-semibold",
+                                  form_class: "shrink-0",
+                                  data: { turbo_submits_with: "Leaving..." },
+                                  form: {
+                                    data: {
+                                      turbo_confirm: "Leave System Admin role?",
+                                      confirm_description: "You will lose access to System Administration and will no longer be a System Admin. Another System Admin will remain responsible for system administration.",
+                                      confirm_accept: "Leave System Admin role",
+                                      confirm_cancel: "Cancel",
+                                      confirm_busy: "Leaving...",
+                                      confirm_variant: "danger"
+                                    }
+                                  } %>
+                  <% end %>
+                <% elsif admin.last_system_admin? %>
+                  <p class="admin-constraint shrink-0">At least one System Admin must remain.</p>
+                <% else %>
+                  <%= button_to "Remove",
+                                system_admin_admin_path(admin),
+                                method: :delete,
+                                class: "member-action-btn member-action-danger text-sm font-semibold",
+                                form_class: "shrink-0",
+                                data: { turbo_submits_with: "Removing..." } %>
+                <% end %>
+              </article>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <div class="home-card mt-6 px-6 py-5">
+          <p class="font-semibold text-ink">No system admins</p>
+          <p class="mt-2 leading-6 text-muted">Add a confirmed user below to give them system admin access.</p>
+        </div>
+      <% end %>
 
       <% if @candidate_users.any? %>
-        <%= form_with url: system_admin_admins_path, class: "home-card mt-8 grid gap-4 px-6 py-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end" do %>
-          <div class="flex min-w-0 flex-col gap-1.5">
-            <%= label_tag :user_id, "Add System Admin", class: "text-xs font-semibold uppercase tracking-[0.12em] text-muted" %>
-            <%= select_tag :user_id,
-                           options_from_collection_for_select(@candidate_users, :id, :display_name),
-                           prompt: "Select a confirmed user",
-                           class: "workspace-field" %>
-          </div>
-          <%= submit_tag "Add", class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto", data: { turbo_submits_with: "Adding..." } %>
-        <% end %>
+        <div class="home-card mt-8 px-6 py-5">
+          <p class="text-lg font-bold text-ink">Add system admin</p>
+          <p class="mt-1 leading-6 text-muted">Select a confirmed user to grant system admin access.</p>
+          <%= form_with url: system_admin_admins_path, class: "add-admin-form mt-5 grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end" do %>
+            <div class="min-w-0">
+              <%= label_tag :user_id, "Select a confirmed user", class: "mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-muted" %>
+              <div class="action-item-control">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="action-item-field-icon" aria-hidden="true">
+                  <path d="M20 21a8 8 0 0 0-16 0"/>
+                  <circle cx="12" cy="8" r="3.25"/>
+                </svg>
+                <%= select_tag :user_id,
+                               options_from_collection_for_select(@candidate_users, :id, :display_name),
+                               prompt: "Select a confirmed user",
+                               class: "workspace-field" %>
+              </div>
+            </div>
+            <%= submit_tag "Add", class: "#{home_primary_button_classes} w-full cursor-pointer sm:w-auto", data: { turbo_submits_with: "Adding..." } %>
+          <% end %>
+        </div>
       <% else %>
         <p class="mt-8 text-sm leading-6 text-muted">Everyone with a confirmed account is already a System Admin.</p>
       <% end %>

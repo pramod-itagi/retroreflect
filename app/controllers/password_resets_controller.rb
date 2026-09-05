@@ -5,6 +5,12 @@ class PasswordResetsController < ApplicationController
   end
 
   def create
+    if AuthThrottle.blocked?(:password_reset, request.remote_ip)
+      redirect_to new_session_path, notice: "If that account exists, we sent reset instructions."
+      return
+    end
+
+    AuthThrottle.record!(:password_reset, request.remote_ip)
     user = User.active.find_by(email: params[:email])
     if user
       raw = user.issue_password_reset_token!

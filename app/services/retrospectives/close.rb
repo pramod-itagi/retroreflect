@@ -6,8 +6,11 @@ class Retrospectives::Close
   end
 
   def call
-    raise Error, "retrospective must be discussing" unless @retrospective.discussing?
+    Retrospective.transaction do
+      @retrospective.lock!
+      raise Error, "retrospective must be discussing" unless @retrospective.discussing?
 
-    @retrospective.update!(status: :closed, closed_at: Time.current)
+      @retrospective.update!(status: :closed, closed_at: Time.current)
+    end
   end
 end

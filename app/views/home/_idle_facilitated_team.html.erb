@@ -1,7 +1,7 @@
 <%# locals: team %>
 <li class="home-card flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
   <div class="min-w-0">
-    <%= link_to team.name, facilitator_team_path(team), class: "font-semibold text-ink hover:text-coral" %>
+    <%= link_to team.name, facilitator_team_path(team), class: "workspace-team-link" %>
     <p class="mt-2 text-sm leading-6 text-muted">No active retrospective</p>
   </div>
   <%= link_to "Create retrospective", new_facilitator_team_retrospective_path(team), class: home_primary_button_classes %>

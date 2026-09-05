@@ -24,7 +24,17 @@ RSpec.describe "Action items", type: :request do
     { action_item: { status: status, status_comment: comment } }
   end
 
-  it "lets a facilitator create an item with title, description, owner, due date, and status" do
+  def archive_team_leaving_items!(team)
+    Team.transaction do
+      team.lock!
+      now = Time.current
+      team.memberships.current.update_all(deactivated_at: now)
+      team.update!(archived_at: now)
+    end
+    team.reload
+  end
+
+  it "lets a facilitator create an item that always starts Open" do
     context = setup_item
     sign_in(context[:facilitator])
 
@@ -33,8 +43,7 @@ RSpec.describe "Action items", type: :request do
         title: "Document the deploy",
         description: "Add a runbook",
         owner_id: context[:owner].id,
-        due_on: Date.current + 3,
-        status: "open"
+        due_on: Date.current + 3
       }
     }
 
@@ -45,6 +54,38 @@ RSpec.describe "Action items", type: :request do
     expect(item).to be_open
     expect(item.created_by).to eq(context[:facilitator])
     expect(item.retrospective).to eq(context[:retro])
+    expect(item.status_events).to be_empty
+  end
+
+  it "ignores a create request that tries to start as completed or cancelled" do
+    context = setup_item
+    sign_in(context[:facilitator])
+
+    post facilitator_retrospective_action_items_path(context[:retro]), params: {
+      action_item: {
+        title: "Forced completed",
+        owner_id: context[:owner].id,
+        due_on: Date.current + 1,
+        status: "completed"
+      }
+    }
+    completed_attempt = context[:team].action_items.find_by!(title: "Forced completed")
+    expect(completed_attempt).to be_open
+    expect(completed_attempt.completed_at).to be_nil
+    expect(completed_attempt.status_events).to be_empty
+
+    post facilitator_retrospective_action_items_path(context[:retro]), params: {
+      action_item: {
+        title: "Forced cancelled",
+        owner_id: context[:owner].id,
+        due_on: Date.current + 1,
+        status: "cancelled"
+      }
+    }
+    cancelled_attempt = context[:team].action_items.find_by!(title: "Forced cancelled")
+    expect(cancelled_attempt).to be_open
+    expect(cancelled_attempt.cancelled_at).to be_nil
+    expect(cancelled_attempt.status_events).to be_empty
   end
 
   it "presents the action item creation form with the expected fields and defaults" do
@@ -58,14 +99,12 @@ RSpec.describe "Action items", type: :request do
     expect(form.at_css("input[name='action_item[title]']")["placeholder"]).to eq("e.g. Improve deployment process")
     expect(form.at_css("select[name='action_item[owner_id]']")["class"]).to include("workspace-field")
     expect(form.css("svg.action-item-field-icon").size).to eq(2)
-    expect(form.at_css(".action-item-status-dot")).to be_present
     expect(form.at_css(".action-item-date-display")).to be_present
     due_on = form.at_css("input[name='action_item[due_on]']")
     expect(due_on["class"]).to include("action-item-date-native")
     expect(due_on["min"]).to eq(Time.zone.today.iso8601)
-    status = form.at_css("select[name='action_item[status]']")
-    expect(status["class"]).to include("workspace-field")
-    expect(status.at("option[selected]")["value"]).to eq("open")
+    expect(form.at_css("select[name='action_item[status]']")).to be_nil
+    expect(form.at_css(".action-item-status-dot")).to be_nil
     expect(form.at_css("textarea[name='action_item[description]']")["placeholder"]).to include("optional")
     expect(form.at_css("[type='submit']")["value"]).to eq("Add action item")
   end
@@ -149,6 +188,7 @@ RSpec.describe "Action items", type: :request do
       title: "Keep this open",
       owner: context[:owner],
       created_by: context[:facilitator],
+      retrospective: context[:retro],
       due_on: Date.current + 2,
       status: :open
     )
@@ -211,36 +251,32 @@ RSpec.describe "Action items", type: :request do
       title: "Improve deployment",
       owner: context[:owner],
       created_by: context[:facilitator],
-      due_on: Date.current + 1,
-      status: :in_progress
-    ).update!(due_on: Date.new(2026, 8, 28))
+      retrospective: context[:retro],
+      due_on: Date.current + 1
+    ).update!(status: :in_progress, due_on: Date.new(2026, 8, 28))
     context[:team].action_items.create!(
       title: "Ready for review item",
       owner: context[:other],
       created_by: context[:facilitator],
-      due_on: Date.current + 1,
-      status: :ready_for_review
-    ).update!(due_on: Date.new(2026, 8, 30))
+      retrospective: context[:retro],
+      due_on: Date.current + 1
+    ).update!(status: :ready_for_review, due_on: Date.new(2026, 8, 30))
     completed = context[:team].action_items.create!(
       title: "Update documentation",
       owner: context[:owner],
       created_by: context[:facilitator],
-      due_on: Date.current + 1,
-      status: :completed,
-      completed_at: Time.current,
-      completed_by: context[:owner]
+      retrospective: context[:retro],
+      due_on: Date.current + 1
     )
-    completed.update!(due_on: due)
+    completed.update!(status: :completed, completed_at: Time.current, completed_by: context[:owner], due_on: due)
     cancelled = context[:team].action_items.create!(
       title: "Cancelled extra work",
       owner: context[:owner],
       created_by: context[:facilitator],
-      due_on: Date.current + 1,
-      status: :cancelled,
-      cancelled_at: Time.current,
-      cancelled_by: context[:facilitator]
+      retrospective: context[:retro],
+      due_on: Date.current + 1
     )
-    cancelled.update!(due_on: due)
+    cancelled.update!(status: :cancelled, cancelled_at: Time.current, cancelled_by: context[:facilitator], due_on: due)
     create_user(name: "Available Person")
 
     sign_in(context[:facilitator])
@@ -261,16 +297,22 @@ RSpec.describe "Action items", type: :request do
     expect(response.body).not_to include("Update documentation")
     expect(response.body).not_to include("Cancelled extra work")
     expect(response.body).not_to include("Add action item")
-    expect(response.body).not_to include(facilitator_team_action_items_path(context[:team]))
-    expect(response.body).to include("View all action items")
-    expect(response.body).to include(participant_action_items_path)
+    view_all = response.parsed_body.css("a").find { |link| link.text.strip == "View all action items" }
+    expect(view_all).to be_present
+    expect(view_all["href"]).to eq(facilitator_team_action_items_path(context[:team]))
+    expect(view_all["href"]).not_to eq(participant_action_items_path)
     expect(response.body).to include("Current retrospective")
     expect(response.body).to include("View retrospective history")
     expect(response.body).to include("Select a confirmed user")
     add_person = response.parsed_body.css(".home-card").find { |card| card.text.include?("Add person") }
+    expect(add_person.at_css("form.add-person-form")).to be_present
     expect(add_person.at_css("select[name='user_id']")["class"]).to include("workspace-field")
     expect(add_person.at_css("select[name='role']")["class"]).to include("workspace-field")
     expect(add_person.at_css("select[name='user_id']")["class"]).not_to include("workspace-filter-field")
+    expect(add_person.at_css("select[name='user_id']").ancestors.find { |node| node["class"].to_s.include?("action-item-control") }).to be_present
+    expect(add_person.at_css("select[name='user_id']").parent.at_css("svg.action-item-field-icon")).to be_present
+    expect(add_person.at_css("select[name='role']").parent.at_css("svg.action-item-field-icon")).to be_nil
+    expect(add_person.at_css("select[name='role']").parent["class"]).to include("action-item-control--plain")
     expect(response.body).to include("Archive team")
     expect(response.body).to include("Archiving removes all current members from this team and prevents new retrospectives.")
 
@@ -295,6 +337,47 @@ RSpec.describe "Action items", type: :request do
     end.not_to(change { context[:team].action_items.count })
   end
 
+  it "rejects a team-scoped create that has no retrospective" do
+    context = setup_item
+    sign_in(context[:facilitator])
+
+    expect do
+      post facilitator_team_action_items_path(context[:team]), params: {
+        action_item: {
+          title: "Team only item",
+          owner_id: context[:owner].id,
+          due_on: Date.current + 1
+        }
+      }
+    end.not_to(change { context[:team].action_items.count })
+
+    expect(response).to redirect_to(root_path)
+    expect(context[:team].action_items.find_by(title: "Team only item")).to be_nil
+  end
+
+  it "rejects a crafted team-scoped create after the retrospective is closed" do
+    context = setup_item
+    sign_in(context[:facilitator])
+    context[:retro].update!(status: :closed, closed_at: Time.current)
+
+    expect do
+      post facilitator_team_action_items_path(context[:team]), params: {
+        action_item: {
+          title: "Bypass closed retro",
+          owner_id: context[:owner].id,
+          due_on: Date.current + 1
+        }
+      }
+    end.not_to(change { context[:team].action_items.count })
+
+    expect(response).to redirect_to(root_path)
+    expect(context[:team].action_items.find_by(title: "Bypass closed retro")).to be_nil
+    expect(context[:item].reload).to be_open
+
+    patch facilitator_action_item_path(context[:item]), params: status_change_params("in_progress", comment: "Still working after close.")
+    expect(context[:item].reload).to be_in_progress
+  end
+
   it "lets a facilitator complete or cancel an item and stamps timestamps" do
     context = setup_item
     sign_in(context[:facilitator])
@@ -308,6 +391,7 @@ RSpec.describe "Action items", type: :request do
       title: "Drop unused gem",
       owner: context[:owner],
       created_by: context[:facilitator],
+      retrospective: context[:retro],
       due_on: Date.current + 2
     )
     patch facilitator_action_item_path(other_item), params: status_change_params("cancelled", comment: "The integration is no longer required.")
@@ -333,6 +417,7 @@ RSpec.describe "Action items", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Fix flaky test")
     expect(response.body).to include("Stabilize the login spec")
+    expect(response.parsed_body.at_css("#action-item-#{context[:item].id}")).to be_present
     expect(response.body).to include("Due #{context[:item].due_on.strftime("%b #{context[:item].due_on.day}, %Y")}")
     expect(response.body).to include("Update")
 
@@ -348,6 +433,7 @@ RSpec.describe "Action items", type: :request do
       title: "Write changelog",
       owner: context[:owner],
       created_by: context[:facilitator],
+      retrospective: context[:retro],
       due_on: Date.current + 4
     )
     patch participant_action_item_path(open_item), params: { action_item: { status: "cancelled" } }
@@ -640,6 +726,7 @@ RSpec.describe "Action items", type: :request do
       title: "Cancel me",
       owner: context[:owner],
       created_by: context[:facilitator],
+      retrospective: context[:retro],
       due_on: Date.current + 2
     )
     patch facilitator_action_item_path(other), params: status_change_params("cancelled", comment: "The integration is no longer required.")
@@ -671,6 +758,138 @@ RSpec.describe "Action items", type: :request do
 
     expect(context[:item].reload).to be_open
     expect(context[:item].status_events).to be_empty
+  end
+
+  it "shows team-scoped action item history and rejects cross-team access" do
+    context = setup_item
+    completed = context[:team].action_items.create!(
+      title: "Ship the runbook",
+      owner: context[:other],
+      created_by: context[:facilitator],
+      retrospective: context[:retro],
+      due_on: Date.current + 1
+    )
+    completed.update!(status: :completed, completed_at: Time.current, completed_by: context[:other])
+
+    outsider = create_user(name: "Outsider")
+    other_team = create_team_with_roles(facilitator: outsider, name: "Payments")
+
+    sign_in(context[:facilitator])
+    get facilitator_team_action_items_path(context[:team])
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Action items")
+    expect(response.body).to include("Fix flaky test")
+    expect(response.body).to include("Ship the runbook")
+    expect(response.body).to include("Other")
+    expect(response.body).not_to include("Add action item")
+    expect(response.body).not_to include('name="action_item[title]"')
+    expect(response.parsed_body.at_css("#action-item-#{completed.id} form")).to be_nil
+    expect(response.parsed_body.at_css("#action-item-#{context[:item].id} form")).to be_present
+    expect(response.parsed_body.at_css("a[href='#{participant_action_items_path}']")).to be_present
+
+    sign_in(context[:owner])
+    get facilitator_team_action_items_path(context[:team])
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Fix flaky test")
+    expect(response.body).to include("Ship the runbook")
+
+    sign_in(outsider)
+    get facilitator_team_action_items_path(context[:team])
+    expect(response).to redirect_to(root_path)
+    expect(context[:team].action_items.pluck(:title)).to include("Fix flaky test", "Ship the runbook")
+
+    get facilitator_team_action_items_path(other_team)
+    expect(response).to have_http_status(:ok)
+    expect(response.body).not_to include("Fix flaky test")
+  end
+
+  it "keeps View all on the team page when only historical action items remain" do
+    context = setup_item
+    context[:item].update!(status: :completed, completed_at: Time.current, completed_by: context[:owner])
+
+    sign_in(context[:facilitator])
+    get facilitator_team_path(context[:team])
+
+    expect(response.body).to include("No current action items.")
+    expect(response.body).not_to include("Fix flaky test")
+    view_all = response.parsed_body.css("a").find { |link| link.text.strip == "View all action items" }
+    expect(view_all["href"]).to eq(facilitator_team_action_items_path(context[:team]))
+  end
+
+  it "rejects Action Item creation after the retrospective is cancelled" do
+    context = setup_item
+    context[:retro].update!(status: :cancelled, cancelled_at: Time.current)
+    sign_in(context[:facilitator])
+
+    expect do
+      post facilitator_retrospective_action_items_path(context[:retro]), params: {
+        action_item: {
+          title: "After cancel",
+          owner_id: context[:owner].id,
+          due_on: Date.current + 1
+        }
+      }
+    end.not_to(change { context[:team].action_items.count })
+
+    expect(response).to redirect_to(root_path)
+    expect(context[:team].action_items.find_by(title: "After cancel")).to be_nil
+    expect(context[:item].reload).to be_open
+  end
+
+  it "lets owners and historical facilitators update retained items after a team is archived" do
+    context = setup_item
+    archive_team_leaving_items!(context[:team])
+
+    sign_in(context[:owner])
+    get participant_action_items_path
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Fix flaky test")
+
+    patch participant_action_item_path(context[:item]), params: status_change_params("in_progress", comment: "Still working after archive.")
+    expect(context[:item].reload).to be_in_progress
+
+    sign_in(context[:facilitator])
+    get facilitator_team_action_items_path(context[:team])
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Fix flaky test")
+
+    patch facilitator_action_item_path(context[:item]), params: status_change_params("ready_for_review", comment: "Facilitator review after archive.")
+    expect(context[:item].reload).to be_ready_for_review
+
+    sign_in(context[:other])
+    patch facilitator_action_item_path(context[:item]), params: status_change_params("completed", comment: "Should not work.")
+    expect(response).to redirect_to(root_path)
+    expect(context[:item].reload).to be_ready_for_review
+  end
+
+  it "rejects new Action Items for an archived team through every create path" do
+    context = setup_item
+    archive_team_leaving_items!(context[:team])
+    sign_in(context[:facilitator])
+
+    expect do
+      post facilitator_retrospective_action_items_path(context[:retro]), params: {
+        action_item: {
+          title: "After archive",
+          owner_id: context[:owner].id,
+          due_on: Date.current + 1
+        }
+      }
+    end.not_to(change { context[:team].action_items.count })
+
+    expect do
+      post facilitator_team_action_items_path(context[:team]), params: {
+        action_item: {
+          title: "Team after archive",
+          owner_id: context[:owner].id,
+          due_on: Date.current + 1,
+          retrospective_id: context[:retro].id
+        }
+      }
+    end.not_to(change { context[:team].action_items.count })
+
+    expect(context[:team].action_items.find_by(title: "After archive")).to be_nil
+    expect(context[:item].reload).to be_open
   end
 
   it "records the actual persisted transition when the item has already moved" do

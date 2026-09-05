@@ -1,0 +1,18 @@
+<%# locals: name %>
+<% case name.to_s %>
+<% when "person" %>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="action-item-field-icon" aria-hidden="true">
+    <path d="M20 21a8 8 0 0 0-16 0"/>
+    <circle cx="12" cy="8" r="3.25"/>
+  </svg>
+<% when "email" %>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="action-item-field-icon" aria-hidden="true">
+    <rect x="3.5" y="5.5" width="17" height="13" rx="2"/>
+    <path d="m4.5 7.5 7.5 6 7.5-6"/>
+  </svg>
+<% when "lock" %>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="action-item-field-icon" aria-hidden="true">
+    <rect x="5.5" y="10.5" width="13" height="9.5" rx="1.75"/>
+    <path d="M8 10.5V8.25a4 4 0 0 1 8 0V10.5"/>
+  </svg>
+<% end %>

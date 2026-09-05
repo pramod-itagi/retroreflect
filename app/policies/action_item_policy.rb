@@ -4,7 +4,7 @@ class ActionItemPolicy < ApplicationPolicy
   end
 
   def update?
-    facilitator_of?(record.team) && record.team.active?
+    historically_facilitated?(record.team)
   end
 
   def update_as_owner?
@@ -14,6 +14,6 @@ class ActionItemPolicy < ApplicationPolicy
   private
 
   def retrospective_allows_create?
-    record.retrospective.blank? || record.retrospective.running?
+    record.retrospective.present? && record.retrospective.running?
   end
 end

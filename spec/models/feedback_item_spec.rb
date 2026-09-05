@@ -51,4 +51,45 @@ RSpec.describe Retrospectives::Reveal do
     expect(draft.reload.body).to eq("Unsubmitted draft")
     expect(retro.revealed_at).to be_nil
   end
+
+  it "publishes submitted drafts and leaves unsubmitted drafts off the board" do
+    facilitator = create_user(name: "Facilitator")
+    alice = create_user(name: "Alice")
+    bob = create_user(name: "Bob")
+    team = create_team_with_roles(facilitator: facilitator, members: [alice, bob])
+    retro = team.retrospectives.create!(title: "Sprint 12", created_by: facilitator)
+    alice_participation = retro.participations.create!(user: alice)
+    bob_participation = retro.participations.create!(user: bob)
+    retro.update!(status: :collecting, collecting_started_at: Time.current)
+    alice_participation.feedback_drafts.create!(retrospective: retro, category: :went_well, body: "Published from Alice")
+    alice_participation.update!(submitted_at: Time.current)
+    bob_participation.feedback_drafts.create!(retrospective: retro, category: :improve, body: "Bob private draft")
+
+    described_class.new(retro).call
+
+    retro.reload
+    expect(retro).to be_discussing
+    expect(retro.feedback_items.pluck(:body)).to contain_exactly("Published from Alice")
+    expect(retro.feedback_items.pluck(:body)).not_to include("Bob private draft")
+    expect(retro.feedback_items.map(&:reveal_position)).to eq([1])
+  end
+
+  it "is a no-op when reveal has already completed" do
+    facilitator = create_user(name: "Facilitator")
+    alice = create_user(name: "Alice")
+    team = create_team_with_roles(facilitator: facilitator, members: [alice])
+    retro = team.retrospectives.create!(title: "Sprint 12", created_by: facilitator)
+    participation = retro.participations.create!(user: alice)
+    retro.update!(status: :collecting, collecting_started_at: Time.current)
+    participation.feedback_drafts.create!(retrospective: retro, category: :went_well, body: "The pipeline was stable")
+    participation.update!(submitted_at: Time.current)
+
+    described_class.new(retro).call
+    expect { described_class.new(retro.reload).call }.not_to raise_error
+
+    retro.reload
+    expect(retro).to be_discussing
+    expect(retro.feedback_items.pluck(:body)).to contain_exactly("The pipeline was stable")
+    expect(retro.feedback_items.pluck(:reveal_position)).to eq([1])
+  end
 end
