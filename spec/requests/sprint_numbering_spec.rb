@@ -113,6 +113,58 @@ RSpec.describe "Automatic sprint numbering and titles", type: :request do
     end
   end
 
+  it "starts each team at Sprint 1 when the same facilitator creates both" do
+    travel_to Time.zone.local(2026, 6, 15) do
+      facilitator = create_user(name: "Jordan")
+      platform = create_team_with_roles(facilitator: facilitator, name: "Platform")
+      growth = create_team_with_roles(facilitator: facilitator, name: "Growth")
+
+      sign_in(facilitator)
+      platform_retro = create_via_http(platform)
+      growth_retro = create_via_http(growth)
+
+      expect(platform_retro.team).to eq(platform)
+      expect(platform_retro.sprint_number).to eq(1)
+      expect(platform_retro.sprint_year).to eq(2026)
+      expect(platform_retro.sprint_label).to eq("Sprint 1 (2026)")
+      expect(platform_retro.title).to eq("Sprint 1 Retrospective - 2026")
+
+      expect(growth_retro.team).to eq(growth)
+      expect(growth_retro.sprint_number).to eq(1)
+      expect(growth_retro.sprint_year).to eq(2026)
+      expect(growth_retro.sprint_label).to eq("Sprint 1 (2026)")
+      expect(growth_retro.title).to eq("Sprint 1 Retrospective - 2026")
+    end
+  end
+
+  it "does not change the sequence when the month changes in the same year" do
+    facilitator = create_user(name: "Jordan")
+    team = create_team_with_roles(facilitator: facilitator)
+
+    travel_to Time.zone.local(2026, 1, 12) do
+      sign_in(facilitator)
+      first = create_via_http(team)
+      first.update!(status: :closed, closed_at: Time.current)
+
+      expect(first.team).to eq(team)
+      expect(first.sprint_number).to eq(1)
+      expect(first.sprint_year).to eq(2026)
+      expect(first.sprint_label).to eq("Sprint 1 (2026)")
+      expect(first.title).to eq("Sprint 1 Retrospective - 2026")
+    end
+
+    travel_to Time.zone.local(2026, 3, 8) do
+      sign_in(facilitator)
+      second = create_via_http(team)
+
+      expect(second.team).to eq(team)
+      expect(second.sprint_number).to eq(2)
+      expect(second.sprint_year).to eq(2026)
+      expect(second.sprint_label).to eq("Sprint 2 (2026)")
+      expect(second.title).to eq("Sprint 2 Retrospective - 2026")
+    end
+  end
+
   it "keeps the one-running-retrospective rule while numbering sprints" do
     travel_to Time.zone.local(2026, 6, 15) do
       facilitator = create_user(name: "Jordan")

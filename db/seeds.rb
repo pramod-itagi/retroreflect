@@ -11,7 +11,7 @@ def seed_confirmed_user(name:, email:, system_admin: false)
   user
 end
 
-seed_confirmed_user(name: "Priya Admin", email: "admin@example.com", system_admin: true)
+seed_confirmed_user(name: "Pramod Admin", email: "admin@example.com", system_admin: true)
 jordan = seed_confirmed_user(name: "Jordan Facilitator", email: "jordan@example.com")
 alice = seed_confirmed_user(name: "Alice Member", email: "alice@example.com")
 bob = seed_confirmed_user(name: "Bob Member", email: "bob@example.com")

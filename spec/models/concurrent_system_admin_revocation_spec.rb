@@ -79,4 +79,37 @@ RSpec.describe "Concurrent system admin revocation", type: :model do
     expect(results).to contain_exactly(true, false)
     expect(User.system_admins.count).to eq(1)
   end
+
+  it "does not let concurrent discards remove the last system admin" do
+    alice = create_user(name: "Alice Discard", system_admin: true)
+    bob = create_user(name: "Bob Discard", system_admin: true)
+    results = []
+    mutex = Mutex.new
+    barrier = Queue.new
+
+    threads = [
+      Thread.new do
+        ActiveRecord::Base.connection_pool.with_connection do
+          barrier.pop
+          result = alice.discard!
+          mutex.synchronize { results << result }
+        end
+      end,
+      Thread.new do
+        ActiveRecord::Base.connection_pool.with_connection do
+          barrier.pop
+          result = bob.discard!
+          mutex.synchronize { results << result }
+        end
+      end
+    ]
+
+    2.times { barrier << true }
+    threads.each { |thread| expect(thread.join(8)).to be_truthy }
+
+    expect(results).to contain_exactly(true, false)
+    expect(User.system_admins.count).to eq(1)
+    expect([alice.reload.discarded?, bob.reload.discarded?]).to contain_exactly(true, false)
+    expect([alice.system_admin?, bob.system_admin?]).to contain_exactly(false, true)
+  end
 end
