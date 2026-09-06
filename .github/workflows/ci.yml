@@ -57,6 +57,9 @@ jobs:
       - name: Prepare test database
         run: RAILS_ENV=test bin/rails db:prepare
 
+      - name: Build Tailwind CSS
+        run: bin/rails tailwindcss:build
+
       - name: Run RSpec
         run: bundle exec rspec
 
