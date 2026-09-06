@@ -19,7 +19,7 @@ module Authentication
 
     user = Current.user
     user = User.active.find_by(id: session[:user_id]) if user.blank? || user.id != session[:user_id]
-    unless user && session_version_for(user)
+    unless user && valid_session_version?(user)
       terminate_session
       return
     end
@@ -27,14 +27,14 @@ module Authentication
     Current.user = user
   end
 
-  def session_version_for(user)
+  def valid_session_version?(user)
     stored = session[:session_version]
     expected = user.session_version
     return true if stored.nil? && expected == 1
 
     stored.to_i == expected
   end
-  private :session_version_for
+  private :valid_session_version?
 
   def authenticated?
     current_user.present?

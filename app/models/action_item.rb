@@ -115,9 +115,7 @@ class ActionItem < ApplicationRecord
       end
 
       from_status = status
-      unless update(status: requested)
-        return false
-      end
+      return false unless update(status: requested)
 
       status_events.create!(
         previous_status: from_status,

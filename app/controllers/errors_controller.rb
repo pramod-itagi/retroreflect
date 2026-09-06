@@ -10,7 +10,7 @@ class ErrorsController < ApplicationController
 
   def unprocessable
     @error_code = "422"
-    render :internal_error, status: :unprocessable_entity
+    render :internal_error, status: :unprocessable_content
   end
 
   def internal_error

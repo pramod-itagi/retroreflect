@@ -259,7 +259,7 @@ RSpec.describe "Team archiving", type: :request do
 
   it "allows a new active team to reuse an archived team's name" do
     setup = archive_setup
-    admin = create_user(name: "Priya", system_admin: true)
+    admin = create_user(name: "Pramod", system_admin: true)
     sign_in(setup[:jordan])
     post_archive(setup[:platform])
 

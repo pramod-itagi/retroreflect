@@ -9,7 +9,7 @@ RSpec.describe "System administration", type: :request do
   end
 
   it "lets a system admin access administration, create teams, and stay off those teams" do
-    admin = create_user(name: "Priya", system_admin: true)
+    admin = create_user(name: "Pramod", system_admin: true)
     jordan = create_user(name: "Jordan")
     unconfirmed = create_user(name: "Unconfirmed", confirmed: false)
 
@@ -35,8 +35,12 @@ RSpec.describe "System administration", type: :request do
     create_team = response.parsed_body.at_css("form.create-team-form")
     expect(create_team.at_css("input[name='team[name]']")["class"]).to include("workspace-field")
     expect(create_team.at_css("select[name='facilitator_id']")["class"]).to include("workspace-field")
-    expect(create_team.at_css("input[name='team[name]']").ancestors.find { |node| node["class"].to_s.include?("action-item-control") }).to be_present
-    expect(create_team.at_css("select[name='facilitator_id']").ancestors.find { |node| node["class"].to_s.include?("action-item-control") }).to be_present
+    expect(create_team.at_css("input[name='team[name]']").ancestors.find do |node|
+      node["class"].to_s.include?("action-item-control")
+    end).to be_present
+    expect(create_team.at_css("select[name='facilitator_id']").ancestors.find do |node|
+      node["class"].to_s.include?("action-item-control")
+    end).to be_present
     expect(create_team.at_css("select[name='facilitator_id']").parent.at_css("svg.action-item-field-icon")).to be_present
 
     expect do
@@ -57,7 +61,7 @@ RSpec.describe "System administration", type: :request do
     get system_admin_teams_path
     team_links = response.parsed_body.css("a.home-team-link")
     expect(team_links.map { |link| link.at_css(".home-team-link-name")&.text }).to include("Mobile", "Platform")
-    expect(team_links.map { |link| link["href"] }).to include(system_admin_team_path(platform))
+    expect(team_links.pluck("href")).to include(system_admin_team_path(platform))
     expect(team_links.first.at_css("svg.home-team-link-icon")).to be_present
 
     post system_admin_teams_path, params: { team: { name: "Platform" }, facilitator_id: jordan.id }
@@ -109,13 +113,13 @@ RSpec.describe "System administration", type: :request do
   end
 
   it "lets a system admin manage other admins without changing team roles" do
-    priya = create_user(name: "Priya", system_admin: true)
+    pramod = create_user(name: "Pramod", system_admin: true)
     alice = create_user(name: "Alice")
     team = create_team_with_roles(facilitator: create_user(name: "Jordan"), members: [alice])
 
-    sign_in(priya)
+    sign_in(pramod)
     get system_admin_admins_path
-    expect(response.body).to include("Priya")
+    expect(response.body).to include("Pramod")
     expect(response.body).to include("Alice")
     add_form = response.parsed_body.at_css("form.add-admin-form")
     add_admin = add_form.at_css("select[name='user_id']")
@@ -129,17 +133,17 @@ RSpec.describe "System administration", type: :request do
     expect(team.memberships.find_by(user: alice)).to be_member
     expect(alice).not_to be_facilitator
 
-    delete system_admin_admin_path(priya)
+    delete system_admin_admin_path(pramod)
     expect(response).to redirect_to(system_admin_admins_path)
     expect(flash[:alert]).to include("Use Leave System Admin role to give up your own privileges.")
-    expect(priya.reload).to be_system_admin
+    expect(pramod.reload).to be_system_admin
     expect(alice.reload).to be_system_admin
 
     delete system_admin_admin_path(alice)
     expect(response).to redirect_to(system_admin_admins_path)
     expect(flash[:notice]).to eq("Alice is no longer a System Admin.")
     expect(alice.reload).not_to be_system_admin
-    expect(priya.reload).to be_system_admin
+    expect(pramod.reload).to be_system_admin
   end
 
   it "lets a system admin leave the role when another admin remains" do
@@ -158,7 +162,9 @@ RSpec.describe "System administration", type: :request do
 
     expect(leave_form).to be_present
     expect(leave_form["data-turbo-confirm"]).to eq("Leave System Admin role?")
-    expect(leave_form["data-confirm-description"]).to include("You will lose access to System Administration and will no longer be a System Admin.")
+    expect(leave_form["data-confirm-description"]).to include(
+      "You will lose access to System Administration and will no longer be a System Admin."
+    )
     expect(leave_form["data-confirm-description"]).to include("Another System Admin will remain responsible for system administration.")
     expect(leave_form["data-confirm-accept"]).to eq("Leave System Admin role")
     expect(leave_form["data-confirm-cancel"]).to eq("Cancel")
@@ -202,7 +208,7 @@ RSpec.describe "System administration", type: :request do
   end
 
   it "does not let system admin status unlock retrospective content" do
-    admin = create_user(name: "Priya", system_admin: true)
+    admin = create_user(name: "Pramod", system_admin: true)
     facilitator = create_user(name: "Jordan")
     member = create_user(name: "Alice")
     team = create_team_with_roles(facilitator: facilitator, members: [member])
@@ -226,7 +232,7 @@ RSpec.describe "System administration", type: :request do
   end
 
   it "uses the shared empty-state cards when admin lists have nothing to show" do
-    admin = create_user(name: "Priya", system_admin: true)
+    admin = create_user(name: "Pramod", system_admin: true)
 
     sign_in(admin)
     get system_admin_teams_path
@@ -246,7 +252,7 @@ RSpec.describe "System administration", type: :request do
   end
 
   it "uses the shared empty-state card when an admin team has no current members" do
-    admin = create_user(name: "Priya", system_admin: true)
+    admin = create_user(name: "Pramod", system_admin: true)
     jordan = create_user(name: "Jordan")
     team = create_team_with_roles(facilitator: jordan, name: "Platform")
     team.memberships.find_by!(user: jordan).update!(deactivated_at: Time.current)
@@ -263,7 +269,7 @@ RSpec.describe "System administration", type: :request do
   end
 
   it "lets a system admin archive a team they do not belong to" do
-    admin = create_user(name: "Priya", system_admin: true)
+    admin = create_user(name: "Pramod", system_admin: true)
     jordan = create_user(name: "Jordan")
     team = create_team_with_roles(facilitator: jordan, name: "Platform")
 
@@ -286,7 +292,7 @@ RSpec.describe "System administration", type: :request do
   end
 
   it "lets a system admin reset their password without bootstrap" do
-    admin = create_user(name: "Priya", email: "priya@example.com", system_admin: true)
+    admin = create_user(name: "Pramod", email: "pramod@example.com", system_admin: true)
     raw = admin.issue_password_reset_token!
 
     patch password_reset_path(token: raw), params: {
@@ -301,8 +307,8 @@ end
 RSpec.describe Users::CreateSystemAdmin do
   it "creates a confirmed system admin with no team membership" do
     user = described_class.new(
-      name: "Priya",
-      email: "priya@example.com",
+      name: "Pramod",
+      email: "pramod@example.com",
       password: "password123",
       password_confirmation: "password123"
     ).call
@@ -315,7 +321,7 @@ RSpec.describe Users::CreateSystemAdmin do
   end
 
   it "refuses to bootstrap a second initial system admin" do
-    create_user(name: "Priya", system_admin: true)
+    create_user(name: "Pramod", system_admin: true)
 
     expect do
       described_class.new(

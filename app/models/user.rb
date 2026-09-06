@@ -133,17 +133,7 @@ class User < ApplicationRecord
     revoked = false
 
     transaction do
-      self.class.system_admins.lock.order(:id).to_a
-      reload
-
-      unless system_admin?
-        raise ActiveRecord::Rollback
-      end
-
-      if self.class.system_admins.where.not(id: id).none?
-        errors.add(:base, as_self ? "You can't leave the System Admin role because you are the only System Admin." : "At least one System Admin must remain.")
-        raise ActiveRecord::Rollback
-      end
+      raise ActiveRecord::Rollback unless another_system_admin_remains?(as_self: as_self)
 
       update!(system_admin: false)
       revoked = true
@@ -161,16 +151,49 @@ class User < ApplicationRecord
   private :bump_session_version_on_password_change
 
   def discard!
-    random_password = SecureRandom.hex(20)
-    update!(
-      discarded_at: Time.current,
-      name: "Unknown User",
-      email: "deleted+#{id}@tombstone.invalid",
-      password: random_password,
-      password_confirmation: random_password,
-      confirmation_token_digest: nil,
-      password_reset_token_digest: nil,
-      system_admin: false
-    )
+    discarded = false
+
+    transaction do
+      raise ActiveRecord::Rollback if system_admin? && !another_system_admin_remains?
+
+      random_password = SecureRandom.hex(20)
+      update!(
+        discarded_at: Time.current,
+        name: "Unknown User",
+        email: "deleted+#{id}@tombstone.invalid",
+        password: random_password,
+        password_confirmation: random_password,
+        confirmation_token_digest: nil,
+        password_reset_token_digest: nil,
+        system_admin: false
+      )
+      discarded = true
+    end
+
+    discarded
   end
+
+  def another_system_admin_remains?(as_self: false)
+    self.class.system_admins.lock.order(:id).to_a
+    reload
+
+    return false unless system_admin?
+
+    if self.class.system_admins.where.not(id: id).none?
+      errors.add(:base, last_system_admin_message(as_self: as_self))
+      return false
+    end
+
+    true
+  end
+  private :another_system_admin_remains?
+
+  def last_system_admin_message(as_self:)
+    if as_self
+      "You can't leave the System Admin role because you are the only System Admin."
+    else
+      "At least one System Admin must remain."
+    end
+  end
+  private :last_system_admin_message
 end

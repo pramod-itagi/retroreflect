@@ -1,6 +1,6 @@
 module ApplicationHelper
   def back_nav_link(path, destination, extra_classes: nil)
-    arrow = %(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="home-back-link-icon"><path d="M10 3.2 4.7 8 10 12.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>).html_safe
+    arrow = back_nav_arrow_svg
 
     link_to path, class: ["home-back-link", extra_classes].compact.join(" ") do
       safe_join([arrow, tag.span("Back to #{destination}")], "")
@@ -12,7 +12,7 @@ module ApplicationHelper
   end
 
   def team_nav_pill(name, path, aria_label: nil, extra_class: nil)
-    arrow = %(<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" aria-hidden="true" class="home-team-link-icon"><path d="M6 3.2 11.3 8 6 12.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>).html_safe
+    arrow = team_nav_arrow_svg
 
     html_options = { class: ["home-team-link", extra_class].compact.join(" ") }
     html_options[:aria] = { label: aria_label } if aria_label.present?
@@ -163,6 +163,32 @@ module ApplicationHelper
       "#{base} bg-sand text-[#5C574E]"
     else
       "#{base} bg-sand text-ink"
+    end
+  end
+
+  def back_nav_arrow_svg
+    nav_arrow_svg(class_name: "home-back-link-icon", path: "M10 3.2 4.7 8 10 12.8")
+  end
+
+  def team_nav_arrow_svg
+    nav_arrow_svg(class_name: "home-team-link-icon", path: "M6 3.2 11.3 8 6 12.8")
+  end
+
+  def nav_arrow_svg(class_name:, path:)
+    tag.svg(
+      xmlns: "http://www.w3.org/2000/svg",
+      viewBox: "0 0 16 16",
+      fill: "none",
+      aria: { hidden: true },
+      class: class_name
+    ) do
+      tag.path(
+        d: path,
+        stroke: "currentColor",
+        "stroke-width": "1.7",
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round"
+      )
     end
   end
 end

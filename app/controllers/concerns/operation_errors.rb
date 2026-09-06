@@ -36,7 +36,7 @@ module OperationErrors
     if turbo_stream_request?
       render_operation_error_stream(message, title: title)
     else
-      redirect_back fallback_location: fallback, allow_other_host: false, alert: message
+      redirect_back_or_to(fallback, allow_other_host: false, alert: message)
     end
   end
 

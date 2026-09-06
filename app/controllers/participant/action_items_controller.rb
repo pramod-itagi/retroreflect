@@ -9,6 +9,7 @@ module Participant
       authorize!(@action_item, :update_as_owner?)
       new_status = status_params[:status]
       raise NotAuthorized unless @action_item.owner_may_transition_to?(new_status)
+
       @operation_error_message = "We couldn't update that action item. Please try again."
 
       if @action_item.apply_status_change(new_status, comment: status_params[:status_comment], actor: current_user)

@@ -19,9 +19,7 @@ class Teams::Create
 
     @team
   rescue ActiveRecord::RecordInvalid => e
-    if e.record != @team
-      e.record.errors.full_messages.each { |message| @team.errors.add(:base, message) }
-    end
+    e.record.errors.full_messages.each { |message| @team.errors.add(:base, message) } if e.record != @team
     @team
   end
 

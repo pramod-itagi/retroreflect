@@ -22,7 +22,7 @@ RSpec.describe User, type: :model do
   end
 
   it "treats system admin as independent from team facilitator membership" do
-    admin = create_user(name: "Priya", system_admin: true)
+    admin = create_user(name: "Pramod", system_admin: true)
     jordan = create_user(name: "Jordan")
     team = create_team_with_roles(facilitator: jordan)
 
@@ -52,7 +52,7 @@ RSpec.describe User, type: :model do
   end
 
   it "scopes workspace teams by role without duplicating memberships" do
-    priya = create_user(name: "Priya", system_admin: true)
+    pramod = create_user(name: "Pramod", system_admin: true)
     jordan = create_user(name: "Jordan")
     alice = create_user(name: "Alice")
     casey = create_user(name: "Casey")
@@ -62,7 +62,7 @@ RSpec.describe User, type: :model do
     expect(jordan.workspace_teams).to contain_exactly(platform, growth)
     expect(alice.workspace_teams).to contain_exactly(platform)
     expect(casey.workspace_teams).to be_empty
-    expect(priya.workspace_teams).to contain_exactly(platform, growth)
+    expect(pramod.workspace_teams).to contain_exactly(platform, growth)
   end
 
   it "revokes a system admin only when another admin remains" do
@@ -84,10 +84,32 @@ RSpec.describe User, type: :model do
 
   it "treats discarded users as inactive" do
     user = create_user(name: "Ada", email: "ada@example.com")
-    user.discard!
+    expect(user.discard!).to be true
 
     expect(user).to be_discarded
     expect(User.active.find_by(id: user.id)).to be_nil
     expect(user.reload.display_name).to eq("Unknown User")
+  end
+
+  it "does not discard the last remaining system admin" do
+    admin = create_user(name: "Pramod", system_admin: true)
+
+    expect(admin.discard!).to be false
+    expect(admin.errors.full_messages).to include("At least one System Admin must remain.")
+    expect(admin.reload).to be_system_admin
+    expect(admin).not_to be_discarded
+    expect(User.system_admins).to contain_exactly(admin)
+  end
+
+  it "discards a system admin when another admin remains" do
+    alice = create_user(name: "Alice", system_admin: true)
+    bob = create_user(name: "Bob", system_admin: true)
+
+    expect(alice.discard!).to be true
+    expect(alice.reload).to be_discarded
+    expect(alice).not_to be_system_admin
+    expect(bob.reload).to be_system_admin
+    expect(bob).not_to be_discarded
+    expect(User.system_admins).to contain_exactly(bob)
   end
 end

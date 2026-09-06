@@ -79,12 +79,12 @@ RSpec.describe "Facilitator retrospective setup", type: :request do
     expect(response.body).to include("Members (2)")
     page_headings = response.parsed_body.css(".workspace-page h1, .workspace-page h2").map { |heading| [heading.name, heading.text.strip] }
     expect(page_headings).to eq([
-      ["h1", team.name],
-      ["h2", "Members (2)"],
-      ["h2", "Current retrospective"],
-      ["h2", "Current action items"],
-      ["h2", "Archive team"]
-    ])
+                                  ["h1", team.name],
+                                  ["h2", "Members (2)"],
+                                  ["h2", "Current retrospective"],
+                                  ["h2", "Current action items"],
+                                  ["h2", "Archive team"]
+                                ])
     expect(response.parsed_body.at_css(".workspace-page h2").text.strip).to eq("Members (2)")
     expect(response.parsed_body.css("h2").map { |heading| heading.text.strip }).not_to include("People")
     expect(response.parsed_body.css("h2").map { |heading| heading.text.strip }).not_to include("Add person")

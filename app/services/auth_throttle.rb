@@ -2,7 +2,7 @@ class AuthThrottle
   LOGIN_LIMIT = 10
   RESET_LIMIT = 5
   WINDOW = 15.minutes
-  TOO_MANY_ATTEMPTS = "Too many attempts. Please try again later."
+  TOO_MANY_ATTEMPTS = "Too many attempts. Please try again later.".freeze
 
   class << self
     def blocked?(scope, ip)

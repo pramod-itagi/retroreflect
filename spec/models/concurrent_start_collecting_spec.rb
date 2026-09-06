@@ -2,6 +2,7 @@ require "rails_helper"
 
 RSpec.describe "Concurrent start collecting", type: :model do
   include ActiveJob::TestHelper
+
   self.use_transactional_tests = false
 
   def cleanup!

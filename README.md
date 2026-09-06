@@ -16,9 +16,12 @@ the anonymity of individual feedback.
 
 The original Retroreflect application was built during an internship as
 a Ruby on Rails application. This project is a rebuilt and expanded
-version, keeping the core retrospective workflow while improving
-authorization, anonymity, team management, action items, lifecycle
-handling, and future analytics/AI capabilities.
+version that keeps the core retrospective workflow while adding
+authorization, anonymity, team management, action items, and
+retrospective lifecycle handling.
+
+The application is implemented in **Ruby 3.2** and **Rails 7.1**, with
+MySQL, Hotwire, and Tailwind CSS.
 
 ---
 
@@ -29,14 +32,13 @@ to follow up on.
 
 Retroreflect provides a structured workflow where:
 
-- Team members can privately submit retrospective feedback.
+- Team members privately submit retrospective feedback.
 - Feedback remains anonymous after it is revealed.
-- Facilitators can reveal and discuss all feedback during the meeting.
-- Action items can be created directly from the discussion.
-- Action items continue to exist after the retrospective is closed.
-- Teams can keep historical retrospectives for future reference.
-- Future AI capabilities can help identify recurring themes and
-  patterns across retrospectives.
+- Facilitators reveal and discuss all feedback during the meeting.
+- Action items are created during discussion and must belong to that
+  retrospective.
+- Action items continue after the retrospective is closed.
+- Teams keep historical retrospectives for later reference.
 
 ---
 
@@ -78,18 +80,21 @@ System Admins can:
 - View and archive teams.
 - Manage System Admin access.
 
-System Admin status does not automatically grant team membership, Facilitator
-privileges, or access to retrospective feedback.
+System Admin status does not automatically grant team membership,
+Facilitator privileges, or access to retrospective feedback.
 
-The first System Admin is created with an explicit bootstrap task, not by
-registration or deployment:
+At least one System Admin must always remain. The last System Admin
+cannot leave the role, be revoked, or be discarded.
+
+The first System Admin is created with an explicit bootstrap task, not
+by registration or deployment:
 
     bin/rails retroreflect:create_system_admin
 
 ### Facilitator
 
-A facilitator is a team-level role responsible for running retrospectives and
-managing that team.
+A facilitator is a team-level role responsible for running
+retrospectives and managing that team.
 
 Facilitators can:
 
@@ -101,15 +106,18 @@ Facilitators can:
 - Monitor participant submission status.
 - Reveal feedback.
 - Facilitate discussion.
-- Create action items during the retrospective.
-- Manage action items.
-- Mark action items completed after confirmation.
-- Close retrospectives.
-- Archive their own team.
+- Create action items during discussion.
+- Update action items they facilitate, including after the retrospective
+  closes or the team is archived.
+- Close a discussing retrospective.
+- Cancel a draft or collecting retrospective.
+- Archive their own team when archive conditions are met.
 
-Multiple facilitators can belong to the same team. Facilitators cannot create
-teams or access System Administration unless they are also granted System Admin
-independently.
+An active team must keep at least one current Facilitator. Multiple
+facilitators can belong to the same team.
+
+Facilitators cannot create teams or access System Administration unless
+they are also granted System Admin independently.
 
 ### Participant / Member
 
@@ -118,24 +126,27 @@ Participants can:
 - Join retrospectives they are invited to.
 - Enter feedback privately.
 - Add multiple points to each category.
-- Edit their own drafts while collection is open.
+- Edit their own drafts while collection is open and they have not
+  submitted.
 - Remove their own draft points.
 - Save their draft.
 - Submit their feedback.
+- See and update action items they own.
 
 Participants cannot:
 
 - Create teams.
 - Create retrospectives.
 - Reveal feedback.
-- View another participant's feedback.
+- View another participant's drafts.
 - Manage team membership.
 - Archive teams.
 - Manage the retrospective as a facilitator.
+- Cancel an action item they own.
 
 The facilitator is **not a participant by default**. The facilitator
-acts as the person running the retrospective and does not contribute
-anonymous feedback as part of the team submission.
+runs the retrospective and does not contribute anonymous feedback as
+part of the team submission.
 
 ---
 
@@ -143,11 +154,11 @@ anonymous feedback as part of the team submission.
 
 ## 1. Create a Team
 
-A System Admin creates a team and assigns a confirmed user as the initial
-Facilitator.
+A System Admin creates a team and assigns a confirmed user as the
+initial Facilitator.
 
-The System Admin does not become a team member automatically. The initial
-Facilitator then adds confirmed users as members.
+The System Admin does not become a team member automatically. The
+initial Facilitator then adds confirmed users as members.
 
 Team creation is enforced by backend authorization as well as the UI.
 
@@ -159,32 +170,46 @@ Active team names must be unique. An archived team's name may be reused.
 
 The facilitator creates a retrospective for a team.
 
-A retrospective includes information such as:
+Sprint identity is assigned automatically and is **team-scoped**:
 
-- Title
-- Sprint number
-- Team
-- Participant roster
+- Each team starts at Sprint 1.
+- The next number is the team's next unused sprint, including cancelled
+  and closed retrospectives.
+- The calendar year is display context only. Numbers do not reset in
+  January.
+- Different teams can have the same sprint number at the same time.
+- The same facilitator managing two teams does not share one sequence.
 
-A team can have only one active/running retrospective at a time.
+The generated identity looks like:
 
-A new retrospective cannot be created until the existing active
-retrospective has been closed.
+```text
+Sprint 1 (2026)
+Sprint 1 Retrospective - 2026
+```
 
-The participant roster becomes frozen once collection starts.
+Facilitators do not type a sprint number or title. Client-supplied
+values are ignored.
+
+A team can have only one running retrospective at a time (`draft`,
+`collecting`, or `discussing`). A new retrospective cannot be created
+until that one is **closed** or **cancelled**.
+
+The participant roster can be edited while the retrospective is in
+draft. The roster freezes when collection starts.
 
 ---
 
 ## 3. Invite Participants
 
-The facilitator selects members from the team and sends invitations.
+The facilitator selects members from the team and starts collection,
+which sends invitations. At least one participant must be on the roster
+before collection can start.
 
-Participants are required to have registered accounts.
+Participants must have registered, confirmed accounts.
 
-Invitations are intended for team members only.
-
-Participants should not be able to participate simply because an
-invitation link was forwarded to another person.
+Invitations are for team members on the roster. A forwarded invitation
+link does not grant participation to someone who is not on that
+retrospective.
 
 ---
 
@@ -197,7 +222,7 @@ During collection:
 
 - Participants can see only their own drafts.
 - Participants can add multiple points.
-- Participants can edit their own drafts.
+- Participants can edit their own drafts until they submit.
 - Participants can remove their own drafts.
 - Participants can save their work as a draft.
 - Participants can submit when finished.
@@ -217,18 +242,18 @@ The system intentionally does **not** retain an author mapping for
 published feedback.
 
 During collection, draft feedback is associated with the participant
-only for the purpose of allowing that participant to edit their own
-work.
+only so that participant can edit their own work.
 
 When feedback is revealed:
 
-1.  Published feedback records are created using only the category and
-    body.
-2.  Feedback is shuffled.
-3.  Draft feedback is deleted.
-4.  No participant/user identifier is retained on the published
-    feedback.
-5.  No separate authorship mapping is retained.
+1.  Only drafts from **submitted** participations are published.
+2.  Published records store only the category and body.
+3.  Feedback is shuffled within each category.
+4.  Drafts are deleted.
+5.  No participant/user identifier is retained on published feedback.
+6.  No separate authorship mapping is retained.
+
+Unsubmitted drafts are not published.
 
 Therefore, published feedback cannot be mapped back to its author
 through the application.
@@ -257,14 +282,13 @@ Retroreflect uses a **locked-box** model.
 
 Feedback is collected privately and is not revealed incrementally.
 
-The facilitator reveals the collected feedback only when the
-retrospective is ready for discussion.
+The facilitator reveals collected feedback only when the retrospective
+is ready for discussion.
 
-The reveal action should not be available when there have been no
-submissions.
+Reveal is not available when there have been no submissions.
 
-The UI should clearly communicate that the reveal action becomes
-available only after at least one participant submission.
+The UI communicates that reveal becomes available only after at least
+one participant submission.
 
 For example:
 
@@ -276,6 +300,7 @@ Once feedback has been revealed:
 - Published feedback is anonymous.
 - Participant authorship is no longer available in the application.
 - The facilitator can discuss the feedback with the team.
+- Collection is frozen. Later submissions cannot change collecting data.
 
 ---
 
@@ -290,64 +315,68 @@ has started.
 This protects the integrity of the meeting and ensures that the
 facilitator is discussing a stable set of anonymous feedback.
 
-The participant also cannot edit submitted feedback.
+A participant also cannot edit feedback after they have submitted it.
 
 ---
 
 # Action Items
 
-Action items are created during the retrospective discussion.
+Action items are created during retrospective discussion.
 
 This is intentional.
 
 A facilitator discusses a feedback point with the team and, when the
 team agrees that an action is needed, creates an action item.
 
+Every new action item must belong to a retrospective. Team-level
+creation without a retrospective is rejected. New action items cannot be
+created after that retrospective is closed or cancelled, or after the
+team is archived.
+
+Creation always starts the item as **Open**. Status is not chosen on
+create and is not advanced automatically.
+
 An action item can contain:
 
 - Title
 - Description
-- Owner
+- Owner (a current team member)
 - Due date
 - Status
 - Retrospective association
+- Status history comments
 
 ### Action Item Lifecycle
 
-Action items continue independently after their retrospective is closed.
-
-They are not deleted when a retrospective is closed.
-
-Typical statuses include:
+Working statuses:
 
 - Open
 - In Progress
 - Ready for Review
+
+Terminal statuses:
+
 - Completed
 - Cancelled
 
-Only the facilitator can mark an action item as completed, after
-discussing the item with the team and getting confirmation.
+Items do not have to move through every working status. A facilitator or
+owner can, for example, complete an item from Open. Some working-status
+moves can also go backward. **Cancelled** is a facilitator-only
+terminal state, not a step owners can choose.
 
-### Progress Updates
+Existing action items remain after their retrospective is closed. They
+are not deleted and are not made read-only merely because the
+retrospective ended.
 
-Action items should support a lightweight progress update when status
-changes.
+Status changes only when an authorized user explicitly selects a new
+status. Every real status change requires a short comment.
 
-The intention is not to create a full comment/discussion system.
-
-Instead, an update can provide context such as:
-
-> Deployment script is being tested. Waiting for CI pipeline changes.
-
-For normal status changes, the update can be optional.
-
-For important terminal transitions:
-
-- **Completed** → completion note should be required.
-- **Cancelled** → cancellation reason should be required.
-
-This provides context for why an action item was completed or cancelled.
+- Owners can move their unresolved items among allowed statuses,
+  including **Completed**.
+- Owners cannot cancel an item.
+- Facilitators can complete or cancel, including after retrospective
+  close or team archive, subject to the same transition rules.
+- Completed and cancelled items cannot change status again.
 
 ---
 
@@ -361,27 +390,29 @@ Used to **create** action items during discussion.
 
 ### Home
 
-Shows **action items needing attention** across the user's workspace.
+Shows **action items needing attention**: unresolved items owned by the
+current user, limited to a short list ordered by due date.
 
-This provides a quick overview of items that are overdue, due soon, or
-otherwise require attention.
+Each card has an **Open** control to that item in the owner's inbox.
+**View all** goes to the owner inbox.
 
-### Actions
+### Action items (navbar)
 
-Provides the complete action-item management and history experience.
+The navbar **Action items** link is the current user's **owner inbox**
+at `/participant/action_items`.
+
+It shows that user's own items, including completed history. It is not a
+team-wide list.
 
 ### Team Page
 
+**Current action items** shows unresolved items for that team, regardless
+of owner.
+
+**View all action items** opens the team's action-item history, not the
+owner inbox.
+
 The Team page does not provide an action-item creation form.
-
-It is focused on:
-
-- Team members.
-- Current retrospective.
-- Team lifecycle.
-
-This avoids duplicating action-item creation and management across
-multiple screens.
 
 ---
 
@@ -403,28 +434,37 @@ Facilitators can:
 - Assign roles.
 - Remove team members.
 
-Removing a team member is a destructive membership operation and should
-require confirmation.
+Removing a team member requires confirmation.
 
-The backend must enforce all membership rules; hiding an action in the
-UI is not sufficient authorization.
+An active team must keep at least one Facilitator. The last facilitator
+cannot be removed or demoted.
+
+The backend enforces all membership rules; hiding an action in the UI is
+not sufficient authorization.
 
 ---
 
 # Team Archiving
 
-Teams should be archived rather than hard-deleted.
+Teams are archived rather than hard-deleted.
+
+A team cannot be archived while it has:
+
+- A collecting or discussing retrospective.
+- Unresolved action items.
+
+A leftover draft retrospective is cancelled as part of archive.
 
 Archiving a team:
 
 - Removes all current members from the team.
-- Prevents new retrospectives from being created for the team.
+- Prevents new retrospectives and new action items.
 - Retains historical retrospectives.
 - Retains historical action items.
-- Preserves historical data for reference and future analysis.
+- Leaves existing action items workable under their normal owner and
+  facilitator rules.
 
-The archive operation should display a clear warning before
-confirmation.
+The archive operation displays a clear warning before confirmation.
 
 Example:
 
@@ -432,63 +472,62 @@ Example:
 > retrospectives. Historical retrospectives and action items are
 > retained.
 
-The exact restore behavior for archived teams is a future product
-decision.
+Restoring an archived team is not implemented.
 
 ---
 
 # Retrospective History
 
-Historical retrospectives should be kept separate from the
-active/current workflow.
+Historical retrospectives are kept separate from the current team
+workflow.
 
-The application should prioritize the current retrospective and current
-work rather than filling the main team screen with historical
-retrospectives.
+The application prioritizes the current retrospective and current work
+rather than filling the main team screen with history.
 
-The navigation includes a dedicated **Retrospectives** area for
-historical retrospectives.
+The navigation includes a dedicated **Retrospectives** area for current
+and previous retrospectives.
 
-A team page can provide a link such as:
+A team page can provide:
 
 > View retrospective history
 
-but should not display a large list of all historical retrospectives.
-
-This keeps the current team workflow focused.
+without listing every past retrospective on the team page itself.
 
 ---
 
 # Application Navigation
 
-The application is intended to have the following major areas:
+The authenticated application has these major areas:
 
 ### Home
 
 A workspace overview showing:
 
-- Current work / active retrospectives.
-- Teams requiring attention.
+- Current / running retrospectives.
+- The user's teams.
 - Action items needing attention.
-- A small amount of contextual/product information.
-
-The Home page should not become a full historical data browser.
 
 ### Teams
 
-Team management and team membership.
+Teams the user currently belongs to. A System Admin also sees every
+active team here and opens teams they do not belong to from System
+Administration.
 
 ### Retrospectives
 
-Historical and current retrospective browsing.
+Current, draft, and previous retrospectives the user can access.
 
-### Actions
+### Action items
 
-Action-item management and history.
+The current user's owner inbox.
+
+### System administration
+
+Visible only to System Admins.
 
 ### Meeting Board
 
-The working area for running an active retrospective.
+The working area for a revealed retrospective.
 
 ---
 
@@ -506,37 +545,42 @@ The Retrospectives page should answer:
 
 > **What happened in previous retrospectives?**
 
-The Actions page should answer:
+The Action items inbox should answer:
 
-> **What action items exist and what is their current status?**
+> **What action items are assigned to me?**
+
+The team action-item history should answer:
+
+> **What action items exist for this team?**
 
 The Meeting Board should answer:
 
 > **How do we run this retrospective?**
 
-A separate public/landing experience can answer:
-
-> **What is Retroreflect and why should a team use it?**
-
-The future visual design can use the existing Retroreflect design
-direction as inspiration without changing the underlying product
-responsibilities.
+Sign-in, registration, and password reset introduce Retroreflect and
+route people into the workspace. The authenticated Home page also
+includes product-facing copy above the current work.
 
 ---
 
 # Retrospective States
 
-The application uses a lifecycle where a retrospective moves through
-controlled states.
+A retrospective moves through controlled states:
 
-A simplified workflow is:
+```text
+Draft → Collecting → Discussing → Closed
+```
+
+A draft or collecting retrospective may instead be **cancelled**:
 
 ```text
 Draft
   │
+  ├──► Cancelled
   ▼
 Collecting
   │
+  ├──► Cancelled
   ▼
 Discussing
   │
@@ -544,16 +588,33 @@ Discussing
 Closed
 ```
 
-A retrospective may also be cancelled according to the final lifecycle
-rules.
+A discussing retrospective cannot be cancelled; it must be closed. A
+cancelled retrospective stays in history and keeps its sprint number.
+The next retrospective for that team uses the next sprint number.
 
 Important lifecycle principles:
 
-- Only one active retrospective can exist for a team at a time.
+- Only one running retrospective can exist for a team at a time.
 - The participant roster freezes when collection begins.
 - Feedback becomes immutable once discussion begins.
 - Published feedback is anonymous.
-- Closed retrospectives are historical records.
+- Closed and cancelled retrospectives are historical records.
+- Sprint numbers are never reused for that team.
+
+---
+
+# Accounts and Sessions
+
+People register with email and password and must confirm their email
+before joining teams, running or joining retrospectives, or managing
+action items. Unconfirmed accounts can sign in, but those workspace
+actions stay blocked until confirmation.
+
+Password reset is available from the sign-in page. Changing a password
+invalidates previously issued sessions. The session created by a
+successful reset remains usable.
+
+Sign-in and password-reset requests are rate limited on the server.
 
 ---
 
@@ -578,83 +639,16 @@ Backend authorization must protect all facilitator-only operations.
 
 ---
 
-# Future AI Capabilities
+# Visual Design
 
-AI is intentionally a future phase, not a requirement for the core
-retrospective workflow.
+The current workspace uses the Retroreflect visual language:
 
-The long-term goal is to use anonymous historical feedback to provide
-useful insights across retrospectives.
-
-Potential capabilities include:
-
-### Recurring Themes
-
-Identify themes that appear repeatedly across multiple retrospectives.
-
-Example:
-
-```text
-Sprint 20
-"Deployment was painful."
-
-Sprint 21
-"Deployment took too long."
-
-Sprint 22
-"Deployment process still causes delays."
-```
-
-AI could identify:
-
-> **Recurring theme: Deployment process**
-
-### Trend Analysis
-
-Identify whether a recurring problem is:
-
-- Improving.
-- Getting worse.
-- Staying unchanged.
-
-### Cross-Retrospective Insights
-
-AI could summarize patterns across several closed retrospectives rather
-than analyzing only one meeting.
-
-### Suggested Actions
-
-AI could potentially suggest action items based on recurring themes.
-
-Any AI capability should preserve the application's anonymity model.
-
-AI should work with published anonymous feedback and should not receive
-participant identity information.
-
----
-
-# Future UI Direction
-
-The application will eventually receive a broader UI/UX redesign.
-
-The intended visual direction is inspired by the Retroreflect design
-concept:
-
-- Warm/off-white background.
-- Dark green typography.
+- Warm cream / off-white background.
+- Dark green / near-black typography.
 - Coral accent color.
-- Editorial-style display typography.
-- Clean cards.
-- Generous whitespace.
-- Rounded controls.
-- Clear hierarchy.
-- Calm, focused visual language.
-
-The visual redesign should be applied after the core functional
-workflows and edge cases are stable.
-
-The UI should improve the product experience without changing the
-established domain model or privacy guarantees.
+- Fraunces for major headings and Work Sans for UI.
+- Clean cards, dotted or dashed borders, and generous whitespace.
+- Rounded controls and visible focus states.
 
 ---
 
@@ -682,6 +676,7 @@ unrelated team-management screens.
 ### 5. Action items survive the retrospective
 
 Closing a retrospective does not close or delete its action items.
+Archiving a team also retains existing items and leaves them workable.
 
 ### 6. Historical information should not overwhelm current work
 
@@ -699,77 +694,58 @@ introducing unnecessary complexity.
 
 ---
 
-# Project Status
+# Current Capabilities
 
-The application is currently being developed incrementally.
+These workflows are implemented:
 
-The current focus is:
-
-1.  Complete and verify core retrospective workflows.
-2.  Resolve edge cases and authorization rules.
-3.  Finalize team archiving and lifecycle behavior.
-4.  Finalize action-item behavior.
-5.  Verify automated tests.
-6.  Apply the broader UI/UX redesign.
-7.  Explore AI-powered retrospective insights.
-
-Technical implementation details will continue to evolve as the product
-decisions are finalized.
-
----
-
-# Planned Areas
-
-## Core
-
-- Authentication
-- Team management
-- Team membership
-- Retrospective creation
-- Participant invitations
-- Anonymous feedback collection
-- Locked-box reveal
-- Discussion workflow
-- Retrospective closure
-
-## Action Management
-
-- Action item creation during discussion
-- Ownership
-- Due dates
-- Status management
-- Progress updates
-- Completion/cancellation reasons
-- Action item history
-
-## History
-
-- Previous retrospectives
-- Historical anonymous feedback
-- Retrospective/action relationships
-
-## Team Lifecycle
-
-- Team archiving
-- Membership removal
-- Active retrospective restrictions
-
-## Future
-
-- Improved notifications
-- Audit/history capabilities
-- Richer action-item tracking
-- Cross-retrospective analytics
-- AI-generated insights
-- Recurring theme detection
-- Trend analysis
-- Suggested actions
+- Registration, email confirmation, sign-in, sign-out, and password
+  reset.
+- System Administration for teams and System Admins.
+- Team membership, last-facilitator protection, and team archiving.
+- Team-scoped sprint numbering and generated retrospective titles.
+- Draft, collecting, discussing, closed, and cancelled retrospectives.
+- Participant invitations and roster freeze.
+- Anonymous locked-box reveal.
+- Action item creation during discussion.
+- Owner inbox and team-scoped action-item history.
+- Action item status history with required comments.
 
 ---
 
-# Development Philosophy
+# Future Areas
 
-Retroreflect is being developed incrementally.
+Possible later work, not required for the current workflow:
+
+- Restoring archived teams.
+- Richer notifications.
+- Cross-retrospective analytics.
+- AI-generated insights from anonymous published feedback.
+- Recurring theme detection and suggested actions.
+
+Any future insight feature should use published anonymous feedback only
+and must not receive participant identity.
+
+---
+
+# Development
+
+Requirements:
+
+- Ruby 3.2.2
+- Rails 7.1
+- MySQL
+
+Setup:
+
+    bin/setup
+
+Create the first System Admin:
+
+    bin/rails retroreflect:create_system_admin
+
+Run the test suite:
+
+    bundle exec rspec
 
 Before adding large features, the project prioritizes:
 
@@ -781,10 +757,8 @@ Before adding large features, the project prioritizes:
 - Automated tests.
 - Small, reviewable changes.
 
-The UI will be refined after the underlying product behavior is stable.
-
 ---
 
 ## License
 
-License information will be added when the project license is finalized.
+Retroreflect is available under the [MIT License](LICENSE).

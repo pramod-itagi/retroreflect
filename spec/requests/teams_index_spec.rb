@@ -75,13 +75,13 @@ RSpec.describe "Teams listing", type: :request do
   end
 
   it "lets a system admin see every active team in their workspace" do
-    priya = create_user(name: "Priya", system_admin: true)
+    pramod = create_user(name: "Pramod", system_admin: true)
     jordan = create_user(name: "Jordan")
     morgan = create_user(name: "Morgan")
     platform = create_team_with_roles(facilitator: jordan, name: "Platform")
     growth = create_team_with_roles(facilitator: morgan, name: "Growth")
 
-    sign_in(priya)
+    sign_in(pramod)
     get facilitator_teams_path
 
     expect(response).to have_http_status(:ok)
@@ -123,7 +123,7 @@ RSpec.describe "Teams listing", type: :request do
 
     expect do
       post facilitator_team_memberships_path(platform), params: { user_id: extra.id, role: "member" }
-    end.not_to change { platform.memberships.count }
+    end.not_to(change { platform.memberships.count })
     expect(response).to redirect_to(root_path)
 
     expect do
