@@ -2,6 +2,7 @@ require "rails_helper"
 
 RSpec.describe "Action items", type: :request do
   include ActiveSupport::Testing::TimeHelpers
+
   def setup_item
     facilitator = create_user(name: "Facilitator")
     owner = create_user(name: "Owner")
@@ -119,7 +120,7 @@ RSpec.describe "Action items", type: :request do
 
     get facilitator_retrospective_meeting_path(context[:retro])
     select = status_select_on_meeting(context[:item])
-    expect(select.css("option").map { |option| option["value"] }).to eq(
+    expect(select.css("option").pluck("value")).to eq(
       %w[open in_progress ready_for_review completed cancelled]
     )
     expect(select.at("option[selected]")["value"]).to eq("open")
@@ -159,18 +160,20 @@ RSpec.describe "Action items", type: :request do
     context = setup_item
     sign_in(context[:facilitator])
 
-    patch facilitator_action_item_path(context[:item]), params: status_change_params("in_progress", comment: "Started working on the flaky spec.")
+    patch facilitator_action_item_path(context[:item]),
+          params: status_change_params("in_progress", comment: "Started working on the flaky spec.")
     expect(context[:item].reload).to be_in_progress
 
     get facilitator_retrospective_meeting_path(context[:retro])
     select = status_select_on_meeting(context[:item])
-    expect(select.css("option").map { |option| option["value"] }).to include("in_progress")
+    expect(select.css("option").pluck("value")).to include("in_progress")
     expect(select.at("option[selected]")["value"]).to eq("in_progress")
 
     patch facilitator_action_item_path(context[:item]), params: { action_item: { status: "in_progress" } }
     expect(context[:item].reload).to be_in_progress
 
-    patch facilitator_action_item_path(context[:item]), params: status_change_params("ready_for_review", comment: "Implementation is complete. Please review.")
+    patch facilitator_action_item_path(context[:item]),
+          params: status_change_params("ready_for_review", comment: "Implementation is complete. Please review.")
     expect(context[:item].reload).to be_ready_for_review
 
     patch facilitator_action_item_path(context[:item]), params: { action_item: { status: "ready_for_review" } }
@@ -195,7 +198,8 @@ RSpec.describe "Action items", type: :request do
     patch facilitator_action_item_path(other), params: { action_item: { status: "open" } }
     expect(other.reload).to be_open
 
-    patch facilitator_action_item_path(context[:item]), params: status_change_params("cancelled", comment: "The integration is no longer required.")
+    patch facilitator_action_item_path(context[:item]),
+          params: status_change_params("cancelled", comment: "The integration is no longer required.")
     expect(context[:item].reload).to be_cancelled
     expect(context[:item].cancelled_at).to be_present
   end
@@ -205,10 +209,11 @@ RSpec.describe "Action items", type: :request do
     sign_in(context[:owner])
 
     get participant_action_items_path
-    select = response.parsed_body.css("form[action='#{participant_action_item_path(context[:item])}'] select[name='action_item[status]']").first
-    expect(select.css("option").map { |option| option["value"] }).to include("open", "in_progress")
+    form = response.parsed_body.at_css("form[action='#{participant_action_item_path(context[:item])}']")
+    select = form.at_css("select[name='action_item[status]']")
+    expect(select.css("option").pluck("value")).to include("open", "in_progress")
     expect(select.at("option[selected]")["value"]).to eq("open")
-    expect(select.css("option").map { |option| option["value"] }).not_to include("cancelled")
+    expect(select.css("option").pluck("value")).not_to include("cancelled")
 
     patch participant_action_item_path(context[:item]), params: { action_item: { status: "open" } }
     expect(context[:item].reload).to be_open
@@ -309,7 +314,9 @@ RSpec.describe "Action items", type: :request do
     expect(add_person.at_css("select[name='user_id']")["class"]).to include("workspace-field")
     expect(add_person.at_css("select[name='role']")["class"]).to include("workspace-field")
     expect(add_person.at_css("select[name='user_id']")["class"]).not_to include("workspace-filter-field")
-    expect(add_person.at_css("select[name='user_id']").ancestors.find { |node| node["class"].to_s.include?("action-item-control") }).to be_present
+    expect(add_person.at_css("select[name='user_id']").ancestors.find do |node|
+      node["class"].to_s.include?("action-item-control")
+    end).to be_present
     expect(add_person.at_css("select[name='user_id']").parent.at_css("svg.action-item-field-icon")).to be_present
     expect(add_person.at_css("select[name='role']").parent.at_css("svg.action-item-field-icon")).to be_nil
     expect(add_person.at_css("select[name='role']").parent["class"]).to include("action-item-control--plain")
@@ -394,7 +401,8 @@ RSpec.describe "Action items", type: :request do
       retrospective: context[:retro],
       due_on: Date.current + 2
     )
-    patch facilitator_action_item_path(other_item), params: status_change_params("cancelled", comment: "The integration is no longer required.")
+    patch facilitator_action_item_path(other_item),
+          params: status_change_params("cancelled", comment: "The integration is no longer required.")
     expect(other_item.reload).to be_cancelled
     expect(other_item.cancelled_at).to be_present
     expect(other_item.cancelled_by).to eq(context[:facilitator])
@@ -674,7 +682,8 @@ RSpec.describe "Action items", type: :request do
     expect(context[:item].reload).to be_open
     expect(context[:item].status_events).to be_empty
 
-    patch facilitator_action_item_path(context[:item]), params: status_change_params("in_progress", comment: "Started implementation and completed the initial setup.")
+    patch facilitator_action_item_path(context[:item]),
+          params: status_change_params("in_progress", comment: "Started implementation and completed the initial setup.")
     context[:item].reload
     expect(context[:item]).to be_in_progress
     event = context[:item].status_events.last
@@ -711,7 +720,8 @@ RSpec.describe "Action items", type: :request do
     sign_in(context[:facilitator])
 
     patch facilitator_action_item_path(context[:item]), params: status_change_params("in_progress", comment: "Started implementation.")
-    patch facilitator_action_item_path(context[:item]), params: status_change_params("ready_for_review", comment: "Implementation is complete.")
+    patch facilitator_action_item_path(context[:item]),
+          params: status_change_params("ready_for_review", comment: "Implementation is complete.")
     patch facilitator_action_item_path(context[:item]), params: status_change_params("completed", comment: "Reviewed and merged.")
 
     expect(context[:item].reload.status_events.map { |event| [event.previous_status, event.new_status, event.comment] }).to eq(
@@ -853,7 +863,8 @@ RSpec.describe "Action items", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("Fix flaky test")
 
-    patch facilitator_action_item_path(context[:item]), params: status_change_params("ready_for_review", comment: "Facilitator review after archive.")
+    patch facilitator_action_item_path(context[:item]),
+          params: status_change_params("ready_for_review", comment: "Facilitator review after archive.")
     expect(context[:item].reload).to be_ready_for_review
 
     sign_in(context[:other])

@@ -30,7 +30,7 @@ module RetrospectivesHelper
     end
   end
 
-  def retrospective_listing_cta_classes(variant)
+  def retrospective_listing_cta_classes(_variant)
     "#{home_primary_button_classes} shrink-0"
   end
 

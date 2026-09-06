@@ -133,9 +133,7 @@ class User < ApplicationRecord
     revoked = false
 
     transaction do
-      unless another_system_admin_remains?(as_self: as_self)
-        raise ActiveRecord::Rollback
-      end
+      raise ActiveRecord::Rollback unless another_system_admin_remains?(as_self: as_self)
 
       update!(system_admin: false)
       revoked = true
@@ -156,9 +154,7 @@ class User < ApplicationRecord
     discarded = false
 
     transaction do
-      if system_admin? && !another_system_admin_remains?
-        raise ActiveRecord::Rollback
-      end
+      raise ActiveRecord::Rollback if system_admin? && !another_system_admin_remains?
 
       random_password = SecureRandom.hex(20)
       update!(
@@ -184,11 +180,20 @@ class User < ApplicationRecord
     return false unless system_admin?
 
     if self.class.system_admins.where.not(id: id).none?
-      errors.add(:base, as_self ? "You can't leave the System Admin role because you are the only System Admin." : "At least one System Admin must remain.")
+      errors.add(:base, last_system_admin_message(as_self: as_self))
       return false
     end
 
     true
   end
   private :another_system_admin_remains?
+
+  def last_system_admin_message(as_self:)
+    if as_self
+      "You can't leave the System Admin role because you are the only System Admin."
+    else
+      "At least one System Admin must remain."
+    end
+  end
+  private :last_system_admin_message
 end

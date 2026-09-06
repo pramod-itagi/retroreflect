@@ -173,6 +173,6 @@ RSpec.describe "Concurrent retrospective reveal", type: :model do
     expect(data[:retro]).to be_discussing
     expect(bodies).to contain_exactly("Alice submitted note")
     expect(bodies).not_to include("Bob first draft", "Bob edited during reveal", "Bob extra during reveal")
-    expect(save_error).to satisfy { |error| error.nil? || error.is_a?(ActiveRecord::RecordInvalid) }
+    expect(save_error).to(satisfy { |error| error.nil? || error.is_a?(ActiveRecord::RecordInvalid) })
   end
 end

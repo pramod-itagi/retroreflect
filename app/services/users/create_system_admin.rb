@@ -12,7 +12,7 @@ module Users
     end
 
     def call
-      raise Error, ALREADY_EXISTS_MESSAGE if User.where(system_admin: true).exists?
+      raise Error, ALREADY_EXISTS_MESSAGE if User.exists?(system_admin: true)
 
       user = User.new(
         name: @name,

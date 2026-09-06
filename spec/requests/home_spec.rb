@@ -46,7 +46,7 @@ RSpec.describe "Home dashboard", type: :request do
     platform_link = team_links.find { |link| link.text.include?("Platform") }
     expect(platform_link).to be_present
     expect(platform_link["href"]).to eq(facilitator_team_path(context[:platform]))
-    expect(team_links.map { |link| link["href"] }).to include(facilitator_team_path(context[:platform]))
+    expect(team_links.pluck("href")).to include(facilitator_team_path(context[:platform]))
     expect(response.body).to include("home-team-link")
     your_teams = response.parsed_body.css("ul").find { |list| list.at_css("a.home-team-link") }
     expect(your_teams).to be_present

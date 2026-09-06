@@ -35,8 +35,12 @@ RSpec.describe "System administration", type: :request do
     create_team = response.parsed_body.at_css("form.create-team-form")
     expect(create_team.at_css("input[name='team[name]']")["class"]).to include("workspace-field")
     expect(create_team.at_css("select[name='facilitator_id']")["class"]).to include("workspace-field")
-    expect(create_team.at_css("input[name='team[name]']").ancestors.find { |node| node["class"].to_s.include?("action-item-control") }).to be_present
-    expect(create_team.at_css("select[name='facilitator_id']").ancestors.find { |node| node["class"].to_s.include?("action-item-control") }).to be_present
+    expect(create_team.at_css("input[name='team[name]']").ancestors.find do |node|
+      node["class"].to_s.include?("action-item-control")
+    end).to be_present
+    expect(create_team.at_css("select[name='facilitator_id']").ancestors.find do |node|
+      node["class"].to_s.include?("action-item-control")
+    end).to be_present
     expect(create_team.at_css("select[name='facilitator_id']").parent.at_css("svg.action-item-field-icon")).to be_present
 
     expect do
@@ -57,7 +61,7 @@ RSpec.describe "System administration", type: :request do
     get system_admin_teams_path
     team_links = response.parsed_body.css("a.home-team-link")
     expect(team_links.map { |link| link.at_css(".home-team-link-name")&.text }).to include("Mobile", "Platform")
-    expect(team_links.map { |link| link["href"] }).to include(system_admin_team_path(platform))
+    expect(team_links.pluck("href")).to include(system_admin_team_path(platform))
     expect(team_links.first.at_css("svg.home-team-link-icon")).to be_present
 
     post system_admin_teams_path, params: { team: { name: "Platform" }, facilitator_id: jordan.id }
@@ -158,7 +162,9 @@ RSpec.describe "System administration", type: :request do
 
     expect(leave_form).to be_present
     expect(leave_form["data-turbo-confirm"]).to eq("Leave System Admin role?")
-    expect(leave_form["data-confirm-description"]).to include("You will lose access to System Administration and will no longer be a System Admin.")
+    expect(leave_form["data-confirm-description"]).to include(
+      "You will lose access to System Administration and will no longer be a System Admin."
+    )
     expect(leave_form["data-confirm-description"]).to include("Another System Admin will remain responsible for system administration.")
     expect(leave_form["data-confirm-accept"]).to eq("Leave System Admin role")
     expect(leave_form["data-confirm-cancel"]).to eq("Cancel")

@@ -123,7 +123,7 @@ RSpec.describe "Teams listing", type: :request do
 
     expect do
       post facilitator_team_memberships_path(platform), params: { user_id: extra.id, role: "member" }
-    end.not_to change { platform.memberships.count }
+    end.not_to(change { platform.memberships.count })
     expect(response).to redirect_to(root_path)
 
     expect do

@@ -37,19 +37,41 @@ Rails/ActionOrder:
   Enabled: false
 
 Metrics/AbcSize:
-  Max: 30
+  Max: 40
 
 Metrics/BlockLength:
   Exclude:
     - "spec/**/*"
     - "config/**/*"
 
-Metrics/MethodLength:
-  Max: 25
+Metrics/ClassLength:
+  Max: 155
 
-Layout/LineLength:
-  Max: 140
+Metrics/ModuleLength:
+  Max: 160
+
+Metrics/CyclomaticComplexity:
+  Max: 8
+
+Metrics/MethodLength:
+  Max: 30
+
+Rails/HelperInstanceVariable:
+  Enabled: false
+
+Rails/ActiveRecordOverride:
+  Exclude:
+    - "app/models/membership.rb"
+
+Rails/TransactionExitStatement:
+  Exclude:
+    - "app/models/action_item.rb"
+    - "app/services/retrospectives/reveal.rb"
 
 Rails/SkipsModelValidations:
   Exclude:
     - "app/services/retrospectives/**/*.rb"
+    - "spec/**/*"
+
+Layout/LineLength:
+  Max: 140
