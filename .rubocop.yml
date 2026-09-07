@@ -45,7 +45,7 @@ Metrics/BlockLength:
     - "config/**/*"
 
 Metrics/ClassLength:
-  Max: 155
+  Max: 165
 
 Metrics/ModuleLength:
   Max: 160

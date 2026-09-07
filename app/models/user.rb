@@ -174,12 +174,12 @@ class User < ApplicationRecord
   end
 
   def another_system_admin_remains?(as_self: false)
-    self.class.system_admins.lock.order(:id).to_a
-    reload
+    sentinel_id = self.class.system_admins.minimum(:id) || id
+    self.class.lock.find(sentinel_id)
+    admins = self.class.system_admins.lock.order(:id).to_a
+    return false unless admins.any? { |admin| admin.id == id }
 
-    return false unless system_admin?
-
-    if self.class.system_admins.where.not(id: id).none?
+    if admins.none? { |admin| admin.id != id }
       errors.add(:base, last_system_admin_message(as_self: as_self))
       return false
     end
