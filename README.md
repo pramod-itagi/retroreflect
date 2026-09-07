@@ -21,7 +21,7 @@ authorization, anonymity, team management, action items, and
 retrospective lifecycle handling.
 
 The application is implemented in **Ruby 3.2** and **Rails 7.1**, with
-MySQL, Hotwire, and Tailwind CSS.
+PostgreSQL, Hotwire, and Tailwind CSS.
 
 ---
 
@@ -733,11 +733,26 @@ Requirements:
 
 - Ruby 3.2.2
 - Rails 7.1
-- MySQL
+- PostgreSQL 16 (or another supported PostgreSQL version)
+
+Install and start PostgreSQL locally. On macOS with Homebrew:
+
+    brew install postgresql@16
+    brew services start postgresql@16
+    echo 'export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"' >> ~/.zshrc
+
+PostgreSQL should accept connections as your OS user on `localhost:5432`.
+If your local role or password differs, set `POSTGRES_USER` and
+`POSTGRES_PASSWORD`. Hosted environments such as Render or Railway should
+set `DATABASE_URL`.
 
 Setup:
 
     bin/setup
+
+`bin/setup` installs gems and runs `bin/rails db:prepare`, which creates
+the `retroreflect_development` and `retroreflect_test` databases when
+needed.
 
 Create the first System Admin:
 

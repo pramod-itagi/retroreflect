@@ -35,6 +35,6 @@ class RetrospectivesController < ApplicationController
     return scope if query.blank?
 
     pattern = "%#{Retrospective.sanitize_sql_like(query)}%"
-    scope.where("retrospectives.title LIKE ? OR retrospectives.sprint_label LIKE ?", pattern, pattern)
+    scope.where("retrospectives.title ILIKE ? OR retrospectives.sprint_label ILIKE ?", pattern, pattern)
   end
 end

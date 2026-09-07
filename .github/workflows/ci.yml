@@ -16,10 +16,10 @@ concurrency:
 env:
   RAILS_ENV: test
   CI: true
-  MYSQL_HOST: 127.0.0.1
-  MYSQL_PORT: 3306
-  MYSQL_USERNAME: root
-  MYSQL_PASSWORD: ""
+  POSTGRES_HOST: localhost
+  POSTGRES_PORT: 5432
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
   RAILS_MAX_THREADS: 5
 
 jobs:
@@ -27,14 +27,16 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      mysql:
-        image: mysql:8.0
+      postgres:
+        image: postgres:16
         env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: retroreflect_test
         ports:
-          - 3306:3306
+          - 5432:5432
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root --silent"
+          --health-cmd="pg_isready -U postgres"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
@@ -43,10 +45,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install MySQL client libraries
+      - name: Install PostgreSQL client libraries
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends build-essential default-libmysqlclient-dev
+          sudo apt-get install -y --no-install-recommends build-essential libpq-dev
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1

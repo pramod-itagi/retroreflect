@@ -7,7 +7,7 @@ class Team < ApplicationRecord
   has_many :action_items, dependent: :restrict_with_exception
 
   validates :name, presence: true, length: { maximum: 100 }
-  validates :name, uniqueness: { conditions: -> { where(archived_at: nil) } }
+  validates :name, uniqueness: { case_sensitive: false, conditions: -> { where(archived_at: nil) } }
 
   scope :active, -> { where(archived_at: nil) }
   scope :archived, -> { where.not(archived_at: nil) }

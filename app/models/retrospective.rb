@@ -1,6 +1,4 @@
 class Retrospective < ApplicationRecord
-  self.ignored_columns += %w[running_team_id]
-
   SPRINT_LABEL_NUMBER = /\ASprint (\d+)(?: \((\d{4})\))?\z/
   CANCELLATION_REASON_MAX = 2_000
   RUNNING_STATUSES = %w[draft collecting discussing].freeze
