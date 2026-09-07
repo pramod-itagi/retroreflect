@@ -11,7 +11,10 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[7.1].define(version: 2026_09_05_120000) do
-  create_table "action_item_status_events", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
+  create_table "action_item_status_events", force: :cascade do |t|
     t.bigint "action_item_id", null: false
     t.bigint "actor_id", null: false
     t.string "previous_status", limit: 32, null: false
@@ -24,7 +27,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_05_120000) do
     t.index ["actor_id"], name: "index_action_item_status_events_on_actor_id"
   end
 
-  create_table "action_items", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+  create_table "action_items", force: :cascade do |t|
     t.bigint "team_id", null: false
     t.bigint "retrospective_id"
     t.bigint "created_by_id", null: false
@@ -49,7 +52,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_05_120000) do
     t.index ["team_id"], name: "index_action_items_on_team_id"
   end
 
-  create_table "feedback_drafts", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+  create_table "feedback_drafts", force: :cascade do |t|
     t.bigint "retrospective_id", null: false
     t.bigint "participation_id", null: false
     t.string "category", limit: 32, null: false
@@ -60,7 +63,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_05_120000) do
     t.index ["retrospective_id"], name: "index_feedback_drafts_on_retrospective_id"
   end
 
-  create_table "feedback_items", id: { type: :string, limit: 36 }, charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+  create_table "feedback_items", id: { type: :string, limit: 36 }, force: :cascade do |t|
     t.bigint "retrospective_id", null: false
     t.string "category", limit: 32, null: false
     t.text "body", null: false
@@ -72,7 +75,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_05_120000) do
     t.index ["retrospective_id"], name: "index_feedback_items_on_retrospective_id"
   end
 
-  create_table "memberships", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+  create_table "memberships", force: :cascade do |t|
     t.bigint "team_id", null: false
     t.bigint "user_id", null: false
     t.string "role", limit: 20, null: false
@@ -86,7 +89,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_05_120000) do
     t.index ["user_id"], name: "index_memberships_on_user_id"
   end
 
-  create_table "participations", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+  create_table "participations", force: :cascade do |t|
     t.bigint "retrospective_id", null: false
     t.bigint "user_id", null: false
     t.string "invitation_token_digest", limit: 64
@@ -102,7 +105,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_05_120000) do
     t.index ["user_id"], name: "index_participations_on_user_id"
   end
 
-  create_table "retrospectives", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+  create_table "retrospectives", force: :cascade do |t|
     t.bigint "team_id", null: false
     t.bigint "created_by_id", null: false
     t.string "title", null: false
@@ -115,30 +118,28 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_05_120000) do
     t.datetime "cancelled_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.virtual "running_team_id", type: :bigint, as: "(case when (`status` in (_utf8mb4'draft',_utf8mb4'collecting',_utf8mb4'discussing')) then `team_id` else NULL end)", stored: true
     t.integer "sprint_number"
     t.integer "sprint_year"
     t.text "cancellation_reason"
     t.index ["created_by_id"], name: "index_retrospectives_on_created_by_id"
-    t.index ["running_team_id"], name: "index_retrospectives_one_running_per_team", unique: true
     t.index ["team_id", "sprint_number"], name: "index_retrospectives_on_team_id_and_sprint_number", unique: true
     t.index ["team_id", "status"], name: "index_retrospectives_on_team_id_and_status"
     t.index ["team_id"], name: "index_retrospectives_on_team_id"
+    t.index ["team_id"], name: "index_retrospectives_one_running_per_team", unique: true, where: "((status)::text = ANY ((ARRAY['draft'::character varying, 'collecting'::character varying, 'discussing'::character varying])::text[]))"
   end
 
-  create_table "teams", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+  create_table "teams", force: :cascade do |t|
     t.string "name", limit: 100, null: false
     t.bigint "created_by_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "archived_at"
-    t.virtual "active_name", type: :string, limit: 100, as: "(case when (`archived_at` is null) then `name` else NULL end)", stored: true
-    t.index ["active_name"], name: "index_teams_on_active_name", unique: true
+    t.index "lower((name)::text)", name: "index_teams_on_active_name", unique: true, where: "(archived_at IS NULL)"
     t.index ["archived_at"], name: "index_teams_on_archived_at"
     t.index ["created_by_id"], name: "index_teams_on_created_by_id"
   end
 
-  create_table "users", charset: "utf8mb4", collation: "utf8mb4_unicode_ci", force: :cascade do |t|
+  create_table "users", force: :cascade do |t|
     t.string "email", null: false
     t.string "password_digest", null: false
     t.string "name", limit: 100, null: false
@@ -160,21 +161,21 @@ ActiveRecord::Schema[7.1].define(version: 2026_09_05_120000) do
   end
 
   add_foreign_key "action_item_status_events", "action_items", on_delete: :cascade
-  add_foreign_key "action_item_status_events", "users", column: "actor_id"
+  add_foreign_key "action_item_status_events", "users", column: "actor_id", on_delete: :restrict
   add_foreign_key "action_items", "retrospectives", on_delete: :nullify
-  add_foreign_key "action_items", "teams"
-  add_foreign_key "action_items", "users", column: "cancelled_by_id"
-  add_foreign_key "action_items", "users", column: "completed_by_id"
-  add_foreign_key "action_items", "users", column: "created_by_id"
-  add_foreign_key "action_items", "users", column: "owner_id"
+  add_foreign_key "action_items", "teams", on_delete: :restrict
+  add_foreign_key "action_items", "users", column: "cancelled_by_id", on_delete: :restrict
+  add_foreign_key "action_items", "users", column: "completed_by_id", on_delete: :restrict
+  add_foreign_key "action_items", "users", column: "created_by_id", on_delete: :restrict
+  add_foreign_key "action_items", "users", column: "owner_id", on_delete: :restrict
   add_foreign_key "feedback_drafts", "participations", on_delete: :cascade
   add_foreign_key "feedback_drafts", "retrospectives", on_delete: :cascade
   add_foreign_key "feedback_items", "retrospectives", on_delete: :cascade
-  add_foreign_key "memberships", "teams"
-  add_foreign_key "memberships", "users"
+  add_foreign_key "memberships", "teams", on_delete: :restrict
+  add_foreign_key "memberships", "users", on_delete: :restrict
   add_foreign_key "participations", "retrospectives", on_delete: :cascade
-  add_foreign_key "participations", "users"
-  add_foreign_key "retrospectives", "teams"
-  add_foreign_key "retrospectives", "users", column: "created_by_id"
-  add_foreign_key "teams", "users", column: "created_by_id"
+  add_foreign_key "participations", "users", on_delete: :restrict
+  add_foreign_key "retrospectives", "teams", on_delete: :restrict
+  add_foreign_key "retrospectives", "users", column: "created_by_id", on_delete: :restrict
+  add_foreign_key "teams", "users", column: "created_by_id", on_delete: :restrict
 end

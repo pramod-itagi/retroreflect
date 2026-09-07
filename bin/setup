@@ -23,6 +23,7 @@ FileUtils.chdir APP_ROOT do
   # end
 
   puts "\n== Preparing database =="
+  puts "PostgreSQL must be running. See README Development for install and connection settings."
   system! "bin/rails db:prepare"
 
   puts "\n== Removing old logs and tempfiles =="

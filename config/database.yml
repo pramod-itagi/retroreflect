@@ -1,19 +1,20 @@
-# MySQL. Versions 5.7.8 and up are supported.
+# PostgreSQL. Versions 9.3 and up are supported.
 #
-#   gem install mysql2
+#   gem install pg
 #
-#   Ensure the MySQL gem is defined in your Gemfile
-#   gem "mysql2"
+#   Ensure the PostgreSQL gem is defined in your Gemfile
+#   gem "pg"
 #
+# Local development typically uses the current OS user over a local socket or
+# localhost. CI and hosted environments should set POSTGRES_* or DATABASE_URL.
 default: &default
-  adapter: mysql2
-  encoding: utf8mb4
-  collation: utf8mb4_unicode_ci
+  adapter: postgresql
+  encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  username: <%= ENV.fetch("MYSQL_USERNAME") { "root" } %>
-  password: <%= ENV.fetch("MYSQL_PASSWORD") { "" } %>
-  host: <%= ENV.fetch("MYSQL_HOST") { "127.0.0.1" } %>
-  port: <%= ENV.fetch("MYSQL_PORT") { 3306 } %>
+  host: <%= ENV.fetch("POSTGRES_HOST") { "localhost" } %>
+  port: <%= ENV.fetch("POSTGRES_PORT") { 5432 } %>
+  username: <%= ENV["POSTGRES_USER"] %>
+  password: <%= ENV["POSTGRES_PASSWORD"] %>
 
 development:
   <<: *default
@@ -28,6 +29,4 @@ test:
 
 production:
   <<: *default
-  database: retroreflect_production
-  username: retroreflect
-  password: <%= ENV["RETROREFLECT_DATABASE_PASSWORD"] %>
+  url: <%= ENV["DATABASE_URL"] %>
