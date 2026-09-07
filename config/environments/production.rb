@@ -18,7 +18,7 @@ Rails.application.configure do
 
   # Ensures that a master key has been made available in ENV["RAILS_MASTER_KEY"], config/master.key, or an environment
   # key such as config/credentials/production.key. This key is used to decrypt credentials (and other encrypted files).
-  # config.require_master_key = true
+  config.require_master_key = true
 
   # Disable serving static files from `public/`, relying on NGINX/Apache to do so instead.
   # config.public_file_server.enabled = false
@@ -72,10 +72,30 @@ Rails.application.configure do
   # config.active_job.queue_name_prefix = "retroreflect_production"
 
   config.action_mailer.perform_caching = false
+  config.action_mailer.perform_deliveries = true
+  config.action_mailer.raise_delivery_errors = true
+  config.action_mailer.delivery_method = :smtp
 
-  # Ignore bad email addresses and do not raise email delivery errors.
-  # Set this to true and configure the email server for immediate delivery to raise delivery errors.
-  # config.action_mailer.raise_delivery_errors = false
+  app_host = ENV.fetch("APP_HOST", "retroreflect.onrender.com")
+                .sub(%r{\Ahttps?://}i, "")
+                .split("/")
+                .first
+  mailer_url_options = { host: app_host, protocol: "https" }
+  config.action_mailer.default_url_options = mailer_url_options
+  config.action_controller.default_url_options = mailer_url_options
+  config.action_mailer.default_options = { from: ENV.fetch("MAILER_FROM", "noreply@retroreflect.local") }
+
+  if ENV["SMTP_ADDRESS"].present?
+    config.action_mailer.smtp_settings = {
+      address: ENV["SMTP_ADDRESS"],
+      port: Integer(ENV.fetch("SMTP_PORT", "587")),
+      domain: ENV.fetch("SMTP_DOMAIN", app_host),
+      user_name: ENV.fetch("SMTP_USERNAME", nil),
+      password: ENV.fetch("SMTP_PASSWORD", nil),
+      authentication: ENV.fetch("SMTP_AUTHENTICATION", "plain").to_sym,
+      enable_starttls_auto: true
+    }
+  end
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).
