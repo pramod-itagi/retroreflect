@@ -1,0 +1,30 @@
+<% content_for :full_bleed, true %>
+
+<div class="login-page auth-screen workspace-shell">
+  <section class="auth-split">
+    <div class="auth-copy">
+      <%= render "shared/auth_copy",
+                 heading: "Resend confirmation email",
+                 lede: "Enter your email address and we'll send you a new confirmation link." %>
+    </div>
+
+    <div class="auth-panel">
+      <div class="login-form-card">
+        <%= form_with url: confirmation_resends_path, class: "auth-form" do %>
+          <div>
+            <%= label_tag :email, "Email", class: "auth-field-label" %>
+            <div class="action-item-control action-item-control--text">
+              <%= render "shared/auth_field_icon", name: "email" %>
+              <%= email_field_tag :email, nil, required: true, autocomplete: "email", placeholder: "you@example.com", class: "workspace-field" %>
+            </div>
+          </div>
+          <%= submit_tag "Send confirmation email", class: "home-action home-action-primary" %>
+        <% end %>
+
+        <p class="auth-back">
+          <%= back_nav_link new_session_path, "sign in" %>
+        </p>
+      </div>
+    </div>
+  </section>
+</div>

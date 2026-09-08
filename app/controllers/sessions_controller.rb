@@ -1,5 +1,8 @@
 class SessionsController < ApplicationController
+  UNCONFIRMED_ALERT = "Confirm your email before signing in.".freeze
+
   allow_unauthenticated_access only: %i[new create]
+  helper_method :unconfirmed_sign_in_attempt?
 
   def new
     redirect_to root_path if authenticated?
@@ -15,7 +18,7 @@ class SessionsController < ApplicationController
     user = User.active.find_by(email: params[:email])
     if user&.authenticate(params[:password])
       unless user.confirmed?
-        redirect_to new_session_path, alert: "Confirm your email before signing in."
+        redirect_to new_session_path, alert: UNCONFIRMED_ALERT
         return
       end
 
@@ -31,5 +34,11 @@ class SessionsController < ApplicationController
   def destroy
     terminate_session
     redirect_to new_session_path, notice: "Signed out."
+  end
+
+  private
+
+  def unconfirmed_sign_in_attempt?
+    flash[:alert] == UNCONFIRMED_ALERT
   end
 end
