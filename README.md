@@ -747,7 +747,8 @@ Install and start PostgreSQL locally. On macOS with Homebrew:
 PostgreSQL should accept connections as your OS user on `localhost:5432`.
 If your local role or password differs, set `POSTGRES_USER` and
 `POSTGRES_PASSWORD`. Hosted environments such as Render or Railway should
-set `DATABASE_URL`.
+set `DATABASE_URL`. Production email delivery uses the Resend HTTP API
+and needs `RESEND_API_KEY` plus a verified `MAILER_FROM` address.
 
 Setup:
 

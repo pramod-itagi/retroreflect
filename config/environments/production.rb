@@ -74,7 +74,7 @@ Rails.application.configure do
   config.action_mailer.perform_caching = false
   config.action_mailer.perform_deliveries = true
   config.action_mailer.raise_delivery_errors = true
-  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.delivery_method = :resend
 
   app_host = ENV.fetch("APP_HOST", "retroreflect.onrender.com")
                 .sub(%r{\Ahttps?://}i, "")
@@ -84,18 +84,6 @@ Rails.application.configure do
   config.action_mailer.default_url_options = mailer_url_options
   config.action_controller.default_url_options = mailer_url_options
   config.action_mailer.default_options = { from: ENV.fetch("MAILER_FROM", "noreply@retroreflect.local") }
-
-  if ENV["SMTP_ADDRESS"].present?
-    config.action_mailer.smtp_settings = {
-      address: ENV["SMTP_ADDRESS"],
-      port: Integer(ENV.fetch("SMTP_PORT", "587")),
-      domain: ENV.fetch("SMTP_DOMAIN", app_host),
-      user_name: ENV.fetch("SMTP_USERNAME", nil),
-      password: ENV.fetch("SMTP_PASSWORD", nil),
-      authentication: ENV.fetch("SMTP_AUTHENTICATION", "plain").to_sym,
-      enable_starttls_auto: true
-    }
-  end
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).
