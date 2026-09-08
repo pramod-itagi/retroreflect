@@ -1,6 +1,7 @@
 class AuthThrottle
   LOGIN_LIMIT = 10
   RESET_LIMIT = 5
+  CONFIRMATION_RESEND_LIMIT = RESET_LIMIT
   WINDOW = 15.minutes
   TOO_MANY_ATTEMPTS = "Too many attempts. Please try again later.".freeze
 
@@ -33,7 +34,14 @@ class AuthThrottle
     end
 
     def limit_for(scope)
-      scope.to_sym == :password_reset ? RESET_LIMIT : LOGIN_LIMIT
+      case scope.to_sym
+      when :password_reset
+        RESET_LIMIT
+      when :confirmation_resend
+        CONFIRMATION_RESEND_LIMIT
+      else
+        LOGIN_LIMIT
+      end
     end
   end
 end

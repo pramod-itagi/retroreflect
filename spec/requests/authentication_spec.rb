@@ -1,14 +1,21 @@
 require "rails_helper"
 
 RSpec.describe "Authentication", type: :request do
+  include ActiveJob::TestHelper
+
   it "requires email confirmation before sign in" do
     create_user(name: "Ada", email: "ada@example.com", confirmed: false)
 
-    post session_path, params: { email: "ada@example.com", password: "password123" }
+    expect do
+      post session_path, params: { email: "ada@example.com", password: "password123" }
+    end.not_to have_enqueued_mail(UserMailer, :confirmation)
 
     expect(response).to redirect_to(new_session_path)
     follow_redirect!
     expect(response.body).to include("Confirm your email")
+    expect(response.body).to include("Didn't receive the email?")
+    expect(response.body).to include("Resend confirmation email")
+    expect(response.body).to include(new_confirmation_resend_path)
   end
 
   it "rejects invalid credentials without revealing whether the email exists" do
@@ -259,8 +266,11 @@ RSpec.describe "Authentication", type: :request do
     expect(response.body).to include("Continue to your team's reflections.")
     expect(response.body).to include("Create an account")
     expect(response.body).to include("Forgot password?")
+    expect(response.body).to include("Resend confirmation email")
     expect(response.body).to include(new_registration_path)
     expect(response.body).to include(new_password_reset_path)
+    expect(response.body).to include(new_confirmation_resend_path)
+    expect(response.body).not_to include("Didn't receive the email?")
   end
 
   it "redirects an authenticated user away from the sign-in page" do

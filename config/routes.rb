@@ -6,6 +6,9 @@ Rails.application.routes.draw do
   resource :session, only: %i[new create destroy]
   resources :registrations, only: %i[new create]
   resources :email_confirmations, only: :show, param: :token
+  resources :confirmation_resends, only: %i[new create] do
+    get :sent, on: :collection
+  end
   resources :password_resets, only: %i[new create], param: :token
   get "password_resets/:token/edit", to: "password_resets#edit", as: :edit_password_reset
   patch "password_resets/:token", to: "password_resets#update", as: :password_reset

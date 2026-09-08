@@ -1,0 +1,21 @@
+<% content_for :full_bleed, true %>
+
+<div class="login-page auth-screen workspace-shell">
+  <section class="auth-split">
+    <div class="auth-copy">
+      <%= render "shared/auth_copy",
+                 heading: "Check your email",
+                 lede: @message %>
+    </div>
+
+    <div class="auth-panel">
+      <div class="login-form-card">
+        <%= app_alert(kind: "success", message: @message, autohide: false) %>
+
+        <p class="auth-back">
+          <%= back_nav_link new_session_path, "sign in" %>
+        </p>
+      </div>
+    </div>
+  </section>
+</div>

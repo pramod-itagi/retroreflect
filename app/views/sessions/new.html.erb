@@ -33,7 +33,16 @@
           <%= link_to "Create an account", new_registration_path, class: "home-quiet-link" %>
           <span class="auth-alt-rule" aria-hidden="true"></span>
           <%= link_to "Forgot password?", new_password_reset_path, class: "home-quiet-link" %>
+          <span class="auth-alt-rule" aria-hidden="true"></span>
+          <%= link_to "Resend confirmation email", new_confirmation_resend_path, class: "home-quiet-link" %>
         </p>
+
+        <% if unconfirmed_sign_in_attempt? %>
+          <p class="auth-back">
+            Didn't receive the email?
+            <%= link_to "Resend confirmation email", new_confirmation_resend_path, class: "home-quiet-link" %>
+          </p>
+        <% end %>
       </div>
     </div>
   </section>
