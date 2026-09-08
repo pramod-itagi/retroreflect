@@ -38,6 +38,9 @@ gem "bcrypt", "~> 3.1.7"
 # Tailwind CSS for Rails
 gem "tailwindcss-rails", "~> 2.7"
 
+# Resend HTTP API delivery for Action Mailer
+gem "resend"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[windows jruby]
 

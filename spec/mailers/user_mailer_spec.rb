@@ -33,4 +33,18 @@ RSpec.describe UserMailer, type: :mailer do
       expect(mail.html_part.body.to_s).to include(expected)
     end
   end
+
+  it "includes a password reset URL without sending through Resend" do
+    user = create_user(name: "Alice", email: "alice@example.com")
+    raw = user.issue_password_reset_token!
+    mail = described_class.password_reset(user, raw)
+
+    expect(mail.to).to eq(["alice@example.com"])
+    expect(mail.subject).to eq("Reset your Retroreflect password")
+    expect(mail.text_part.body.to_s).to include("http://www.example.com/password_resets/#{raw}/edit")
+  end
+
+  it "still uses the test delivery method so existing mailer specs do not call Resend" do
+    expect(ActionMailer::Base.delivery_method).to eq(:test)
+  end
 end
