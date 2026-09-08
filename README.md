@@ -23,6 +23,9 @@ retrospective lifecycle handling.
 The application is implemented in **Ruby 3.2** and **Rails 7.1**, with
 PostgreSQL, Hotwire, and Tailwind CSS.
 
+The live application is at
+[https://retroreflect.onrender.com](https://retroreflect.onrender.com).
+
 ---
 
 ## Why Retroreflect?
