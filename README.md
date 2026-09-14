@@ -4,6 +4,53 @@
 > honest conversations, and turn discussion into actionable
 > follow-through.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Why Retroreflect?](#why-retroreflect)
+- [Core Retrospective Format](#core-retrospective-format)
+- [User Roles](#user-roles)
+  - [System Admin](#system-admin)
+  - [Facilitator](#facilitator)
+  - [Participant / Member](#participant--member)
+- [Retrospective Workflow](#retrospective-workflow)
+  - [1. Create a Team](#1-create-a-team)
+  - [2. Create a Retrospective](#2-create-a-retrospective)
+  - [3. Invite Participants](#3-invite-participants)
+  - [4. Collect Feedback](#4-collect-feedback)
+  - [5. Anonymous Feedback Model](#5-anonymous-feedback-model)
+- [Reveal and Discussion](#reveal-and-discussion)
+  - [Locked-Box Model](#locked-box-model)
+- [Editing and Freezing](#editing-and-freezing)
+- [Action Items](#action-items)
+  - [Action Item Lifecycle](#action-item-lifecycle)
+- [Action Item Visibility](#action-item-visibility)
+  - [Retrospective Meeting Board](#retrospective-meeting-board)
+  - [Home](#home)
+  - [Action items (navbar)](#action-items-navbar)
+  - [Team Page](#team-page)
+- [Team Management](#team-management)
+  - [Team Membership](#team-membership)
+- [Team Archiving](#team-archiving)
+- [Retrospective History](#retrospective-history)
+- [Application Navigation](#application-navigation)
+  - [Home](#home-1)
+  - [Teams](#teams)
+  - [Retrospectives](#retrospectives)
+  - [Action items](#action-items-1)
+  - [System administration](#system-administration)
+  - [Meeting Board](#meeting-board)
+- [Product Experience](#product-experience)
+- [Retrospective States](#retrospective-states)
+- [Accounts and Sessions](#accounts-and-sessions)
+- [Privacy and Security Principles](#privacy-and-security-principles)
+- [Visual Design](#visual-design)
+- [Current Product Principles](#current-product-principles)
+- [Current Capabilities](#current-capabilities)
+- [Future Areas](#future-areas)
+- [Development](#development)
+- [License](#license)
+
 ## Overview
 
 Retroreflect is a retrospective management application designed around a
