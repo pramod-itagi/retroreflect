@@ -1,0 +1,62 @@
+<% content_for :title, "System Health" %>
+<% content_for :full_bleed, true %>
+
+<div class="workspace-page workspace-shell listing-page">
+  <div class="listing-inner">
+    <header class="listing-intro">
+      <p class="listing-kicker">Retroreflect</p>
+      <h1 class="display-face listing-heading">System Health</h1>
+      <p class="listing-lede">Operational status for the application and database.</p>
+    </header>
+
+    <% if @overall_healthy %>
+      <%= app_alert(
+            kind: "success",
+            title: "All Systems Operational",
+            message: "The application and PostgreSQL database are responding normally.",
+            autohide: false
+          ) %>
+    <% else %>
+      <%= app_alert(
+            kind: "error",
+            title: "Service Degraded",
+            message: "The application is responding, but PostgreSQL is currently unavailable.",
+            autohide: false
+          ) %>
+    <% end %>
+
+    <section class="home-card health-panel mt-5 px-6 py-5" aria-label="Health checks">
+      <ul class="health-check-list">
+        <li class="health-check-row">
+          <span class="health-check-label">Application</span>
+          <span class="health-check-status health-check-status--ok">
+            <span aria-hidden="true">✓</span>
+            <span>Healthy</span>
+          </span>
+        </li>
+        <li class="health-check-row">
+          <span class="health-check-label">PostgreSQL Database</span>
+          <% if @database_healthy %>
+            <span class="health-check-status health-check-status--ok">
+              <span aria-hidden="true">✓</span>
+              <span>Healthy</span>
+            </span>
+          <% else %>
+            <span class="health-check-status health-check-status--down">
+              <span aria-hidden="true">✕</span>
+              <span>Down</span>
+            </span>
+          <% end %>
+        </li>
+        <li class="health-check-row">
+          <span class="health-check-label">Environment</span>
+          <span class="health-check-value"><%= @environment.to_s.titleize %></span>
+        </li>
+      </ul>
+    </section>
+
+    <p class="health-checked-at mt-4 text-sm text-muted">
+      Last checked: <%= @checked_at.strftime("%b %-d, %Y %-I:%M %p") %>
+    </p>
+  </div>
+</div>
