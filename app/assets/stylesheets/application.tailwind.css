@@ -2875,3 +2875,57 @@ button:focus-visible,
   display: list-item;
   list-style-type: disc;
 }
+
+.health-check-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.health-check-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0;
+}
+
+.health-check-row + .health-check-row {
+  border-top: 1px dotted rgba(16, 33, 29, 0.22);
+}
+
+.health-check-label {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.health-check-value {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.health-check-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 9999px;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.health-check-status--ok {
+  background: #dce9df;
+  color: #24473c;
+}
+
+.health-check-status--down {
+  background: #fdf0ed;
+  color: #9a2f20;
+}
+
+.health-checked-at {
+  margin-top: 1rem;
+}
+

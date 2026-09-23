@@ -49,6 +49,7 @@
 - [Current Capabilities](#current-capabilities)
 - [Future Areas](#future-areas)
 - [Development](#development)
+  - [Health checks](#health-checks)
 - [License](#license)
 
 ## Overview
@@ -812,6 +813,19 @@ Create the first System Admin:
 Run the test suite:
 
     bundle exec rspec
+
+### Health checks
+
+Human-readable application and database status:
+
+    GET /health
+
+Lightweight liveness endpoint for infrastructure monitoring (for example Render's
+health check path). It does not query PostgreSQL:
+
+    GET /health/live
+
+On Render, set the health check path to `/health/live`.
 
 Before adding large features, the project prioritizes:
 
